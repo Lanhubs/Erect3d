@@ -1,0 +1,189 @@
+.workspace{
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  min-height:620px;
+  background:#edf0ec
+}
+.appbar{
+  height:52px;
+  display:flex;
+  align-items:center;
+  padding:0 16px;
+  background:#2c3531;
+  color:#e8e8df;
+  gap:18px;
+  border-bottom:1px solid #47504a
+}
+.appbar button{
+  background:transparent;
+  border:1px solid #56615a;
+  color:#e8e8df;
+  height:29px;
+  padding:0 10px;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:12px
+}
+.appbar .back{
+  width:30px;
+  padding:0;
+  justify-content:center
+}
+.app-name{
+  display:flex;
+  gap:13px;
+  align-items:center;
+  font-size:13px;
+  min-width:0
+}
+.app-name strong{
+  letter-spacing:.12em;
+  font-size:14px;
+  white-space:nowrap
+}
+.app-name em{
+  color:#c29a66;
+  font-style:normal
+}
+.app-name span{
+  color:#69756e
+}
+.app-name b{
+  font-weight:500;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+  overflow:hidden
+}
+.app-actions{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:7px
+}
+.save-state{
+  color:#a9b4aa;
+  font-size:11px;
+  margin-right:12px;
+  white-space:nowrap
+}
+.workspace-top{
+  height:48px;
+  display:flex;
+  align-items:center;
+  padding:0 13px;
+  gap:20px;
+  background:#f6f7f4;
+  border-bottom:1px solid #cbd1ca
+}
+.toolset,.viewset{
+  display:flex;
+  align-items:center;
+  gap:3px
+}
+.toolset button,.viewset button{
+  height:31px;
+  border:1px solid transparent;
+  background:transparent;
+  color:#57615b;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:0 9px;
+  font-size:12px
+}
+.toolset button svg{
+  font-size:14px
+}
+.toolset button.active,.viewset button.active{
+  background:#e2e7df;
+  border-color:#bfc8bd;
+  color:#334a3c
+}
+.viewset{
+  margin-left:auto;
+  border-left:1px solid #d4dad2;
+  padding-left:14px
+}
+.viewset button{
+  min-width:46px;
+  justify-content:center
+}
+.workspace-body{
+  flex:1;
+  display:flex;
+  min-height:0;
+  position:relative
+}
+.mode-actions{display:flex;align-items:center;gap:3px;border-left:1px solid #d4dad2;padding-left:12px}
+.mode-actions button,.more-tools{height:31px;border:1px solid transparent;background:transparent;color:#57615b;padding:0 9px;font-size:12px}
+.mode-actions button.active{background:#e2e7df;border-color:#bfc8bd;color:#334a3c}
+.more-tools{display:none}
+.tool-sheet-scrim,.tool-sheet{display:none}
+.inspector-toggle,.inspector-scrim,.inspector-mobile-head{display:none}
+.work-main{
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column
+}
+.source-strip{
+  height:41px;
+  flex:none;
+  background:#e6e9e4;
+  border-bottom:1px solid #cdd3ca;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 14px;
+  gap:15px;
+  font-size:11px;
+  color:#4d5950
+}
+.source-strip>span{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
+.source-strip>div{
+  display:flex;
+  align-items:center;
+  gap:7px
+}
+.source-strip button,.file-button,.page-choice button{
+  border:1px solid #bfc8bc;
+  background:#f8f9f6;
+  color:#3e4e42;
+  padding:5px 10px;
+  font-size:11px;
+  white-space:nowrap
+}
+.file-button{
+  cursor:pointer
+}
+.file-button input{
+  display:none
+}
+.view-area{
+  flex:1;
+  min-height:0;
+  display:flex
+}
+.view-area.split>*{
+  width:50%;
+  min-width:0
+}
+.view-area.plan>.plan-editor,.view-area.model>.viewer{
+  width:100%
+}
+.view-area.split>.plan-editor{
+  border-right:1px solid #b8c1b8
+}
+.analyze-mode .source-strip,.analyze-mode .reconstruction-flow{display:none}
+.present-mode .appbar,.present-mode .workspace-top,.present-mode .source-strip,.present-mode .reconstruction-flow,.present-mode .statusbar{display:none}
+.present-mode .work-main,.present-mode .viewer{width:100%;height:100%;flex:1}
+.present-mode .viewport-head{height:44px}

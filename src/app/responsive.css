@@ -1,0 +1,68 @@
+@media(max-width:900px){
+  .toolset button span{display:none}
+  .inspector{width:220px}
+  .view-area.split{flex-direction:column}
+  .view-area.split>*{width:100%;height:50%}
+  .view-area.split>.plan-editor{border-right:0;border-bottom:1px solid #b8c1b8}
+  .save-state{display:none}
+  .mode-actions{padding-left:6px}
+  .mode-actions button{padding:0 6px;font-size:11px}
+  .ready-flow{gap:6px;padding:6px 10px}
+  .ready-flow>div{min-width:95px;flex:1}
+  .ready-flow span{display:none}
+  .ready-flow button{padding:6px 8px}
+}
+@media(max-width:620px){
+  .workspace{height:100dvh;min-height:0;overflow:hidden}
+  .appbar{height:48px;flex:none;padding:0 10px;gap:9px}
+  .app-name{gap:7px;flex:1}
+  .app-name strong{font-size:12px}
+  .app-name b{max-width:100px;font-size:11px}
+  .app-actions{margin-left:0;gap:4px}
+  .app-actions button{height:30px;padding:0 7px}
+  .app-actions button:last-child span{display:none}
+  .workspace-top{height:132px;flex:none;display:grid;grid-template-columns:1fr auto;grid-template-rows:43px 40px 40px;gap:0 8px;padding:3px 9px 4px}
+  .toolset{grid-column:1;grid-row:1;min-width:0;overflow:hidden;gap:2px}
+  .toolset button{flex:none;min-width:41px;height:38px;justify-content:center;padding:0 10px}
+  .toolset button:nth-child(n+6){display:none}
+  .toolset button svg{font-size:18px}
+  .more-tools{display:block;grid-column:2;grid-row:1;height:38px;align-self:center;border:1px solid #bdc8bb;background:#fff;border-radius:5px}
+  .viewset{grid-column:1;grid-row:2;margin:0;padding:0;border:0;background:#e9ede7;border-radius:5px;gap:0}
+  .viewset button{flex:1;min-width:50px;height:36px}
+  .mode-actions{grid-column:1 / -1;grid-row:3;display:flex;margin:0;padding:0;border:0;background:#e9ede7;border-radius:5px}
+  .mode-actions button{flex:1;height:36px}
+  .inspector-toggle{display:block;grid-column:2;grid-row:2;border:1px solid #bdc8bb;background:#fff;color:#344b3b;border-radius:5px;padding:0 10px;font-size:11px;white-space:nowrap}
+  .inspector-toggle.active{background:#dbe9da}
+  .workspace-body{display:block;overflow:hidden}
+  .work-main{height:100%;width:100%}
+  .source-strip{height:36px;padding:0 8px}
+  .source-strip>span{display:none}
+  .source-strip>div{width:100%;justify-content:flex-end}
+  .source-strip button,.source-strip .file-button{min-height:28px}
+  .ready-flow{flex-wrap:nowrap}
+  .ready-flow>div{flex:1;min-width:0;flex-basis:auto}
+  .ready-flow button{flex:none}
+  .ready-flow button:first-of-type,.ready-flow button:nth-of-type(2){display:none}
+  .viewport-head{padding:0 8px}
+  .viewport-head>div{min-width:0;overflow-x:auto;scrollbar-width:none}
+  .viewport-head button,.viewport-head select{flex:none;white-space:nowrap}
+  .plan-editor .viewport-head>span{display:none}
+  .plan-editor .viewport-head>div{overflow:visible;margin-left:auto}
+  .viewport-foot{padding:0 8px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  .statusbar{height:24px;padding:0 8px;gap:10px;font-size:9px}
+  .statusbar span:nth-child(2){display:none}
+  .inspector-scrim{display:block;position:absolute;inset:0;z-index:8;background:#15241d77;border:0}
+  .inspector{display:none;position:absolute;bottom:0;left:0;right:0;z-index:9;width:100%;height:min(68dvh,540px);border:0;border-top:2px solid #9bab9a;border-radius:14px 14px 0 0;box-shadow:0 -10px 30px #14201933}
+  .inspector.mobile-open{display:block}
+  .inspector-mobile-head{display:flex;position:sticky;top:0;z-index:1;align-items:center;justify-content:space-between;padding:8px 15px;background:#edf1ea;border-bottom:1px solid #cbd4c9;text-transform:capitalize;font-size:13px;color:#354b3c}
+  .inspector-mobile-head button{width:34px;height:34px;border:1px solid #b9c7b7;border-radius:5px;background:#fff;font-size:21px;line-height:1}
+  .inspector-field,.readout{min-height:45px;font-size:12px}
+  .inspector-field input,.inspector-field select{min-height:34px;width:140px;font-size:12px}
+  .tool-sheet-scrim{display:block;position:fixed;inset:0;z-index:20;background:#14221a88;border:0}
+  .tool-sheet{display:block;position:fixed;left:0;right:0;bottom:0;z-index:21;background:#f6f8f4;border-top:2px solid #9eae9e;border-radius:12px 12px 0 0;padding:12px;box-shadow:0 -10px 30px #14201933}
+  .tool-sheet>div{display:flex;align-items:center;justify-content:space-between;font:600 11px 'IBM Plex Mono',monospace;letter-spacing:.1em;margin-bottom:12px}
+  .tool-sheet>div button{width:36px;height:36px;border:1px solid #c4cec2;background:#fff;font-size:22px}
+  .tool-sheet nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .tool-sheet nav button{display:flex;align-items:center;gap:9px;min-height:43px;border:1px solid #c3cdc3;background:#fff;color:#3a4b3d;padding:0 12px;text-align:left;font-size:12px}
+  .tool-sheet nav button[aria-pressed=true]{background:#e0e9df;border-color:#8dab91}
+}

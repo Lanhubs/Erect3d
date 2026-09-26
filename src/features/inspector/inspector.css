@@ -1,0 +1,96 @@
+.inspector{
+  width:260px;
+  flex:none;
+  background:#f6f7f4;
+  border-left:1px solid #cbd2c8;
+  overflow:auto
+}
+.panel-title{
+  padding:14px 15px 9px;
+  border-bottom:1px solid #d6dcd4;
+  font:600 10px 'IBM Plex Mono',monospace;
+  letter-spacing:.1em;
+  color:#6c786d
+}
+.inspector-empty{
+  padding:18px 15px 24px;
+  color:#829084;
+  font-size:12px;
+  line-height:1.55
+}
+.summary-grid{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:9px;
+  padding:16px;
+  color:#68756a;
+  font-size:12px
+}
+.summary-grid b{
+  color:#354239
+}
+.entity-title{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  padding:15px;
+  border-bottom:1px solid #d8ded5
+}
+.entity-title strong{
+  font:600 14px 'IBM Plex Mono',monospace;
+  letter-spacing:.03em
+}
+.entity-title small{
+  font:10px 'IBM Plex Mono',monospace;
+  color:#8b978b;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
+.fields{
+  padding:7px 15px
+}
+.inspector-field,.readout{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  min-height:39px;
+  font-size:11px;
+  color:#647066;
+  border-bottom:1px solid #e4e8e1
+}
+.inspector-field input,.inspector-field select{
+  width:95px;
+  border:1px solid #c9d1c6;
+  background:#fff;
+  color:#36443a;
+  padding:5px 6px;
+  font-size:11px
+}
+.inspector-field input[type=color]{
+  height:27px;
+  padding:2px
+}
+.readout b{
+  font-weight:600;
+  color:#3c493f;
+  text-align:right;
+  max-width:130px;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
+.delete-button{
+  margin:16px;
+  border:1px solid #c8b9b3;
+  background:#f8f2ef;
+  color:#8d574c;
+  font-size:11px;
+  padding:7px 9px
+}
+.inspector-action{margin:12px 0 6px;border:1px solid #b8c6b9;background:#e9eee8;color:#35513b;padding:8px 10px;font-size:11px}
+.roof-controls { padding: 12px 15px 18px; display: grid; gap: 12px; }
+.roof-controls label { display: grid; gap: 5px; color: #536055; font-size: 11px; }
+.roof-controls select, .roof-controls input[type=color] { width: 100%; min-height: 30px; border: 1px solid #c4ccc1; background: white; color: #344238; padding: 4px 6px; }
+.roof-controls input[type=color] { padding: 2px; }
+.roof-controls input[type=range] { width: 100%; accent-color: #9a7047; }
+.roof-controls p { margin: 0; color: #849084; font-size: 10px; line-height: 1.5; }

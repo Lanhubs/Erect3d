@@ -1,0 +1,29 @@
+.reconstruction-flow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 14px;
+  background: #f4efe5;
+  border-bottom: 1px solid #d9c8ac;
+  color: #564b3c;
+}
+.reconstruction-flow > div { flex: 1; min-width: 170px; display: flex; flex-direction: column; gap: 3px; }
+.reconstruction-flow strong { font: 600 10px 'IBM Plex Mono', monospace; letter-spacing: .06em; }
+.reconstruction-flow span { font-size: 11px; line-height: 1.35; }
+.reconstruction-flow button {
+  border: 1px solid #bdac92;
+  background: #fffdfa;
+  color: #594c3b;
+  padding: 7px 10px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.reconstruction-flow button:disabled { opacity: .5; cursor: not-allowed; }
+@media (max-width: 700px) {
+  .reconstruction-flow { flex-wrap: wrap; padding: 10px; }
+  .reconstruction-flow > div { flex-basis: 100%; }
+  .reconstruction-flow button { flex: 1; }
+  .calibration { min-height: 650px; }
+  .calibration-copy { height: auto; overflow: visible; gap: 9px; padding: 12px; }
+  .calibration-image { flex: none; height: 420px; }
+}
