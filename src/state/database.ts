@@ -1,4 +1,5 @@
 import type { Project, SourceDocument } from '../domain/types'
+import { initialAutoScale } from '../geometry/autoScale'
 
 const DB = 'erect3d-v1'
 const open = () => new Promise<IDBDatabase>((resolve, reject) => {
@@ -45,7 +46,7 @@ export async function replaceProjectSource(project: Project, document: SourceDoc
   const copy = structuredClone(project)
   const previous = copy.sources[0]?.id
   copy.sources = [document]
-  copy.calibration = undefined
+  copy.calibration = initialAutoScale(document.width, document.height)
   copy.modified = Date.now()
   if (previous) for (const level of copy.buildings.flatMap(building => building.levels)) {
     level.walls = []; level.doors = []; level.windows = []; level.passages = []; level.rooms = []

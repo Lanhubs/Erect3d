@@ -11,6 +11,7 @@ import { zoomEvent, type ZoomDetail } from '../app/useWorkspaceZoom'
 import { drawWalkMap } from './walkMap'
 import { RoomSurface } from './RoomSurface'
 import { SectionPlane } from './SectionPlane'
+import { SoftwarePreview } from './SoftwarePreview'
 
 function InspectionCamera({ walk, top, center, span }: { walk: boolean; top: boolean; center: [number, number, number]; span: number }) {
   const { camera, gl } = useThree()
@@ -91,6 +92,12 @@ export function Viewer({ level, selection, select, roofShown, setRoofShown, walk
   const [ceiling, setCeiling] = useState(false)
   const [sectionHeight, setSectionHeight] = useState<number | null>(null)
   const [quality, setQuality] = useState<Quality>('balanced')
+  const [webglAvailable] = useState(() => {
+    try { const probe = document.createElement('canvas'); const context = probe.getContext('webgl2') || probe.getContext('webgl')
+      if (!context) return false
+      context.getExtension('WEBGL_lose_context')?.loseContext(); return true
+    } catch { return false }
+  })
   const [error, setError] = useState('')
   const [openDoors, setOpenDoors] = useState<ReadonlySet<string>>(() => new Set())
   const [mapShown, setMapShown] = useState(true)
@@ -111,7 +118,7 @@ export function Viewer({ level, selection, select, roofShown, setRoofShown, walk
     if (walk) { if (document.pointerLockElement) document.exitPointerLock(); endWalk(); return }
     const canvas = document.querySelector<HTMLCanvasElement>('.viewer canvas')
     try {
-      if (!canvas) throw new Error('Canvas unavailable')
+      if (!canvas) { setError('Walkthrough requires WebGL. The building preview and editing remain available.'); return }
       await Promise.resolve(canvas.requestPointerLock())
       setLockedWalk(document.pointerLockElement === canvas)
       setError(''); setWalk(true)
@@ -146,15 +153,16 @@ export function Viewer({ level, selection, select, roofShown, setRoofShown, walk
       {presentation && <button onClick={onExitPresentation}>Exit present</button>}
     </div></div>
     {error && <div className="inline-error">{error}</div>}
-    <div className="canvas-wrap"><Canvas shadows={{ type: PCFShadowMap }}
+    <div className="canvas-wrap">{webglAvailable ? <Canvas shadows={{ type: PCFShadowMap }}
       dpr={quality === 'high' ? [1, 2] : quality === 'balanced' ? [1, 1.5] : [1, 1]}
       camera={{ fov: 55, near: .03, far: 250 }}
       gl={{ antialias: true, toneMapping: ACESFilmicToneMapping }}
-      fallback={<div className="inline-error">WebGL is unavailable in this browser.</div>}>
+      >
       <Scene level={level} selection={selection} select={select} walk={walk} top={top}
         endWalk={endWalk} ceiling={ceiling} roofShown={roofShown} sectionHeight={sectionHeight} quality={quality} openDoors={openDoors}
         toggleDoor={toggleDoor} onWalkPosition={onWalkPosition} />
-    </Canvas>
+    </Canvas> : <SoftwarePreview level={level} selection={selection} select={select} roofShown={roofShown}
+      top={top} sectionHeight={sectionHeight} />}
       {sectionHeight !== null && <label className="section-control">Cut height · {sectionHeight.toFixed(1)} m
         <input aria-label="Section cut height" type="range" min="0.4" max="5" step="0.1" value={sectionHeight}
           onChange={event => setSectionHeight(Number(event.target.value))} />

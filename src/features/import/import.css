@@ -90,6 +90,10 @@
   font-size:14px;
   color:#36443a
 }
+.scale-controls{max-width:260px;min-width:210px}
+.scale-controls span{line-height:1.5}
+.scale-controls label{display:grid;gap:7px;color:#526354;font-size:11px}
+.scale-controls input{width:100%;padding:8px;border:1px solid #bdc8ba;background:#fff;color:#334638}
 @media(max-width:700px){
   .calibration{
   flex-direction:column

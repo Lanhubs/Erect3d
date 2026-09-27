@@ -66,6 +66,10 @@
   min-height:0;
   position:relative
 }
+.software-preview{position:absolute;inset:0;overflow:hidden;background:#e6eae6}
+.software-preview svg{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+.software-preview svg:active{cursor:grabbing}
+.software-preview-note{position:absolute;left:12px;bottom:10px;max-width:calc(100% - 85px);padding:5px 8px;background:#fffffff0;border:1px solid #bdc8bc;color:#4f6054;font:10px 'DM Sans',sans-serif;pointer-events:none}
 .viewer-zoom{
   position:absolute;
   right:14px;

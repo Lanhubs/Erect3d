@@ -24,12 +24,22 @@ function evidence(choice: OpeningCandidate, features: WorldFeature[]): OpeningCh
     return Math.max(a, b) > lo + choice.width * .2 && Math.min(a, b) < hi - choice.width * .2 &&
       Math.min(Math.abs(crossA - fixed), Math.abs(crossB - fixed)) < .35
   })
-  const diagonal = aligned.some(line => line.kind === 'diagonal' &&
-    Math.hypot(line.end.x - line.start.x, line.end.z - line.start.z) > Math.min(.35, choice.width * .4) &&
-    [line.start, line.end].some(point => {
-      const along = horizontal ? point.x : point.z
-      return Math.abs(along - lo) < .3 || Math.abs(along - hi) < .3
-    }))
+  const diagonal = choice.width <= 1.6 && features.some(line => {
+    if (line.kind !== 'diagonal') return false
+    const length = Math.hypot(line.end.x - line.start.x, line.end.z - line.start.z)
+    if (length < Math.max(.35, choice.width * .42) || length > choice.width * 1.8) return false
+    return ([ [line.start, line.end], [line.end, line.start] ] as const).some(([hinge, tip]) => {
+      const hingeAlong = horizontal ? hinge.x : hinge.z
+      const tipAlong = horizontal ? tip.x : tip.z
+      const hingeAcross = horizontal ? hinge.z : hinge.x
+      const tipAcross = horizontal ? tip.z : tip.x
+      const atStart = Math.abs(hingeAlong - lo) < Math.min(.22, choice.width * .24)
+      const atEnd = Math.abs(hingeAlong - hi) < Math.min(.22, choice.width * .24)
+      return (atStart || atEnd) && Math.abs(hingeAcross - fixed) < .18 &&
+        Math.abs(tipAcross - fixed) > .14 &&
+        tipAlong > lo + choice.width * .13 && tipAlong < hi - choice.width * .13
+    })
+  })
   if (diagonal) return 'door'
   const windowLines = aligned.filter(line => line.kind === 'axis' &&
     (horizontal ? Math.abs(line.end.z - line.start.z) < .08 : Math.abs(line.end.x - line.start.x) < .08) &&
@@ -43,6 +53,7 @@ export function findOpeningCandidates(walls: Wall[], features: WorldFeature[] = 
   if (!coordinates.length) return []
   const minX = Math.min(...coordinates.map(point => point.x)), maxX = Math.max(...coordinates.map(point => point.x))
   const minZ = Math.min(...coordinates.map(point => point.z)), maxZ = Math.max(...coordinates.map(point => point.z))
+  const edgeX = Math.max(.35, (maxX - minX) * .12), edgeZ = Math.max(.35, (maxZ - minZ) * .12)
   const proposals: OpeningCandidate[] = []
   for (let i = 0; i < walls.length; i++) for (let j = 0; j < walls.length; j++) {
     if (i === j) continue
@@ -50,9 +61,11 @@ export function findOpeningCandidates(walls: Wall[], features: WorldFeature[] = 
     if (!a || !b || a.horizontal !== b.horizontal || Math.abs(a.fixed - b.fixed) > Math.max(.16, (walls[i].thickness + walls[j].thickness) / 2)) continue
     const gap = b.start - a.end
     if (gap < .4 || gap > 3) continue
+    if (axes.some((middle, index) => index !== i && index !== j && middle?.horizontal === a.horizontal &&
+      Math.abs(middle.fixed - a.fixed) < .16 && middle.start < b.start - .05 && middle.end > a.end + .05)) continue
     const fixed = (a.fixed + b.fixed) / 2
-    const exterior = a.horizontal ? Math.min(Math.abs(fixed - minZ), Math.abs(fixed - maxZ)) < .35
-      : Math.min(Math.abs(fixed - minX), Math.abs(fixed - maxX)) < .35
+    const exterior = a.horizontal ? Math.min(Math.abs(fixed - minZ), Math.abs(fixed - maxZ)) < edgeZ
+      : Math.min(Math.abs(fixed - minX), Math.abs(fixed - maxX)) < edgeX
     const candidate: OpeningCandidate = { id: `${walls[i].id}:${walls[j].id}`, firstId: walls[i].id, secondId: walls[j].id,
       start: a.horizontal ? { x: a.end, z: fixed } : { x: fixed, z: a.end },
       end: a.horizontal ? { x: b.start, z: fixed } : { x: fixed, z: b.start }, width: gap, exterior, choice: 'unknown' }

@@ -14,7 +14,8 @@ export const defaultRoof: Roof = { shape: 'hip', material: 'standing-seam', colo
 export type Level = { id: string; name: string; elevation: number; walls: Wall[]; doors: Door[]; windows: WindowUnit[]; passages?: Passage[]; rooms: Room[]; slabThickness: number; roof?: Roof }
 export type Building = { id: string; name: string; levels: Level[] }
 export type SourceDocument = { id: string; name: string; mime: string; originalBytes: number; width: number; height: number; page?: number; pages?: number }
-export type Calibration = { a: Point; b: Point; knownMetres: number; metresPerPixel: number }
+export type Calibration = { a: Point; b: Point; knownMetres: number; metresPerPixel: number;
+  method?: 'auto' | 'manual'; basisPixels?: number }
 export type Project = { id: string; name: string; modified: number; buildings: Building[]; sources: SourceDocument[]; calibration?: Calibration; units: 'm' | 'cm' | 'mm' }
 export type EntityKind = 'wall' | 'door' | 'window' | 'passage' | 'room'
 export type Selection = { kind: EntityKind; id: string } | null

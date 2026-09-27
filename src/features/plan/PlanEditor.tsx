@@ -86,11 +86,14 @@ export function PlanEditor({ level, selection, select, unit, source, review }: P
     if (tool === 'wall') {
       if (!draft.length) setDraft([p])
       else if (distance(draft[0], p) > .08) {
-        edit(model => ({ ...model, walls: [...model.walls, { id: uid('wall'), start: draft[0], end: p, thickness: .2, height: 2.9, material: 'plaster' }] }))
+        const next = { id: uid('wall'), start: draft[0], end: p, thickness: .2, height: 2.9, material: 'plaster' as const }
+        if (review) review.setCandidates(items => [...items, next])
+        else edit(model => ({ ...model, walls: [...model.walls, next] }))
         setDraft([p])
       }
     }
     if (tool === 'door' || tool === 'window') {
+      if (review) { setMessage('Classify detected gaps in Openings, or place new openings after accepting the walls.'); return }
       const host = nearestWall(raw)
       if (!host) { setMessage('Click near a wall to place an opening.'); return }
       const wall = level.walls.find(item => item.id === host.id)!
@@ -127,7 +130,14 @@ export function PlanEditor({ level, selection, select, unit, source, review }: P
     setDraft([])
   }
   const finishDrag = () => {
-    if (drag?.kind === 'end') edit(model => ({ ...model, walls: model.walls.map(wall => wall.id === drag.wallId ? { ...wall, [drag.end]: drag.point } : wall) }))
+    if (drag?.kind === 'end') {
+      const wall = level.walls.find(item => item.id === drag.wallId)
+      const proposed = wall && { ...wall, [drag.end]: drag.point }
+      const required = Math.max(.1, ...[...level.doors, ...level.windows, ...(level.passages || [])]
+        .filter(item => item.wallId === drag.wallId).map(item => item.offset + item.width + .05))
+      if (proposed && wallLength(proposed) < required) setMessage('This wall would become too short for its openings.')
+      else if (proposed) edit(model => ({ ...model, walls: model.walls.map(item => item.id === drag.wallId ? proposed : item) }))
+    }
     if (drag?.kind === 'wall' && Math.hypot(drag.delta.x, drag.delta.z) > .01) edit(model => ({ ...model, walls: model.walls.map(wall => wall.id === drag.wallId ? {
       ...wall, start: { x: drag.start.x + drag.delta.x, z: drag.start.z + drag.delta.z },
       end: { x: drag.end.x + drag.delta.x, z: drag.end.z + drag.delta.z },
@@ -154,13 +164,13 @@ export function PlanEditor({ level, selection, select, unit, source, review }: P
         <rect x={-1000} y={-1000} width={2000} height={2000} fill="url(#grid-major)" />
       </g>}
       {review && <ReviewLayer svg={svg} {...review} />}
-      {level.rooms.map(room => <g key={room.id} className="plan-entity" onPointerDown={event => { if (tool === 'select') { event.stopPropagation(); select({ kind: 'room', id: room.id }) } }}>
+      {!review && level.rooms.map(room => <g key={room.id} className="plan-entity" onPointerDown={event => { if (tool === 'select') { event.stopPropagation(); select({ kind: 'room', id: room.id }) } }}>
         <polygon points={room.polygon.map(p => `${p.x},${p.z}`).join(' ')} fill={selection?.id === room.id ? '#c5ba98' : '#e2dfd4'} fillOpacity={.65} stroke="#bdc1bb" strokeWidth=".02" />
         <text x={room.polygon.reduce((a, p) => a + p.x, 0) / room.polygon.length}
           y={room.polygon.reduce((a, p) => a + p.z, 0) / room.polygon.length}
           textAnchor="middle" className="room-label">{room.name} · {formatArea(roomArea(room), unit)}</text>
       </g>)}
-      <WallLayer walls={level.walls} selection={selection} drag={drag} tool={tool} unit={unit}
+      {!review && <WallLayer walls={level.walls} selection={selection} drag={drag} tool={tool} unit={unit}
         onWallDown={(event, wall) => {
           event.stopPropagation(); select({ kind: 'wall', id: wall.id })
           setDrag({ wallId: wall.id, kind: 'wall', origin: point(event), start: wall.start,
@@ -170,8 +180,8 @@ export function PlanEditor({ level, selection, select, unit, source, review }: P
         onEndDown={(event, wall, end) => {
           event.stopPropagation(); setDrag({ wallId: wall.id, kind: 'end', end, point: wall[end] })
           svg.current?.setPointerCapture(event.pointerId)
-        }} />
-      <OpeningLayer svg={svg} level={level} selection={selection} select={select} tool={tool} />
+        }} />}
+      {!review && <OpeningLayer svg={svg} level={level} selection={selection} select={select} tool={tool} />}
       {draft.length > 0 && cursor && <polyline points={[...draft, cursor].map(p => `${p.x},${p.z}`).join(' ')} fill="none" stroke="#b28b4a" strokeWidth=".045" strokeDasharray=".14 .09" />}
       {snapGuide && <circle cx={snapGuide.x} cy={snapGuide.z} r=".09" fill="none" stroke="#b28b4a" strokeWidth=".035" pointerEvents="none" />}
       {measure.length === 2 && <g>

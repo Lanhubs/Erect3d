@@ -2,6 +2,63 @@ import { preparePlan } from './opencv'
 import { scanThinFeatures } from './thinFeatures'
 
 type Candidate = { x1: number; y1: number; x2: number; y2: number; thicknessPixels: number }
+function excludeIsolatedMarks(lines: Candidate[], width: number, height: number) {
+  if (lines.length < 5) return lines
+  const reach = Math.max(10, Math.min(width, height) * .06)
+  const nearby = (a: Candidate, b: Candidate) => {
+    const dx = Math.max(0, Math.max(Math.min(a.x1, a.x2), Math.min(b.x1, b.x2)) - Math.min(Math.max(a.x1, a.x2), Math.max(b.x1, b.x2)))
+    const dy = Math.max(0, Math.max(Math.min(a.y1, a.y2), Math.min(b.y1, b.y2)) - Math.min(Math.max(a.y1, a.y2), Math.max(b.y1, b.y2)))
+    return Math.hypot(dx, dy) <= reach
+  }
+  return lines.filter((line, index) => lines.some((other, otherIndex) => index !== otherIndex && nearby(line, other)))
+}
+function hatchLines(lines: Candidate[], dark: Uint8Array, width: number, height: number) {
+  const groups = new Map<string, Candidate[]>()
+  const quantum = Math.max(8, Math.round(Math.min(width, height) * .04))
+  for (const line of lines) {
+    const horizontal = line.y1 === line.y2
+    const start = horizontal ? line.x1 : line.y1, end = horizontal ? line.x2 : line.y2
+    const key = `${horizontal ? 'h' : 'v'}:${Math.round(start / quantum)}:${Math.round(end / quantum)}`
+    const group = groups.get(key)
+    if (group) group.push(line); else groups.set(key, [line])
+  }
+  const rejected = new Set<Candidate>()
+  for (const all of groups.values()) {
+    const horizontal = all[0].y1 === all[0].y2
+    const ordered = all.sort((a, b) => (horizontal ? a.y1 - b.y1 : a.x1 - b.x1))
+    const clusters: Candidate[][] = []
+    for (const line of ordered) {
+      const last = clusters.at(-1), previous = last?.at(-1)
+      if (previous && (horizontal ? line.y1 - previous.y1 : line.x1 - previous.x1) <= Math.max(6, Math.min(width, height) * .03)) last!.push(line)
+      else clusters.push([line])
+    }
+    for (const group of clusters) {
+    if (group.length < 6) continue
+    const fixed = group.map(line => horizontal ? line.y1 : line.x1)
+    const low = Math.min(...fixed), high = Math.max(...fixed)
+    if (high - low < Math.min(width, height) * .06) continue
+    const middle = Math.round(group.reduce((sum, line) => sum + (horizontal ? line.x1 + line.x2 : line.y1 + line.y2) / 2, 0) / group.length)
+    let runs = 0, inside = false
+    for (let position = low; position <= high; position++) {
+      const black = Boolean(horizontal ? dark[position * width + middle] : dark[middle * width + position])
+      if (black && !inside) runs++
+      inside = black
+    }
+    if (runs >= 5) {
+      const stroke = (line: Candidate) => {
+        const fixed = horizontal ? line.y1 : line.x1
+        let low = fixed, high = fixed
+        while (low > 0 && (horizontal ? dark[(low - 1) * width + middle] : dark[middle * width + low - 1])) low--
+        while (high < (horizontal ? height : width) - 1 && (horizontal ? dark[(high + 1) * width + middle] : dark[middle * width + high + 1])) high++
+        return high - low + 1
+      }
+      const widest = Math.max(...group.map(stroke))
+      for (const line of group) if (widest < 5 || stroke(line) < widest * .65) rejected.add(line)
+    }
+    }
+  }
+  return rejected
+}
 export function scanWalls(dark: Uint8Array, width: number, height: number) {
   const minRun = Math.max(12, Math.round(Math.min(width, height) * .035))
   const parallelGap = Math.max(4, Math.round(Math.min(width, height) * .012))
@@ -24,8 +81,10 @@ export function scanWalls(dark: Uint8Array, width: number, height: number) {
       if (!black && start >= 0) { if (y - start >= minRun) candidates.push({ x1: x, y1: start, x2: x, y2: y, thicknessPixels: 0 }); start = -1 }
     }
   }
+  const rejected = hatchLines(candidates, dark, width, height)
   const result: Candidate[] = []
   for (const item of candidates.sort((a, b) => Math.hypot(b.x2 - b.x1, b.y2 - b.y1) - Math.hypot(a.x2 - a.x1, a.y2 - a.y1))) {
+    if (rejected.has(item)) continue
     if (result.length >= 180) break
     const horizontal = item.y1 === item.y2
     const samples = [.25, .5, .75].map(t => {
@@ -59,7 +118,7 @@ export function scanWalls(dark: Uint8Array, width: number, height: number) {
         Math.abs(item.x1 - other.x1) <= Math.min(parallelGap, (item.thicknessPixels + other.thicknessPixels) / 2 + 2) && Math.max(item.y1, other.y1) < Math.min(item.y2, other.y2) - minRun / 2))
     if (!duplicate) result.push(item)
   }
-  return result
+  return excludeIsolatedMarks(result, width, height)
 }
 
 async function analyze(pixels: Uint8ClampedArray, width: number, height: number) {

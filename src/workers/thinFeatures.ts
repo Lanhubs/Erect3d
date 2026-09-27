@@ -2,20 +2,20 @@ export type ThinFeature = { x1: number; y1: number; x2: number; y2: number; kind
 
 export function scanThinFeatures(fine: Uint8Array, structural: Uint8Array, width: number, height: number): ThinFeature[] {
   const found: ThinFeature[] = []
-  const directions = [[1, 0], [0, 1], [1, 1], [1, -1]] as const
+  const directions = [[1, 0], [0, 1], [1, 1], [1, -1], [2, 1], [2, -1], [1, 2], [1, -2], [3, 1], [3, -1], [1, 3], [1, -3]] as const
   const dark = (x: number, y: number) => x >= 0 && x < width && y >= 0 && y < height && fine[y * width + x] > 0
-  const minimum = Math.max(12, Math.round(Math.min(width, height) * .009))
+  const minimum = Math.max(17, Math.round(Math.min(width, height) * .035))
   for (const [dx, dy] of directions) for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
     if (!dark(x, y) || dark(x - dx, y - dy)) continue
-    let length = 0, misses = 0
+    let length = 0, misses = 0, hits = 0
     while (length < Math.min(280, Math.min(width, height) * .55)) {
       const px = x + length * dx, py = y + length * dy
       if (px < 0 || px >= width || py < 0 || py >= height) break
-      if (!dark(px, py)) { if (++misses > 1) break } else misses = 0
+      if (!dark(px, py)) { if (++misses > 1) break } else { misses = 0; hits++ }
       length++
     }
     length -= misses
-    if (length < minimum) continue
+    if (length * Math.hypot(dx, dy) < minimum || hits < length * .85) continue
     const midpoint = Math.floor(length / 2), px = x + midpoint * dx, py = y + midpoint * dy
     const nx = dy === 0 ? 0 : dy > 0 ? 1 : -1, ny = dx === 0 ? 0 : -1
     let stroke = 1

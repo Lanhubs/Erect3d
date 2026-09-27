@@ -17,6 +17,16 @@ export async function preparePlan(pixels: Uint8ClampedArray, width: number, heig
   const gray = new cv.Mat(), smooth = new cv.Mat(), binary = new cv.Mat(), fine = new cv.Mat()
   try {
     rgba.data.set(pixels)
+    // Transparent PNG margins render white in the editor. Composite them over
+    // white here too, so their hidden black RGB channels never become walls.
+    for (let index = 0; index < rgba.data.length; index += 4) {
+      const alpha = rgba.data[index + 3]
+      if (alpha === 255) continue
+      const transparency = 255 - alpha
+      for (let channel = 0; channel < 3; channel++)
+        rgba.data[index + channel] = Math.round((rgba.data[index + channel] * alpha + 255 * transparency) / 255)
+      rgba.data[index + 3] = 255
+    }
     cv.cvtColor(rgba, gray, cv.COLOR_RGBA2GRAY)
     cv.threshold(gray, fine, 0, 255, cv.THRESH_BINARY_INV | cv.THRESH_OTSU)
     if (Math.min(width, height) >= 300) cv.medianBlur(gray, smooth, 3)
