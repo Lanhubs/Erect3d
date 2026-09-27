@@ -48,6 +48,5 @@ export function Dashboard({ projects, open, create, remove }: Props) {
             }}>Delete</button>
           </div>)}</div>}
     </div>
-    <footer className="dashboard-footer">LOCAL WORKSPACE · PROJECTS STAY IN THIS BROWSER</footer>
-  </main>
+     </main>
 }

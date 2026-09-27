@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { FiBox, FiDownload } from 'react-icons/fi'
 import type { Calibration, Project, Selection } from '../domain/types'
-import { levelOf } from '../domain/types'
+import { activeLevel } from '../domain/types'
 import { calibrate } from '../geometry/math'
 import { initialAutoScale, setEstimatedSpan } from '../geometry/autoScale'
 import { assembleDraft } from '../geometry/reconstruct'
@@ -21,6 +21,7 @@ import { useProject } from '../state/project'
 import { useWorkspaceZoom } from './useWorkspaceZoom'
 import { WorkspaceHeader, type WorkspaceMode } from './WorkspaceHeader'
 import { modelViewAction } from './modelViewAction'
+import { LevelManager } from '../features/levels/LevelManager'
 const Viewer = lazy(() => import('../rendering/Viewer').then(module => ({ default: module.Viewer })))
 export function Workspace({ project, back }: { project: Project; back: () => void }) {
   const selection = useProject(s => s.selection), select = useProject(s => s.setSelection)
@@ -30,19 +31,22 @@ export function Workspace({ project, back }: { project: Project; back: () => voi
   const undo = useProject(s => s.undo), redo = useProject(s => s.redo)
   const dirty = useProject(s => s.dirty), markSaved = useProject(s => s.markSaved)
   const version = useProject(s => s.version)
+  const activeLevelId = useProject(s => s.activeLevelId)
   const analysis = useAnalysis()
   const { source, url, error, pages, busy, importFile, selectPage } = usePlanSource(project, analysis.clear)
   const clearAnalysis = analysis.clear
   const [page, setPage] = useState(source?.page || 1), [showImport, setShowImport] = useState(!project.sources.length)
   const [manualScale, setManualScale] = useState(false), autoStarted = useRef<string | null>(null), buildRequested = useRef(false)
   const [roofShown, setRoofShown] = useState(true)
+  const [isolateId, setIsolateId] = useState<string | null>(null), [underlayId, setUnderlayId] = useState<string | null>(null)
   const [walkRequest, setWalkRequest] = useState(0)
   const [mode, setMode] = useState<WorkspaceMode>('edit'), [reviewView, setReviewView] = useState<ReviewView>({ source: true, walls: true, openings: true, opacity: .55 })
   const [selectedDetection, setSelectedDetection] = useState<string | null>(null)
   useWorkspaceZoom(mode === 'present' ? 'model' : view)
   const [inspectorOpen, setInspectorOpen] = useState(false)
   const selectEntity = (next: Selection) => { select(next); if (next) setInspectorOpen(true) }
-  const level = levelOf(project)
+  const level = activeLevel(project, activeLevelId)
+  const underlay = project.buildings[0].levels.find(item => item.id === underlayId)
   useEffect(() => { clearAnalysis() }, [source?.id, clearAnalysis])
   const sourceRect = useMemo(() => source && url && project.calibration ? {
     url, x: (0 - project.calibration.a.x) * project.calibration.metresPerPixel,
@@ -129,6 +133,8 @@ export function Workspace({ project, back }: { project: Project; back: () => voi
       selection={selection} inspectorOpen={inspectorOpen} toggleInspector={() => setInspectorOpen(value => !value)}
       inspectorAvailable={mode === 'edit' && !showImport} />
     <div className="workspace-body"><div className="work-main">
+      <LevelManager project={project} activeId={level.id} isolateId={isolateId} setIsolateId={setIsolateId}
+        underlayId={underlayId} setUnderlayId={setUnderlayId} />
       <div className="source-strip">
         <span><FiDownload /> {source ? `${source.name}${source.page ? ` · page ${source.page}` : ''} · ${source.width.toLocaleString()} × ${source.height.toLocaleString()} px` : 'No source plan'}</span>
         <div>
@@ -180,7 +186,7 @@ export function Workspace({ project, back }: { project: Project; back: () => voi
         </div> :
         <div className={`view-area ${view}`}>
           {view !== 'model' && <PlanEditor level={level} selection={selection} select={selectEntity}
-            unit={project.units} source={sourceRect} review={analysis.status === 'completed' && analysis.candidates.length > 0
+            unit={project.units} source={sourceRect} underlay={underlay} review={analysis.status === 'completed' && analysis.candidates.length > 0
               ? { candidates: analysis.candidates, openings: analysis.openings, view: reviewView, selected: selectedDetection,
                 setSelected: setSelectedDetection, setCandidates: analysis.setCandidates } : undefined} />}
           {view !== 'plan' && <Suspense fallback={<div className="viewer-loading">Preparing 3D model…</div>}>

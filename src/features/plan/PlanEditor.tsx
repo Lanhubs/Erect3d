@@ -13,9 +13,10 @@ import { ReviewLayer, type ReviewView } from './ReviewLayer'
 import { OpeningLayer } from './OpeningLayer'
 import { validateOpening } from '../../geometry/openingValidation'
 import type { OpeningCandidate } from '../../geometry/openingCandidates'
+import { LevelUnderlay } from './LevelUnderlay'
 type Props = {
   level: Level; selection: Selection; select: (selection: Selection) => void; unit: Unit
-  source?: { url: string; x: number; z: number; width: number; height: number }
+  source?: { url: string; x: number; z: number; width: number; height: number }; underlay?: Level
   review?: { candidates: Level['walls']; openings: OpeningCandidate[]; view: ReviewView; selected: string | null;
     setSelected: (id: string | null) => void; setCandidates: (change: (walls: Level['walls']) => Level['walls']) => void }
 }
@@ -29,7 +30,7 @@ function fitBounds(level: Level, source?: Props['source']): Box {
   const width = Math.max(4, maxX - minX), height = Math.max(4, maxZ - minZ)
   return { x: minX - width * .08, z: minZ - height * .08, width: width * 1.16, height: height * 1.16 }
 }
-export function PlanEditor({ level, selection, select, unit, source, review }: Props) {
+export function PlanEditor({ level, selection, select, unit, source, underlay, review }: Props) {
   const svg = useRef<SVGSVGElement>(null)
   const [box, setBox] = useState<Box>(() => fitBounds(level, source))
   const [draft, setDraft] = useState<Point[]>([])
@@ -145,7 +146,7 @@ export function PlanEditor({ level, selection, select, unit, source, review }: P
     setPan(null); setDrag(null)
   }
   return <section className="plan-editor">
-    <div className="viewport-head"><span>GROUND FLOOR · PLAN</span><div>
+    <div className="viewport-head"><span>{level.name.toUpperCase()} · PLAN</span><div>
       <PlanSettings grid={grid} setGrid={setGrid} unit={unit} />
       <button onClick={() => setBox(fitBounds(level, source))}>Fit</button>
       {tool === 'room' && draft.length > 2 && <button onClick={finishRoom}>Close room</button>}
@@ -158,6 +159,7 @@ export function PlanEditor({ level, selection, select, unit, source, review }: P
         <pattern id="grid-major" width="1" height="1" patternUnits="userSpaceOnUse"><path d="M 1 0 L 0 0 0 1" fill="none" stroke="#aebbae" strokeWidth=".018" /></pattern>
       </defs>
       <rect x={-1000} y={-1000} width={2000} height={2000} fill="#f4f5f2" />
+      {underlay && <LevelUnderlay level={underlay} />}
       {source && (!review || review.view.source) && <image href={source.url} x={source.x} y={source.z} width={source.width} height={source.height} opacity={review?.view.opacity ?? .6} />}
       {grid.visible && <g opacity={source ? .55 : 1} pointerEvents="none">
         <rect x={-1000} y={-1000} width={2000} height={2000} fill="url(#grid-minor)" />
