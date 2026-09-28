@@ -1,31 +1,44 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { Euler, Vector3 } from 'three'
 import type { Level } from '../domain/types'
 import { nearbyDoor, walkStart } from '../geometry/walk'
-import { buildColliders, collidesPrepared } from '../geometry/walls'
+import { stairHeightAt } from '../geometry/stairs'
+import { buildColliders, collidesPrepared, type Collider } from '../geometry/walls'
 
-type Props = { level: Level; active: boolean; onUnlock: () => void; openDoors: ReadonlySet<string>
-  onToggleDoor: (id: string) => void; onPosition?: (x: number, z: number, yaw: number) => void }
-export function WalkController({ level, active, onUnlock, openDoors, onToggleDoor, onPosition }: Props) {
+type Props = { levels: Level[]; startLevelId: string; active: boolean; onUnlock: () => void; openDoors: ReadonlySet<string>
+  onToggleDoor: (id: string) => void; onPosition?: (x: number, z: number, yaw: number, level: Level) => void }
+export function WalkController({ levels, startLevelId, active, onUnlock, openDoors, onToggleDoor, onPosition }: Props) {
   const { camera, gl } = useThree()
+  const level = levels.find(item => item.id === startLevelId) || levels[0]
   const keys = useRef(new Set<string>())
   const yaw = useRef(0), pitch = useRef(0)
   const speed = useRef(new Vector3())
   const frameCount = useRef(0)
-  const colliders = useMemo(() => buildColliders(level.walls, level.doors, level.windows, openDoors, level.passages), [level.walls, level.doors, level.windows, level.passages, openDoors])
+  const signature = JSON.stringify([levels.map(item => [item.id,
+    item.walls.map(wall => [wall.id, wall.start, wall.end, wall.thickness, wall.height]),
+    item.doors.map(door => [door.id, door.wallId, door.offset, door.width, door.height]),
+    item.windows.map(window => [window.id, window.wallId, window.offset, window.width, window.sill, window.height]),
+    item.passages?.map(passage => [passage.id, passage.wallId, passage.offset, passage.width, passage.height])]),
+  [...openDoors].sort()])
+  const colliderCache = useRef<{ signature: string; colliders: Map<string, Collider[]> } | null>(null)
+  if (colliderCache.current?.signature !== signature) colliderCache.current = { signature, colliders: new Map(levels.map(item => [item.id,
+    buildColliders(item.walls, item.doors, item.windows, openDoors, item.passages)])) }
+  const colliders = colliderCache.current.colliders
+  const currentLevel = useRef(level)
   useEffect(() => {
     if (!active) return
     const keySet = keys.current
     const start = walkStart(level)
-    camera.position.set(start.point.x, 1.65, start.point.z)
+    camera.position.set(start.point.x, level.elevation + 1.65, start.point.z)
+    currentLevel.current = level
     yaw.current = start.yaw
     pitch.current = 0
     speed.current.set(0, 0, 0)
     const down = (event: KeyboardEvent) => {
       keys.current.add(event.code)
       if (event.code === 'KeyE' && !event.repeat) {
-        const id = nearbyDoor(level, { x: camera.position.x, z: camera.position.z })
+        const id = nearbyDoor(currentLevel.current, { x: camera.position.x, z: camera.position.z })
         if (id) { event.preventDefault(); onToggleDoor(id) }
       }
     }
@@ -54,12 +67,31 @@ export function WalkController({ level, active, onUnlock, openDoors, onToggleDoo
     const target = new Vector3(side, 0, -forward).normalize().applyEuler(new Euler(0, yaw.current, 0))
     target.multiplyScalar(keys.current.has('ShiftLeft') ? 3.8 : 2.3)
     speed.current.lerp(target, Math.min(1, step * 9))
+    const activeColliders = colliders.get(currentLevel.current.id) || []
     const nextX = camera.position.x + speed.current.x * step
-    const x = collidesPrepared({ x: nextX, z: camera.position.z }, .22, colliders) ? camera.position.x : nextX
+    const x = collidesPrepared({ x: nextX, z: camera.position.z }, .22, activeColliders) ? camera.position.x : nextX
     const nextZ = camera.position.z + speed.current.z * step
-    const z = collidesPrepared({ x, z: nextZ }, .22, colliders) ? camera.position.z : nextZ
-    camera.position.set(x, 1.65, z)
-    if (++frameCount.current % 5 === 0) onPosition?.(x, z, yaw.current)
+    const z = collidesPrepared({ x, z: nextZ }, .22, activeColliders) ? camera.position.z : nextZ
+    const point = { x, z }
+    const stairs = levels.flatMap(item => item.stairs || [])
+    const candidates = stairs.map(stair => {
+      const from = levels.find(item => item.id === stair.fromLevelId)
+      const height = stairHeightAt(stair, levels, point)
+      return from && height !== null ? { stair, elevation: from.elevation + height } : null
+    }).filter(item => item !== null)
+    const previousFloor = camera.position.y - 1.65
+    const stair = candidates.find(item => Math.abs(item.elevation - previousFloor) < .5)
+    let floor = stair?.elevation ?? currentLevel.current.elevation
+    if (!stair) {
+      const landing = levels.filter(item => Math.abs(item.elevation - previousFloor) < .45)
+        .sort((a, b) => Math.abs(a.elevation - previousFloor) - Math.abs(b.elevation - previousFloor))[0]
+      if (landing) floor = landing.elevation
+    }
+    const nextY = camera.position.y + Math.max(-step * 4, Math.min(step * 4, floor + 1.65 - camera.position.y))
+    camera.position.set(x, nextY, z)
+    const matching = [...levels].sort((a, b) => b.elevation - a.elevation).find(item => nextY - 1.65 >= item.elevation - .2)
+    if (matching) currentLevel.current = matching
+    if (++frameCount.current % 5 === 0) onPosition?.(x, z, yaw.current, currentLevel.current)
   })
   return null
 }

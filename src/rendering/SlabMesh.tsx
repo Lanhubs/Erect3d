@@ -1,6 +1,9 @@
 import { useEffect, useMemo } from 'react'
 import { ExtrudeGeometry, Path, Shape } from 'three'
 import type { Selection, Slab } from '../domain/types'
+import { materialRoughness } from './materials'
+import { floorTexture } from './textures'
+import { pointerCursor } from './pointerCursor'
 
 export function SlabMesh({ slab, selection, select }: { slab: Slab; selection: Selection; select: (selection: Selection) => void }) {
   const geometry = useMemo(() => {
@@ -19,7 +22,11 @@ export function SlabMesh({ slab, selection, select }: { slab: Slab; selection: S
   useEffect(() => () => geometry.dispose(), [geometry])
   const color = slab.color || (slab.structuralMaterial === 'timber' ? '#967759' : slab.structuralMaterial === 'steel-deck' ? '#89939a' : '#a9aaa5')
   return <mesh geometry={geometry} rotation={[Math.PI / 2, 0, 0]} position={[0, slab.elevation, 0]}
-    castShadow receiveShadow onClick={event => { event.stopPropagation(); select({ kind: 'slab', id: slab.id }) }}>
-    <meshStandardMaterial color={selection?.id === slab.id ? '#c3a874' : color} roughness={slab.structuralMaterial === 'steel-deck' ? .54 : .88} />
+    castShadow receiveShadow onPointerOver={() => pointerCursor(true)} onPointerOut={() => pointerCursor(false)}
+    onClick={event => { event.stopPropagation(); select({ kind: 'slab', id: slab.id }) }}>
+    <meshStandardMaterial attach="material-0" color={selection?.id === slab.id ? '#c3a874' : slab.color || '#ffffff'}
+      map={floorTexture(slab.finishMaterial)} roughness={materialRoughness[slab.finishMaterial]} />
+    <meshStandardMaterial attach="material-1" color={selection?.id === slab.id ? '#c3a874' : color}
+      roughness={slab.structuralMaterial === 'steel-deck' ? .54 : .88} />
   </mesh>
 }

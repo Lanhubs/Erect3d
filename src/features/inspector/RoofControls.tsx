@@ -1,4 +1,5 @@
 import { defaultRoof, type Level, type Roof } from '../../domain/types'
+import { topLevel } from '../../domain/levels'
 import { useProject } from '../../state/project'
 
 const materialColors: Record<Roof['material'], string> = {
@@ -6,9 +7,14 @@ const materialColors: Record<Roof['material'], string> = {
 }
 
 export function RoofControls({ level }: { level: Level }) {
-  const edit = useProject(state => state.edit)
-  const roof = level.roof || defaultRoof
-  const update = (change: Partial<Roof>) => edit(model => ({ ...model, roof: { ...roof, ...change } }))
+  const editProject = useProject(state => state.editProject)
+  const building = useProject(state => state.project?.buildings[0])
+  const roof = building?.roof || level.roof || defaultRoof
+  const update = (change: Partial<Roof>) => editProject(copy => {
+    const target = copy.buildings[0], next = { ...roof, ...change }
+    target.roof = next; topLevel(target).roof = next
+    return copy
+  })
   return <>
     <div className="panel-title">ROOF DESIGN</div>
     <div className="roof-controls">

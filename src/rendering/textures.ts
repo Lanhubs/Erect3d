@@ -6,12 +6,13 @@ function pattern(key: MaterialKey): CanvasTexture {
   const canvas = document.createElement('canvas')
   canvas.width = 256; canvas.height = 256
   const context = canvas.getContext('2d')!
-  const base = key === 'tile' ? '#d4d0c5' : key === 'oak' ? '#ac8d69' : key === 'timber' ? '#8e7558'
+  const base = key === 'tile' ? '#d4d0c5' : key === 'porcelain-tile' ? '#e0ddd7' : key === 'laminate' ? '#b49d7f'
+    : key === 'oak' ? '#ac8d69' : key === 'timber' ? '#8e7558'
     : key === 'marble' ? '#e4e2dc' : key === 'carpet' ? '#92988b' : key === 'polished-concrete' ? '#aaa9a6'
       : key === 'concrete' ? '#aaa9a2' : '#cbc6ba'
   context.fillStyle = base
   context.fillRect(0, 0, 256, 256)
-  if (key === 'tile') {
+  if (key === 'tile' || key === 'porcelain-tile') {
     context.strokeStyle = '#b2afa5'; context.lineWidth = 3
     context.strokeRect(1.5, 1.5, 253, 253)
     context.strokeStyle = 'rgba(255,255,255,.25)'; context.lineWidth = 2
@@ -29,7 +30,7 @@ function pattern(key: MaterialKey): CanvasTexture {
       context.fillStyle = i % 3 ? 'rgba(255,255,255,.045)' : 'rgba(20,30,20,.08)'
       context.fillRect(x, y, 2, 2)
     }
-  } else if (key === 'oak' || key === 'timber') {
+  } else if (key === 'oak' || key === 'timber' || key === 'laminate') {
     context.strokeStyle = 'rgba(57,42,29,.27)'; context.lineWidth = 2
     for (const x of [0, 64, 128, 192, 255]) { context.beginPath(); context.moveTo(x, 0); context.lineTo(x, 256); context.stroke() }
     for (let row = 0; row < 4; row++) {
@@ -53,7 +54,7 @@ function pattern(key: MaterialKey): CanvasTexture {
   texture.colorSpace = SRGBColorSpace
   texture.anisotropy = 4
   texture.generateMipmaps = true
-  texture.repeat.set(key === 'tile' ? 1.6 : 1, key === 'tile' ? 1.6 : 1)
+  texture.repeat.set(key === 'tile' || key === 'porcelain-tile' ? 1.6 : 1, key === 'tile' || key === 'porcelain-tile' ? 1.6 : 1)
   return texture
 }
 export function floorTexture(key: MaterialKey): CanvasTexture {

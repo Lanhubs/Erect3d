@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import type { Door, Passage, Project, Roof, Room, Selection, Wall, WindowUnit } from '../domain/types'
 import { activeLevel } from '../domain/types'
-import { normalizeProject } from '../domain/levels'
+import { normalizeProject, refreshAutoSlabs } from '../domain/levels'
 
 export type Tool = 'select' | 'pan' | 'wall' | 'door' | 'window' | 'room' | 'measure' | 'calibrate'
 export type View = 'plan' | 'split' | 'model'
@@ -25,7 +25,9 @@ export const useProject = create<State>((set, get) => ({
   grid: { visible: true, snap: false, step: .1, angle: 0, length: 0 }, history: [], future: [], dirty: false, version: 0,
   setProject: input => {
     const project = input ? normalizeProject(input) : null
-    set({ project, activeLevelId: project?.buildings[0].levels[0].id || null, selection: null,
+    const previous = get()
+    const keep = project?.id === previous.project?.id && project?.buildings[0].levels.some(level => level.id === previous.activeLevelId)
+    set({ project, activeLevelId: keep ? previous.activeLevelId : project?.buildings[0].levels[0].id || null, selection: null,
       history: [], future: [], dirty: false, version: 0 })
   },
   setActiveLevel: id => set({ activeLevelId: id, selection: null }),
@@ -45,6 +47,8 @@ export const useProject = create<State>((set, get) => ({
     const before: Model = { walls: level.walls, doors: level.doors, windows: level.windows,
       passages: level.passages || [], rooms: level.rooms, roof: level.roof }
     Object.assign(level, change(before))
+    if (level.roof !== before.roof && level.roof) next.buildings[0].roof = level.roof
+    if (level.walls !== before.walls) refreshAutoSlabs(level)
     commit(set, state, next)
   },
   undo: () => {

@@ -12,7 +12,7 @@
   .ready-flow span{display:none}
   .ready-flow button{padding:6px 8px}
 }
-@media(max-width:620px){
+@media(max-width:900px){
   .workspace{height:100dvh;min-height:0;overflow:hidden}
   .appbar{height:48px;flex:none;padding:0 10px;gap:9px}
   .app-name{gap:7px;flex:1}

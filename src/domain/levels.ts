@@ -1,4 +1,18 @@
-import { defaultRoof, uid, type Building, type Level, type Point, type Project, type Slab } from './types'
+import { defaultRoof, uid, type Building, type Level, type Point, type Project, type Slab, type Wall } from './types'
+
+const moved = (point: Point, delta: Point): Point => ({ x: point.x + delta.x, z: point.z + delta.z })
+export function translateWalls<T extends { walls: Wall[] }>(draft: T, delta: Point): T {
+  draft.walls.forEach(wall => { wall.start = moved(wall.start, delta); wall.end = moved(wall.end, delta) })
+  return draft
+}
+export function translateLevel(level: Level, delta: Point) {
+  translateWalls(level, delta)
+  level.rooms.forEach(room => { room.polygon = room.polygon.map(point => moved(point, delta)) })
+  level.slabs?.forEach(slab => { slab.polygon = slab.polygon.map(point => moved(point, delta))
+    slab.openings.forEach(opening => { opening.polygon = opening.polygon.map(point => moved(point, delta)) }) })
+  level.columns?.forEach(column => { column.position = moved(column.position, delta) })
+  level.stairs?.forEach(stair => { stair.start = moved(stair.start, delta) })
+}
 
 export function wallEnvelope(level: Level): Point[] {
   const points = level.walls.flatMap(wall => [wall.start, wall.end])
@@ -10,7 +24,15 @@ export function wallEnvelope(level: Level): Point[] {
 
 export function newSlab(polygon: Point[], thickness = .2): Slab {
   return { id: uid('slab'), polygon, thickness, elevation: 0, structuralMaterial: 'reinforced-concrete',
-    finishMaterial: 'concrete', openings: [] }
+    finishMaterial: 'concrete', openings: [], autoFromWalls: true }
+}
+export function refreshAutoSlabs(level: Level) {
+  const polygon = wallEnvelope(level)
+  if (!polygon.length || polygon[1].x - polygon[0].x < .5 || polygon[2].z - polygon[1].z < .5) return
+  level.slabs ||= []
+  const automatic = level.slabs.find(slab => slab.autoFromWalls)
+  if (automatic) automatic.polygon = polygon
+  else if (level.autoSlab && !level.slabs.length) level.slabs.push(newSlab(polygon, level.slabThickness))
 }
 
 export function normalizeProject(input: Project): Project {
@@ -26,6 +48,7 @@ export function normalizeProject(input: Project): Project {
     building.levels ||= []
     if (!building.levels.length) building.levels.push(blankLevel('Ground floor', 0, 3))
     building.levels.sort((a, b) => a.elevation - b.elevation)
+    const hasAssignedSource = building.levels.some(level => Boolean(level.sourceId))
     building.roof ||= building.levels.at(-1)?.roof || { ...defaultRoof }
     for (const level of building.levels) {
       level.floorToFloorHeight ||= Math.max(2.7, ...level.walls.map(wall => wall.height + level.slabThickness))
@@ -35,7 +58,8 @@ export function normalizeProject(input: Project): Project {
       level.visible ??= true
       level.locked ??= false
       level.slabs ??= wallEnvelope(level).length ? [newSlab(wallEnvelope(level), level.slabThickness)] : []
-      if (!level.sourceId && level === building.levels[0] && project.sources?.[0]) level.sourceId = project.sources[0].id
+      level.autoSlab ??= level.slabs.some(slab => slab.autoFromWalls) || !level.slabs.length
+      if (!hasAssignedSource && !level.sourceId && level === building.levels[0] && project.sources?.[0]) level.sourceId = project.sources[0].id
       if (!level.calibration && level === building.levels[0] && project.calibration) level.calibration = project.calibration
       level.alignment ||= { x: 0, z: 0 }
     }
@@ -46,7 +70,7 @@ export function normalizeProject(input: Project): Project {
 export function blankLevel(name: string, elevation: number, floorToFloorHeight: number): Level {
   return { id: uid('level'), name, elevation, floorToFloorHeight, visible: true, locked: false,
     walls: [], doors: [], windows: [], passages: [], rooms: [], slabs: [], columns: [], stairs: [],
-    slabThickness: .2, alignment: { x: 0, z: 0 } }
+    slabThickness: .2, alignment: { x: 0, z: 0 }, autoSlab: true }
 }
 
 export function duplicateLevel(source: Level, name: string, elevation: number): Level {
@@ -59,7 +83,8 @@ export function duplicateLevel(source: Level, name: string, elevation: number): 
   level.windows.forEach(window => { window.id = uid('window'); window.wallId = wallIds.get(window.wallId) || window.wallId })
   level.passages?.forEach(passage => { passage.id = uid('passage'); passage.wallId = wallIds.get(passage.wallId) || passage.wallId })
   level.rooms.forEach(room => { room.id = uid('room') })
-  level.slabs?.forEach(slab => { slab.id = uid('slab'); slab.openings.forEach(opening => { opening.id = uid('opening') }) })
+  level.slabs?.forEach(slab => { slab.id = uid('slab'); slab.openings = slab.openings.filter(opening => opening.kind !== 'stair')
+    slab.openings.forEach(opening => { opening.id = uid('opening') }) })
   level.columns?.forEach(column => { column.id = uid('column') })
   return level
 }

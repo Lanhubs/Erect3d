@@ -8,10 +8,11 @@ import { materialColor } from '../../rendering/materials'
 import { formatArea, formatDistance, toDisplay, toMetres, type Unit } from '../../geometry/units'
 import { RoofControls } from './RoofControls'
 import { validateOpening } from '../../geometry/openingValidation'
+import { StructureInspector } from './StructureInspector'
 
 const materials = Object.keys(materialColor)
 const wallMaterials = materials.filter(item => !['marble', 'carpet', 'polished-concrete'].includes(item))
-const floorMaterials = ['tile', 'oak', 'timber', 'marble', 'carpet', 'polished-concrete', 'concrete']
+const floorMaterials = ['tile', 'porcelain-tile', 'oak', 'timber', 'laminate', 'marble', 'carpet', 'polished-concrete', 'concrete']
 function NumberField({ label, value, onChange, unit, min = 0 }: {
   label: string; value: number; onChange: (value: number) => void; unit: Unit; min?: number
 }) {
@@ -37,6 +38,8 @@ export function Inspector({ level, selection, unit, open, onClose }: { level: Le
       <span>Rooms</span><b>{level.rooms.length}</b></div>
     <RoofControls level={level} />
   </aside>
+  if (selection.kind === 'slab' || selection.kind === 'column' || selection.kind === 'stair')
+    return <StructureInspector level={level} selection={selection} unit={unit} open={open} onClose={onClose} />
   const update = (kind: 'walls' | 'doors' | 'windows' | 'passages' | 'rooms', change: Record<string, string | number>) => {
     if (kind === 'doors' || kind === 'windows' || kind === 'passages') {
       const previous = (level[kind] || []).find(item => item.id === selection.id)

@@ -1,7 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
-import type { PointerEvent as ReactPointerEvent } from 'react'
-import type { Level, Point, Selection } from '../../domain/types'
-import { uid } from '../../domain/types'
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import { uid, type Level, type Point, type Selection } from '../../domain/types'
 import { atWall, distance, roomArea, wallLength } from '../../geometry/math'
 import { constrainPoint } from '../../geometry/snapping'
 import { useProject } from '../../state/project'
@@ -14,25 +12,17 @@ import { OpeningLayer } from './OpeningLayer'
 import { validateOpening } from '../../geometry/openingValidation'
 import type { OpeningCandidate } from '../../geometry/openingCandidates'
 import { LevelUnderlay } from './LevelUnderlay'
+import { SlabLayer } from './SlabLayer'
+import { fitBounds, type PlanBox, type PlanSourceRect } from './planBounds'
 type Props = {
   level: Level; selection: Selection; select: (selection: Selection) => void; unit: Unit
-  source?: { url: string; x: number; z: number; width: number; height: number }; underlay?: Level
+  source?: PlanSourceRect; underlay?: Level
   review?: { candidates: Level['walls']; openings: OpeningCandidate[]; view: ReviewView; selected: string | null;
     setSelected: (id: string | null) => void; setCandidates: (change: (walls: Level['walls']) => Level['walls']) => void }
 }
-type Box = { x: number; z: number; width: number; height: number }
-function fitBounds(level: Level, source?: Props['source']): Box {
-  const points = level.walls.flatMap(wall => [wall.start, wall.end])
-  if (source) points.push({ x: source.x, z: source.z }, { x: source.x + source.width, z: source.z + source.height })
-  if (!points.length) return { x: -1.5, z: -1.5, width: 15, height: 11 }
-  const minX = Math.min(...points.map(p => p.x)), maxX = Math.max(...points.map(p => p.x))
-  const minZ = Math.min(...points.map(p => p.z)), maxZ = Math.max(...points.map(p => p.z))
-  const width = Math.max(4, maxX - minX), height = Math.max(4, maxZ - minZ)
-  return { x: minX - width * .08, z: minZ - height * .08, width: width * 1.16, height: height * 1.16 }
-}
 export function PlanEditor({ level, selection, select, unit, source, underlay, review }: Props) {
   const svg = useRef<SVGSVGElement>(null)
-  const [box, setBox] = useState<Box>(() => fitBounds(level, source))
+  const [box, setBox] = useState<PlanBox>(() => fitBounds(level, source))
   const [draft, setDraft] = useState<Point[]>([])
   const [cursor, setCursor] = useState<Point | null>(null)
   const [snapGuide, setSnapGuide] = useState<Point | null>(null)
@@ -87,7 +77,8 @@ export function PlanEditor({ level, selection, select, unit, source, underlay, r
     if (tool === 'wall') {
       if (!draft.length) setDraft([p])
       else if (distance(draft[0], p) > .08) {
-        const next = { id: uid('wall'), start: draft[0], end: p, thickness: .2, height: 2.9, material: 'plaster' as const }
+        const next = { id: uid('wall'), start: draft[0], end: p, thickness: .2,
+          height: Math.max(2.2, (level.floorToFloorHeight || 3.1) - level.slabThickness), material: 'plaster' as const }
         if (review) review.setCandidates(items => [...items, next])
         else edit(model => ({ ...model, walls: [...model.walls, next] }))
         setDraft([p])
@@ -161,6 +152,7 @@ export function PlanEditor({ level, selection, select, unit, source, underlay, r
       <rect x={-1000} y={-1000} width={2000} height={2000} fill="#f4f5f2" />
       {underlay && <LevelUnderlay level={underlay} />}
       {source && (!review || review.view.source) && <image href={source.url} x={source.x} y={source.z} width={source.width} height={source.height} opacity={review?.view.opacity ?? .6} />}
+      {!review && <SlabLayer slabs={level.slabs || []} />}
       {grid.visible && <g opacity={source ? .55 : 1} pointerEvents="none">
         <rect x={-1000} y={-1000} width={2000} height={2000} fill="url(#grid-minor)" />
         <rect x={-1000} y={-1000} width={2000} height={2000} fill="url(#grid-major)" />

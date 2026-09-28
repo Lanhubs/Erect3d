@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Level, Project } from '../../domain/types'
-import { blankLevel, duplicateLevel } from '../../domain/levels'
+import { blankLevel, duplicateLevel, translateLevel } from '../../domain/levels'
 import { useProject } from '../../state/project'
 import './levels.css'
 
@@ -25,6 +25,10 @@ function LevelRow({ level, active, select, change, remove, duplicate, isolate, i
         defaultValue={level.elevation} onBlur={event => { const value = Number(event.target.value); if (Number.isFinite(value) && value !== level.elevation) change({ elevation: value }) }} /></label>
       <label>Floor to floor · m <input aria-label="Floor to floor height" type="number" min="2.2" step=".1" key={`${level.id}:height`}
         defaultValue={level.floorToFloorHeight || 3} onBlur={event => { const value = Number(event.target.value); if (value >= 2.2 && value !== level.floorToFloorHeight) change({ floorToFloorHeight: value }) }} /></label>
+      {(['x', 'z'] as const).map(axis => <label key={axis}>Plan offset {axis.toUpperCase()} · m
+        <input aria-label={`Plan offset ${axis.toUpperCase()}`} type="number" step=".1" key={`${level.id}:offset:${axis}:${level.alignment?.[axis] || 0}`}
+          defaultValue={level.alignment?.[axis] || 0} onBlur={event => { const value = Number(event.target.value); if (Number.isFinite(value)) change({ alignment: { x: level.alignment?.x || 0, z: level.alignment?.z || 0, [axis]: value } }) }} />
+      </label>)}
       <div className="level-actions"><button onClick={duplicate}>Duplicate</button><button onClick={remove}>Delete</button></div>
     </div>}
   </div>
@@ -38,6 +42,8 @@ export function LevelManager({ project, activeId, isolateId, setIsolateId, under
   const [height, setHeight] = useState(active.floorToFloorHeight || 3), [from, setFrom] = useState('blank')
   const change = (id: string, changes: Partial<Level>) => editProject(next => {
     const target = next.buildings[0].levels.find(level => level.id === id)!
+    if (changes.alignment) translateLevel(target, { x: changes.alignment.x - (target.alignment?.x || 0),
+      z: changes.alignment.z - (target.alignment?.z || 0) })
     Object.assign(target, changes)
     next.buildings[0].levels.sort((a, b) => a.elevation - b.elevation)
     return next
@@ -57,8 +63,12 @@ export function LevelManager({ project, activeId, isolateId, setIsolateId, under
   }
   const remove = (id: string) => {
     if (building.levels.length === 1) return
-    editProject(copy => { copy.buildings[0].levels = copy.buildings[0].levels.filter(level => level.id !== id)
-      for (const level of copy.buildings[0].levels) level.stairs = level.stairs?.filter(stair => stair.fromLevelId !== id && stair.toLevelId !== id)
+    editProject(copy => { const levels = copy.buildings[0].levels
+      const removed = new Set(levels.flatMap(level => level.stairs || [])
+        .filter(stair => stair.fromLevelId === id || stair.toLevelId === id).map(stair => stair.openingId))
+      copy.buildings[0].levels = levels.filter(level => level.id !== id)
+      for (const level of copy.buildings[0].levels) { level.stairs = level.stairs?.filter(stair => stair.fromLevelId !== id && stair.toLevelId !== id)
+        level.slabs?.forEach(slab => { slab.openings = slab.openings.filter(opening => !removed.has(opening.id)) }) }
       return copy })
     if (activeId === id) setActiveLevel(building.levels.find(level => level.id !== id)!.id)
     if (isolateId === id) setIsolateId(null)

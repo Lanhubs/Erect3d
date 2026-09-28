@@ -24,6 +24,12 @@ export function AnalysisPanel({ level, unit }: { level: Level; unit: Unit }) {
           <dt>{item.material}</dt><dd>{formatArea(item.area, unit)}</dd>
         </div>)}
       </dl>{!quantities.floorByMaterial.length && <p>No room finishes assigned.</p>}</article>
+      <article><h2>Structural slabs</h2><dl>
+        <dt>Net slab area</dt><dd>{formatArea(quantities.slabArea, unit)}</dd>
+        {quantities.slabByMaterial.map(item => <div className="analysis-line" key={item.material}>
+          <dt>{item.material.replaceAll('-', ' ')}</dt><dd>{formatArea(item.area, unit)}</dd>
+        </div>)}
+      </dl>{!quantities.slabByMaterial.length && <p>No slabs on this level.</p>}</article>
       <article><h2>Material allowance</h2>
         <label>Waste allowance <select aria-label="Waste allowance" value={waste} onChange={event => setWaste(Number(event.target.value))}>
           {[0, 5, 10, 15, 20].map(value => <option key={value} value={value}>{value}%</option>)}

@@ -1,0 +1,13 @@
+.structure-panel{position:relative;z-index:19;border-bottom:1px solid var(--line,#d8dbd7);background:var(--surface,#fff)}
+.structure-toggle{width:100%;display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border:0;background:transparent;font-weight:600;text-align:left;cursor:pointer}
+.structure-body{position:absolute;top:100%;left:8px;width:min(430px,calc(100vw - 16px));max-height:min(65vh,650px);overflow:auto;padding:12px;display:grid;gap:8px;background:#f7f8f5;border:1px solid #b9c4b9;box-shadow:0 12px 26px #1d2e2440}
+.structure-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.structure-card{border:1px solid #d9dedb;border-radius:8px;padding:8px;display:grid;gap:7px}
+.structure-outline,.structure-opening{border-top:1px solid #d9dedb;padding-top:6px;display:grid;gap:6px}
+.structure-outline summary{cursor:pointer;font-size:11px;color:#526354}
+.structure-outline input{max-width:58px}
+.structure-panel label{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px}
+.structure-panel input,.structure-panel select{min-width:0;max-width:145px;padding:4px 6px;border:1px solid #ccd2cf;border-radius:5px;background:#fff}
+.structure-panel button:not(.structure-toggle){border:1px solid #cbd2ce;border-radius:5px;background:#f8faf8;padding:4px 8px;cursor:pointer}
+.structure-panel button:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:700px){.structure-body{position:fixed;left:0;right:0;top:auto;bottom:0;width:100vw;max-height:70dvh;border-radius:12px 12px 0 0;padding:15px;box-shadow:0 -12px 35px #15241855}}

@@ -4,7 +4,7 @@ import { loadSource, replaceProjectSource } from '../../state/database'
 import { useProject } from '../../state/project'
 import { readSource } from './readSource'
 
-export function usePlanSource(project: Project, onReplaced: () => void) {
+export function usePlanSource(project: Project, levelId: string, onReplaced: () => void) {
   const [activeUrl, setActiveUrl] = useState<{ id: string; url: string }>()
   const [error, setError] = useState('')
   const [pages, setPages] = useState(project.sources[0]?.pages || 1)
@@ -12,9 +12,11 @@ export function usePlanSource(project: Project, onReplaced: () => void) {
   const [busy, setBusy] = useState(false)
   const importGeneration = useRef(0)
   const setProject = useProject(s => s.setProject)
-  const source = project.sources[0]
+  const level = project.buildings[0].levels.find(item => item.id === levelId) || project.buildings[0].levels[0]
+  const source = project.sources.find(item => item.id === level.sourceId)
   const sourceId = source?.id
   const url = sourceId && activeUrl?.id === sourceId ? activeUrl.url : undefined
+  useEffect(() => { setPages(source?.pages || 1); setFile(undefined) }, [sourceId, source?.pages])
   useEffect(() => {
     let current = true, objectUrl = ''
     if (sourceId) loadSource(sourceId).then(blob => {
@@ -30,11 +32,10 @@ export function usePlanSource(project: Project, onReplaced: () => void) {
     try {
       const result = await readSource(chosen, page)
       if (job !== importGeneration.current) return false
-      const hasGeometry = project.buildings.some(building => building.levels.some(level =>
-        level.walls.length || level.doors.length || level.windows.length || level.rooms.length))
+      const hasGeometry = Boolean(level.walls.length || level.doors.length || level.windows.length || level.rooms.length)
       if (sourceId && hasGeometry && !window.confirm('Replace this plan and discard geometry traced or reconstructed from it? This cannot be undone.')) return false
       const copy = await replaceProjectSource(project, result.document, result.blob,
-        result.document.mime === 'application/pdf' ? chosen : undefined)
+        result.document.mime === 'application/pdf' ? chosen : undefined, levelId)
       onReplaced()
       setProject(copy)
       setPages(result.pages); setFile(chosen)

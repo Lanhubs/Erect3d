@@ -1,5 +1,5 @@
 export type Point = { x: number; z: number }
-export type MaterialKey = 'plaster' | 'concrete' | 'brick' | 'timber' | 'tile' | 'oak' | 'marble' | 'carpet' | 'polished-concrete'
+export type MaterialKey = 'plaster' | 'concrete' | 'brick' | 'timber' | 'tile' | 'porcelain-tile' | 'laminate' | 'oak' | 'marble' | 'carpet' | 'polished-concrete'
 export type Wall = { id: string; start: Point; end: Point; thickness: number; height: number; material: MaterialKey; color?: string; kind?: 'exterior' | 'interior' | 'partition' }
 export type DoorStyle = 'flush' | 'panel' | 'glazed' | 'double'
 export type Door = { id: string; wallId: string; offset: number; width: number; height: number; hinge: 'left' | 'right'; style?: DoorStyle; swing?: 'in' | 'out'; material?: 'timber' | 'metal' }
@@ -11,7 +11,7 @@ export type SlabMaterial = 'reinforced-concrete' | 'concrete' | 'timber' | 'stee
 export type FloorFinish = 'concrete' | 'polished-concrete' | 'tile' | 'porcelain-tile' | 'marble' | 'timber' | 'laminate' | 'carpet'
 export type SlabOpening = { id: string; polygon: Point[]; kind: 'stair' | 'shaft' | 'void' }
 export type Slab = { id: string; polygon: Point[]; thickness: number; elevation: number;
-  structuralMaterial: SlabMaterial; finishMaterial: FloorFinish; color?: string; textureScale?: number; openings: SlabOpening[] }
+  structuralMaterial: SlabMaterial; finishMaterial: FloorFinish; color?: string; textureScale?: number; openings: SlabOpening[]; autoFromWalls?: boolean }
 export type Column = { id: string; position: Point; shape: 'rectangular' | 'circular'; width: number; depth: number;
   diameter: number; height: number; material: 'concrete' | 'steel' | 'timber' }
 export type Stair = { id: string; fromLevelId: string; toLevelId: string; start: Point; direction: number;
@@ -23,7 +23,7 @@ export type Roof = { shape: RoofShape; material: RoofMaterial; color: string; pi
 export const defaultRoof: Roof = { shape: 'hip', material: 'standing-seam', color: '#5e6970', pitch: 24, overhang: .45 }
 export type Level = { id: string; name: string; elevation: number; floorToFloorHeight?: number; visible?: boolean; locked?: boolean;
   walls: Wall[]; doors: Door[]; windows: WindowUnit[]; passages?: Passage[]; rooms: Room[]; slabThickness: number;
-  slabs?: Slab[]; columns?: Column[]; stairs?: Stair[]; sourceId?: string; calibration?: Calibration; alignment?: Point; roof?: Roof }
+  slabs?: Slab[]; autoSlab?: boolean; columns?: Column[]; stairs?: Stair[]; sourceId?: string; calibration?: Calibration; alignment?: Point; roof?: Roof }
 export type Building = { id: string; name: string; levels: Level[]; roof?: Roof }
 export type SourceDocument = { id: string; name: string; mime: string; originalBytes: number; width: number; height: number; page?: number; pages?: number }
 export type Calibration = { a: Point; b: Point; knownMetres: number; metresPerPixel: number;
