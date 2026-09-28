@@ -150,6 +150,28 @@
   color:#829083;
   font-size:13px
 }
+.dashboard-about{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  column-gap:40px;
+  margin-top:54px;
+  padding-top:24px;
+  border-top:1px solid #cbd4c9;
+  color:#536557
+}
+.dashboard-about h2{
+  grid-row:1;
+  margin:0 0 9px;
+  color:#34493a;
+  font-size:15px;
+  font-weight:600
+}
+.dashboard-about p{
+  grid-row:2;
+  margin:0;
+  font-size:13px;
+  line-height:1.65
+}
 .dashboard-footer{
   padding:18px max(30px,calc((100vw - 1120px)/2));
   border-top:1px solid #d5dcd3;
@@ -180,5 +202,8 @@
 .project-row button{
   padding:7px
 }
+.dashboard-about{grid-template-columns:1fr;gap:6px;margin-top:38px}
+.dashboard-about h2,.dashboard-about p{grid-row:auto}
+.dashboard-about h2:not(:first-child){margin-top:18px}
 
 }

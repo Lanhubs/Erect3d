@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://erect3d.olanrewaju.xyz/sitemap.xml

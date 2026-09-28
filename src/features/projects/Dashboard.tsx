@@ -16,7 +16,7 @@ export function Dashboard({ projects, open, create, remove }: Props) {
     </header>
     <div className="dashboard-main">
       <div className="section-lead"><div className="eyebrow">WORKSPACE</div>
-        <h1>Projects</h1><p>Reconstruct a plan, refine the model, and walk through the building.</p>
+        <h1>Architectural projects</h1><p>Import or draw a floor plan, edit the building, and explore every level in 3D.</p>
       </div>
       <div className="create-row">
         <input aria-label="Project name" placeholder="Project name" value={name}
@@ -47,6 +47,12 @@ export function Dashboard({ projects, open, create, remove }: Props) {
               if (confirm(`Delete ${project.name}?`)) remove(project.id)
             }}>Delete</button>
           </div>)}</div>}
+      <section className="dashboard-about" aria-label="About Erect 3D">
+        <h2>From floor plan to editable 3D building</h2>
+        <p>Work from a PNG, JPEG or PDF drawing, or start with a blank plan. Review detected walls, edit doors and windows, and configure rooms, floors, stairs, columns and roofs.</p>
+        <h2>Explore the entire building</h2>
+        <p>Design multiple levels with real elevations, inspect section and exploded views, then walk through the model in your browser. Projects are stored locally on this device.</p>
+      </section>
     </div>
      </main>
 }
