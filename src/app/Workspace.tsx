@@ -191,7 +191,7 @@ export function Workspace({ project, back }: { project: Project; back: () => voi
           </Suspense>}
         </div>}
       <WorkspaceStatus level={level} units={project.units} />
-    </div>{mode === 'edit' && !showImport && <>
+    </div>{mode === 'edit' && <>
       {inspectorOpen && <button className="inspector-scrim" type="button" aria-label="Close properties" onClick={() => setInspectorOpen(false)} />}
       <Inspector building={project.buildings[0]} level={level} selection={selection} unit={project.units} open={inspectorOpen} onClose={() => setInspectorOpen(false)} />
     </>}</div>

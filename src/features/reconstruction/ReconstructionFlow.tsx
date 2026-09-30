@@ -34,10 +34,7 @@ export function ReconstructionFlow({ source, calibrated, calibrationOpen, ready,
     <button onClick={manual}>Edit walls</button>
     <button disabled={!ready} onClick={analyze}>Reanalyze plan</button>
   </section>
-  if (status === 'completed') return <section className="reconstruction-flow">
-    <div><strong>NO WALLS FOUND</strong><span>This image has no detectable wall shapes. Draw the main walls on the plan.</span></div>
-    <button className="primary" onClick={manual}>Draw walls</button>
-  </section>
+  if (status === 'completed') return null
   return <section className="reconstruction-flow">
     <div><strong>PLAN READY</strong><span>Automatic scale is available. Analyze the source to build its walls in 3D.</span></div>
     <button className="primary" disabled={!ready} onClick={generate}>Analyze plan</button>

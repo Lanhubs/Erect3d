@@ -21,34 +21,35 @@
   .app-actions{margin-left:0;gap:4px}
   .app-actions button{height:28px;padding:0 6px}
   .app-actions button:last-child span{display:none}
-  .workspace-top{height:78px;flex:none;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:34px 34px;gap:2px 7px;padding:3px 8px;box-sizing:border-box}
+  .workspace-top{height:74px;flex:none;display:grid;grid-template-columns:minmax(0,1fr) auto auto;grid-template-rows:33px 32px;gap:2px 6px;padding:3px 8px;box-sizing:border-box}
   .toolset{grid-column:1;grid-row:1;min-width:0;overflow:hidden;gap:2px}
   .toolset button{flex:none;min-width:36px;height:31px;justify-content:center;padding:0 8px}
   .toolset button:nth-child(n+6){display:none}
   .toolset button svg{font-size:16px}
   .more-tools{display:block;grid-column:2;grid-row:1;height:31px;align-self:center;border:1px solid #bdc8bb;background:#fff;border-radius:5px;padding:0 8px}
-  .viewset{grid-column:1;grid-row:2;width:44%;margin:0;padding:0;border:0;background:#e9ede7;border-radius:5px;gap:0}
-  .viewset button{flex:1;min-width:0;height:30px;padding:0 4px;font-size:11px}
-  .mode-actions{grid-column:1;grid-row:2;justify-self:end;width:54%;min-width:0;display:flex;margin:0;padding:0;border:0;background:#e9ede7;border-radius:5px;gap:0}
-  .mode-actions button{flex:1;min-width:0;height:30px;padding:0 3px;font-size:10px;white-space:nowrap}
-  .inspector-toggle{display:block;grid-column:2;grid-row:2;height:30px;border:1px solid #bdc8bb;background:#fff;color:#344b3b;border-radius:5px;padding:0 8px;font-size:10px;white-space:nowrap}
+  .viewset{grid-column:1;grid-row:2;margin:0;padding:0;border:0;background:#e9ede7;border-radius:5px;gap:0}
+  .viewset button{flex:1;min-width:0;height:29px;padding:0 6px;font-size:11px}
+  .mode-actions{grid-column:2 / 4;grid-row:2;display:flex;min-width:0;margin:0;padding:0;border:0;background:#e9ede7;border-radius:5px;gap:0}
+  .mode-actions button{flex:1;min-width:0;height:29px;padding:0 5px;font-size:10px;white-space:nowrap}
+  .inspector-toggle{display:block;grid-column:3;grid-row:1;height:31px;border:1px solid #bdc8bb;background:#fff;color:#344b3b;border-radius:5px;padding:0 8px;font-size:10px;white-space:nowrap}
   .inspector-toggle.active{background:#dbe9da}
   .workspace-body{display:block;overflow:hidden}
   .work-main{height:100%;width:100%}
-  .source-strip{height:30px;padding:0 7px}
+  .level-manager>summary{gap:8px;padding:4px 9px;font-size:10px}
+  .level-manager>summary b{font-size:11px}
+  .structure-toggle{padding:5px 9px;font-size:11px}
+  .source-strip{height:29px;padding:0 7px}
   .source-strip>span{display:none}
   .source-strip>div{width:100%;justify-content:flex-end}
   .source-strip button,.source-strip .file-button{min-height:25px;padding:3px 8px;font-size:10px}
-  .level-manager>summary{gap:8px;padding:5px 10px;font-size:10px}
-  .level-manager>summary b{font-size:11px}
-  .structure-toggle{padding:6px 10px;font-size:11px}
-  .reconstruction-flow{gap:6px;padding:5px 8px}
-  .reconstruction-flow>div{gap:2px}
+  .reconstruction-flow{flex-wrap:nowrap;gap:6px;padding:5px 8px}
+  .reconstruction-flow>div{min-width:0;flex:1;gap:2px}
   .reconstruction-flow strong{font-size:9px}
-  .reconstruction-flow span{font-size:10px;line-height:1.2}
+  .reconstruction-flow span{display:none}
+  .reconstruction-flow button{flex:none;padding:5px 7px;font-size:10px}
   .ready-flow{flex-wrap:nowrap}
   .ready-flow>div{flex:1;min-width:0;flex-basis:auto}
-  .ready-flow button{flex:none}
+  .ready-flow button{flex:none;padding:5px 6px}
   .ready-flow button:first-of-type,.ready-flow button:nth-of-type(2){display:none}
   .viewport-head{padding:0 8px}
   .viewport-head>div{min-width:0;overflow-x:auto;scrollbar-width:none}
@@ -73,16 +74,21 @@
   .tool-sheet nav button{display:flex;align-items:center;gap:9px;min-height:43px;border:1px solid #c3cdc3;background:#fff;color:#3a4b3d;padding:0 12px;text-align:left;font-size:12px}
   .tool-sheet nav button[aria-pressed=true]{background:#e0e9df;border-color:#8dab91}
 }
-@media(max-width:900px) and (max-height:700px){
+@media(max-width:900px) and (max-height:600px){
   .appbar{height:40px}
-  .app-name strong{font-size:11px}
-  .workspace-top{height:68px;grid-template-rows:30px 30px;gap:2px 6px;padding:3px 7px}
-  .toolset button,.more-tools{height:28px}
-  .viewset button,.mode-actions button,.inspector-toggle{height:27px}
-  .level-manager>summary{padding:4px 9px}
-  .structure-toggle{padding:5px 9px}
-  .source-strip{height:27px}
-  .reconstruction-flow{padding:4px 8px}
-  .reconstruction-flow span{display:none}
+  .workspace-top{height:63px;grid-template-rows:27px 27px;gap:2px 5px;padding:3px 7px}
+  .toolset button,.more-tools,.inspector-toggle{height:27px}
+  .viewset button,.mode-actions button{height:25px}
+  .level-manager>summary{padding:3px 8px}
+  .structure-toggle{padding:3px 8px}
+  .source-strip{height:25px}
+  .reconstruction-flow{padding:3px 8px}
   .statusbar{height:18px}
+  .viewport-head{height:33px}
+  .viewport-foot{height:19px}
+}
+@media(min-width:600px) and (max-width:900px) and (max-height:600px){
+  .view-area.split{flex-direction:row}
+  .view-area.split>*{width:50%;height:100%}
+  .view-area.split>.plan-editor{border-right:1px solid #b8c1b8;border-bottom:0}
 }
