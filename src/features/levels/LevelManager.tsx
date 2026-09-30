@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Level, Project } from '../../domain/types'
-import { blankLevel, duplicateLevel, translateLevel } from '../../domain/levels'
+import { blankLevel, connectAdjacentLevels, duplicateLevel, translateLevel } from '../../domain/levels'
 import { useProject } from '../../state/project'
 import './levels.css'
 
@@ -36,10 +36,11 @@ function LevelRow({ level, active, select, change, remove, duplicate, isolate, i
 
 export function LevelManager({ project, activeId, isolateId, setIsolateId, underlayId, setUnderlayId }: Props) {
   const building = project.buildings[0], levels = [...building.levels].sort((a, b) => b.elevation - a.elevation)
+  const top = building.levels.reduce((highest, level) => level.elevation > highest.elevation ? level : highest)
   const active = building.levels.find(level => level.id === activeId) || building.levels[0]
   const editProject = useProject(state => state.editProject), setActiveLevel = useProject(state => state.setActiveLevel)
-  const [adding, setAdding] = useState(false), [name, setName] = useState(''), [elevation, setElevation] = useState(active.elevation + (active.floorToFloorHeight || 3))
-  const [height, setHeight] = useState(active.floorToFloorHeight || 3), [from, setFrom] = useState('blank')
+  const [adding, setAdding] = useState(false), [name, setName] = useState(''), [elevation, setElevation] = useState(top.elevation + (top.floorToFloorHeight || 3))
+  const [height, setHeight] = useState(top.floorToFloorHeight || 3), [from, setFrom] = useState('blank')
   const change = (id: string, changes: Partial<Level>) => editProject(next => {
     const target = next.buildings[0].levels.find(level => level.id === id)!
     if (changes.alignment) translateLevel(target, { x: changes.alignment.x - (target.alignment?.x || 0),
@@ -53,13 +54,14 @@ export function LevelManager({ project, activeId, isolateId, setIsolateId, under
     const source = building.levels.find(level => level.id === from)
     const next = source ? duplicateLevel(source, name.trim(), elevation) : blankLevel(name.trim(), elevation, height)
     next.floorToFloorHeight = height
-    editProject(copy => { copy.buildings[0].levels.push(next); copy.buildings[0].levels.sort((a, b) => a.elevation - b.elevation); return copy })
+    editProject(copy => { copy.buildings[0].levels.push(next); copy.buildings[0].levels.sort((a, b) => a.elevation - b.elevation); connectAdjacentLevels(copy); return copy })
     setActiveLevel(next.id); setAdding(false); setIsolateId(null)
   }
   const duplicate = (source: Level) => {
-    const next = duplicateLevel(source, `${source.name} copy`, source.elevation + (source.floorToFloorHeight || 3))
-    editProject(copy => { copy.buildings[0].levels.push(next); copy.buildings[0].levels.sort((a, b) => a.elevation - b.elevation); return copy })
+    const next = duplicateLevel(source, `${source.name} copy`, top.elevation + (top.floorToFloorHeight || 3))
+    editProject(copy => { copy.buildings[0].levels.push(next); copy.buildings[0].levels.sort((a, b) => a.elevation - b.elevation); connectAdjacentLevels(copy); return copy })
     setActiveLevel(next.id)
+    setIsolateId(null)
   }
   const remove = (id: string) => {
     if (building.levels.length === 1) return
@@ -85,7 +87,7 @@ export function LevelManager({ project, activeId, isolateId, setIsolateId, under
       <label className="underlay-choice">Plan underlay <select value={underlayId || ''} onChange={event => setUnderlayId(event.target.value || null)}>
         <option value="">None</option>{levels.filter(level => level.id !== activeId).map(level => <option key={level.id} value={level.id}>{level.name}</option>)}
       </select></label>
-      {!adding ? <button className="level-add" onClick={() => { setName(`Level ${String(levels.length).padStart(2, '0')}`); setElevation(active.elevation + (active.floorToFloorHeight || 3)); setAdding(true) }}>+ Add Level</button>
+      {!adding ? <button className="level-add" onClick={() => { setName(`Level ${String(levels.length).padStart(2, '0')}`); setElevation(top.elevation + (top.floorToFloorHeight || 3)); setHeight(top.floorToFloorHeight || 3); setAdding(true) }}>+ Add Level</button>
         : <div className="level-add-form"><strong>Add level</strong>
           <label>Name <input value={name} onChange={event => setName(event.target.value)} /></label>
           <label>Elevation · m <input type="number" step=".1" value={elevation} onChange={event => setElevation(Number(event.target.value))} /></label>

@@ -43,9 +43,12 @@
   font-size:14px;
   white-space:nowrap
 }
-.app-name em{
-  color:#c29a66;
-  font-style:normal
+.app-logo{
+  width:18px;
+  height:18px;
+  display:block;
+  border-radius:2px;
+  object-fit:cover
 }
 .app-name span{
   color:#69756e

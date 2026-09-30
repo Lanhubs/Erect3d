@@ -55,14 +55,18 @@ export function DoorMesh({ door, wall, selection, select, open }: {
     onClick={event => { event.stopPropagation(); select({ kind: 'door', id: door.id }) }}
     onPointerOver={event => { event.stopPropagation(); hover(true) }} onPointerOut={() => hover(false)}>
     {[-1, 1].map(side => <mesh key={side} position={[side * door.width / 2, door.height / 2, 0]} castShadow>
-      <boxGeometry args={[.07, door.height, wall.thickness + .025]} />
+      <boxGeometry args={[.075, door.height, wall.thickness + .08]} />
       <meshStandardMaterial color={selected ? '#e0a545' : '#625a4b'} roughness={.75} />
     </mesh>)}
     <mesh position={[0, door.height, 0]} castShadow>
-      <boxGeometry args={[door.width + .07, .07, wall.thickness + .025]} />
+      <boxGeometry args={[door.width + .07, .075, wall.thickness + .08]} />
       <meshStandardMaterial color={selected ? '#e0a545' : '#625a4b'} />
     </mesh>
     {leaves.map((leaf, index) => <Leaf key={index} door={door} {...leaf} selected={selected} open={open} />)}
+    <mesh position={[0, .035, 0]} castShadow receiveShadow>
+      <boxGeometry args={[door.width, .07, wall.thickness + .06]} />
+      <meshStandardMaterial color="#777770" metalness={.12} roughness={.72} />
+    </mesh>
     {selected && !open && <mesh position={[0, door.height / 2, -.05]}>
       <boxGeometry args={[door.width + .14, door.height + .14, .012]} />
       <meshBasicMaterial color="#e9b459" transparent opacity={.45} />

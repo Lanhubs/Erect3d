@@ -17,6 +17,7 @@ export function Viewer({ building, activeLevelId, isolateId = null, selection, s
   const [walk, setWalk] = useState(false), [lockedWalk, setLockedWalk] = useState(false)
   const [top, setTop] = useState(false), [ceiling, setCeiling] = useState(false)
   const [buildingView, setBuildingView] = useState<BuildingView>(building.levels.length > 1 ? 'building' : 'current')
+  const previousLevelCount = useRef(building.levels.length)
   const [sectionHeight, setSectionHeight] = useState<number | null>(null), [verticalSection, setVerticalSection] = useState<number | null>(null)
   const [quality, setQuality] = useState<'auto' | 'performance' | 'balanced' | 'high'>('auto')
   const [webglAvailable] = useState(() => {
@@ -28,6 +29,10 @@ export function Viewer({ building, activeLevelId, isolateId = null, selection, s
   const [error, setError] = useState(''), [openDoors, setOpenDoors] = useState<ReadonlySet<string>>(() => new Set())
   const [mapShown, setMapShown] = useState(true)
   const mapRef = useRef<HTMLCanvasElement>(null), viewerRef = useRef<HTMLElement | null>(null), seenWalkRequest = useRef(0)
+  useEffect(() => {
+    if (building.levels.length > previousLevelCount.current) setBuildingView('building')
+    previousLevelCount.current = building.levels.length
+  }, [building.levels.length])
   const zoomCamera = (detail: ZoomDetail) => viewerRef.current?.dispatchEvent(new CustomEvent<ZoomDetail>(zoomEvent, { detail }))
   const endWalk = useCallback(() => { setWalk(false); setLockedWalk(false) }, [])
   const toggleDoor = useCallback((id: string) => setOpenDoors(current => {

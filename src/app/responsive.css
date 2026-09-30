@@ -14,31 +14,38 @@
 }
 @media(max-width:900px){
   .workspace{height:100dvh;min-height:0;overflow:hidden}
-  .appbar{height:48px;flex:none;padding:0 10px;gap:9px}
+  .appbar{height:44px;flex:none;padding:0 8px;gap:8px}
   .app-name{gap:7px;flex:1}
   .app-name strong{font-size:12px}
   .app-name b{max-width:100px;font-size:11px}
   .app-actions{margin-left:0;gap:4px}
-  .app-actions button{height:30px;padding:0 7px}
+  .app-actions button{height:28px;padding:0 6px}
   .app-actions button:last-child span{display:none}
-  .workspace-top{height:132px;flex:none;display:grid;grid-template-columns:1fr auto;grid-template-rows:43px 40px 40px;gap:0 8px;padding:3px 9px 4px}
+  .workspace-top{height:78px;flex:none;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:34px 34px;gap:2px 7px;padding:3px 8px;box-sizing:border-box}
   .toolset{grid-column:1;grid-row:1;min-width:0;overflow:hidden;gap:2px}
-  .toolset button{flex:none;min-width:41px;height:38px;justify-content:center;padding:0 10px}
+  .toolset button{flex:none;min-width:36px;height:31px;justify-content:center;padding:0 8px}
   .toolset button:nth-child(n+6){display:none}
-  .toolset button svg{font-size:18px}
-  .more-tools{display:block;grid-column:2;grid-row:1;height:38px;align-self:center;border:1px solid #bdc8bb;background:#fff;border-radius:5px}
-  .viewset{grid-column:1;grid-row:2;margin:0;padding:0;border:0;background:#e9ede7;border-radius:5px;gap:0}
-  .viewset button{flex:1;min-width:50px;height:36px}
-  .mode-actions{grid-column:1 / -1;grid-row:3;display:flex;margin:0;padding:0;border:0;background:#e9ede7;border-radius:5px}
-  .mode-actions button{flex:1;height:36px}
-  .inspector-toggle{display:block;grid-column:2;grid-row:2;border:1px solid #bdc8bb;background:#fff;color:#344b3b;border-radius:5px;padding:0 10px;font-size:11px;white-space:nowrap}
+  .toolset button svg{font-size:16px}
+  .more-tools{display:block;grid-column:2;grid-row:1;height:31px;align-self:center;border:1px solid #bdc8bb;background:#fff;border-radius:5px;padding:0 8px}
+  .viewset{grid-column:1;grid-row:2;width:44%;margin:0;padding:0;border:0;background:#e9ede7;border-radius:5px;gap:0}
+  .viewset button{flex:1;min-width:0;height:30px;padding:0 4px;font-size:11px}
+  .mode-actions{grid-column:1;grid-row:2;justify-self:end;width:54%;min-width:0;display:flex;margin:0;padding:0;border:0;background:#e9ede7;border-radius:5px;gap:0}
+  .mode-actions button{flex:1;min-width:0;height:30px;padding:0 3px;font-size:10px;white-space:nowrap}
+  .inspector-toggle{display:block;grid-column:2;grid-row:2;height:30px;border:1px solid #bdc8bb;background:#fff;color:#344b3b;border-radius:5px;padding:0 8px;font-size:10px;white-space:nowrap}
   .inspector-toggle.active{background:#dbe9da}
   .workspace-body{display:block;overflow:hidden}
   .work-main{height:100%;width:100%}
-  .source-strip{height:36px;padding:0 8px}
+  .source-strip{height:30px;padding:0 7px}
   .source-strip>span{display:none}
   .source-strip>div{width:100%;justify-content:flex-end}
-  .source-strip button,.source-strip .file-button{min-height:28px}
+  .source-strip button,.source-strip .file-button{min-height:25px;padding:3px 8px;font-size:10px}
+  .level-manager>summary{gap:8px;padding:5px 10px;font-size:10px}
+  .level-manager>summary b{font-size:11px}
+  .structure-toggle{padding:6px 10px;font-size:11px}
+  .reconstruction-flow{gap:6px;padding:5px 8px}
+  .reconstruction-flow>div{gap:2px}
+  .reconstruction-flow strong{font-size:9px}
+  .reconstruction-flow span{font-size:10px;line-height:1.2}
   .ready-flow{flex-wrap:nowrap}
   .ready-flow>div{flex:1;min-width:0;flex-basis:auto}
   .ready-flow button{flex:none}
@@ -49,7 +56,7 @@
   .plan-editor .viewport-head>span{display:none}
   .plan-editor .viewport-head>div{overflow:visible;margin-left:auto}
   .viewport-foot{padding:0 8px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-  .statusbar{height:24px;padding:0 8px;gap:10px;font-size:9px}
+  .statusbar{height:20px;padding:0 7px;gap:8px;font-size:8px}
   .statusbar span:nth-child(2){display:none}
   .inspector-scrim{display:block;position:absolute;inset:0;z-index:8;background:#15241d77;border:0}
   .inspector{display:none;position:absolute;bottom:0;left:0;right:0;z-index:9;width:100%;height:min(68dvh,540px);border:0;border-top:2px solid #9bab9a;border-radius:14px 14px 0 0;box-shadow:0 -10px 30px #14201933}
@@ -65,4 +72,17 @@
   .tool-sheet nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
   .tool-sheet nav button{display:flex;align-items:center;gap:9px;min-height:43px;border:1px solid #c3cdc3;background:#fff;color:#3a4b3d;padding:0 12px;text-align:left;font-size:12px}
   .tool-sheet nav button[aria-pressed=true]{background:#e0e9df;border-color:#8dab91}
+}
+@media(max-width:900px) and (max-height:700px){
+  .appbar{height:40px}
+  .app-name strong{font-size:11px}
+  .workspace-top{height:68px;grid-template-rows:30px 30px;gap:2px 6px;padding:3px 7px}
+  .toolset button,.more-tools{height:28px}
+  .viewset button,.mode-actions button,.inspector-toggle{height:27px}
+  .level-manager>summary{padding:4px 9px}
+  .structure-toggle{padding:5px 9px}
+  .source-strip{height:27px}
+  .reconstruction-flow{padding:4px 8px}
+  .reconstruction-flow span{display:none}
+  .statusbar{height:18px}
 }

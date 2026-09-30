@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { DoubleSide } from 'three'
 import type { Door, Passage, Selection, Wall, WindowUnit } from '../domain/types'
 import { atWall, wallLength } from '../geometry/math'
 import { wallRect, wallSolids } from '../geometry/walls'
@@ -23,7 +24,7 @@ export function WallMesh({ wall, doors, windows, passages, selection, select, op
         onPointerOver={event => { event.stopPropagation(); hover(true) }} onPointerOut={() => hover(false)}>
         <mesh position={rect.center} rotation={[0, rect.rotation, 0]} castShadow receiveShadow>
           <boxGeometry args={rect.size} />
-          <meshStandardMaterial map={wallTexture(wall.material)} color={selected ? '#b6a276' : wall.color || materialColor[wall.material]}
+          <meshStandardMaterial map={wallTexture(wall.material, rect.size[0], rect.size[1])} color={selected ? '#b6a276' : wall.color || materialColor[wall.material]}
             roughness={materialRoughness[wall.material]} />
         </mesh>
         {solid.bottom === 0 && <mesh position={[rect.center[0], .045, rect.center[2]]} rotation={[0, rect.rotation, 0]} castShadow>
@@ -48,13 +49,16 @@ export function WallMesh({ wall, doors, windows, passages, selection, select, op
         onClick={event => { event.stopPropagation(); select({ kind: 'window', id: item.id }) }}
         onPointerOver={event => { event.stopPropagation(); hover(true) }} onPointerOut={() => hover(false)}>
         {[-1, 1].map(side => <mesh key={side} position={[side * item.width / 2, 0, 0]}>
-          <boxGeometry args={[.065, item.height + .07, .09]} /><meshStandardMaterial color={selection?.id === item.id ? '#b69c6d' : item.frame === 'timber' ? '#765a43' : '#555d5c'} metalness={item.frame === 'timber' ? .05 : .55} roughness={.35} /></mesh>)}
+          <boxGeometry args={[.065, item.height + .07, wall.thickness + .08]} /><meshStandardMaterial color={selection?.id === item.id ? '#b69c6d' : item.frame === 'timber' ? '#765a43' : '#555d5c'} metalness={item.frame === 'timber' ? .05 : .48} roughness={.38} /></mesh>)}
         {[-1, 1].map(side => <mesh key={side} position={[0, side * item.height / 2, 0]}>
-          <boxGeometry args={[item.width, .065, .09]} /><meshStandardMaterial color="#555d5c" metalness={.55} roughness={.35} /></mesh>)}
-        <mesh><boxGeometry args={[item.width - .07, item.height - .07, .075]} />
-          <meshPhysicalMaterial color={item.glazing === 'frosted' ? '#d5dee0' : '#a9c0c6'} metalness={.15}
-            roughness={item.glazing === 'frosted' ? .65 : .16} transmission={item.glazing === 'frosted' ? .28 : .65}
-            thickness={.03} transparent opacity={.65} /></mesh>
+          <boxGeometry args={[item.width, .065, wall.thickness + .08]} /><meshStandardMaterial color="#555d5c" metalness={.48} roughness={.38} /></mesh>)}
+        <mesh position={[0, -item.height / 2 - .045, 0]} castShadow receiveShadow>
+          <boxGeometry args={[item.width + .16, .09, wall.thickness + .18]} />
+          <meshStandardMaterial color={item.frame === 'timber' ? '#8a785f' : '#aaa89f'} roughness={.72} side={DoubleSide} />
+        </mesh>
+        <mesh><boxGeometry args={[item.width - .14, item.height - .14, .035]} />
+          <meshStandardMaterial color={item.glazing === 'frosted' ? '#b9c6c7' : '#718a91'} metalness={.28}
+            roughness={item.glazing === 'frosted' ? .52 : .2} transparent opacity={item.glazing === 'frosted' ? .72 : .52} side={DoubleSide} /></mesh>
         {item.type !== 'fixed' && <mesh position={[0, 0, .08]}><boxGeometry args={[.035, item.height, .035]} /><meshStandardMaterial color="#555d5c" /></mesh>}
         {item.type === 'casement' && <mesh position={[item.width * .38, 0, .12]}>
           <boxGeometry args={[.025, .14, .04]} /><meshStandardMaterial color="#5b615c" metalness={.65} /></mesh>}

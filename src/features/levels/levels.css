@@ -1,13 +1,186 @@
-.level-manager{position:relative;border-bottom:1px solid #c8d1c6;background:#edf0eb;z-index:20;color:#334239}
-.level-manager>summary{display:flex;align-items:center;gap:12px;padding:7px 13px;cursor:pointer;font-size:11px;letter-spacing:.08em;list-style:none}
-.level-manager>summary::-webkit-details-marker{display:none}
-.level-manager>summary b{font-size:12px;letter-spacing:0}.level-manager>summary span{margin-left:auto;letter-spacing:0;color:#66766b}
-.level-manager-body{position:absolute;top:100%;left:8px;width:min(390px,calc(100vw - 16px));max-height:min(68vh,600px);overflow:auto;background:#f7f8f5;border:1px solid #b9c4b9;box-shadow:0 12px 26px #1d2e2440;padding:10px}
-.level-manager-head,.level-row,.level-actions{display:flex;align-items:center;gap:5px}.level-manager-head{justify-content:space-between;margin-bottom:8px}
-.level-row{flex-wrap:wrap;border-top:1px solid #dce3dc;padding:5px 0}.level-row.active{background:#e9eee8}
-.level-row button,.level-manager-head button,.level-actions button,.level-add{border:1px solid #bac7ba;background:#fff;color:#34483a;padding:5px 7px;cursor:pointer}
-.level-row .level-select{flex:1;display:flex;justify-content:space-between;text-align:left;min-width:160px}.level-select small{color:#69766c}
-.level-properties,.level-add-form{display:grid;gap:7px;width:100%;padding:7px}.level-properties label,.level-add-form label,.underlay-choice{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:11px}
-.level-properties input,.level-add-form input,.level-add-form select,.underlay-choice select{width:55%;min-width:0;border:1px solid #b9c5b9;padding:5px;background:white;color:#253a2d}
-.underlay-choice{padding:9px 4px;border-top:1px solid #dce3dc}.level-add{width:100%;margin-top:8px}.level-actions{justify-content:flex-end}
-@media(max-width:700px){.level-manager-body{position:fixed;left:0;right:0;top:auto;bottom:0;width:100vw;max-height:70dvh;border-radius:12px 12px 0 0;padding:15px;box-shadow:0 -12px 35px #15241855}.level-manager>summary{padding:8px}}
+.level-manager {
+    position: relative;
+    border-bottom: 1px solid #c8d1c6;
+    background: #edf0eb;
+    z-index: 20;
+    color: #334239
+}
+
+.level-manager>summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 7px 13px;
+    cursor: pointer;
+    font-size: 11px;
+    letter-spacing: .08em;
+    list-style: none
+}
+
+.level-manager>summary::-webkit-details-marker {
+    display: none
+}
+
+.level-manager>summary b {
+    font-size: 12px;
+    letter-spacing: 0
+}
+
+.level-manager>summary span {
+    margin-left: auto;
+    letter-spacing: 0;
+    color: #66766b
+}
+
+.level-manager-body {
+    position: absolute;
+    top: 100%;
+    left: 8px;
+    width: min(350px, calc(100vw - 16px));
+    max-height: min(68vh, 600px);
+    overflow: auto;
+    overscroll-behavior: contain;
+    background: #f7f8f5;
+    border: 1px solid #b9c4b9;
+    box-shadow: 0 12px 26px #1d2e2440;
+    padding: 10px;
+    font-size: 11px;
+    scrollbar-width: thin;
+    scrollbar-color: #87968a #e5eae4
+}
+
+.level-manager-body::-webkit-scrollbar {
+    width: 8px;
+    height: 8px
+}
+
+.level-manager-body::-webkit-scrollbar-track {
+    background: #e5eae4;
+    border-radius: 6px
+}
+
+.level-manager-body::-webkit-scrollbar-thumb {
+    background: #87968a;
+    border: 2px solid #e5eae4;
+    border-radius: 6px
+}
+
+.level-manager-body::-webkit-scrollbar-thumb:hover {
+    background: #637568
+}
+
+.level-manager-head,
+.level-row,
+.level-actions {
+    display: flex;
+    align-items: center;
+    gap: 5px
+}
+
+.level-manager-head {
+    justify-content: space-between;
+    margin-bottom: 8px
+}
+
+.level-manager-head strong,
+.level-add-form>strong {
+    font-size: 12px
+}
+
+.level-row {
+    flex-wrap: wrap;
+    border-top: 1px solid #dce3dc;
+    padding: 5px 0
+}
+
+.level-row.active {
+    background: #e9eee8
+}
+
+.level-row button,
+.level-manager-head button,
+.level-actions button,
+.level-add {
+    border: 1px solid #bac7ba;
+    background: #fff;
+    color: #34483a;
+    padding: 5px 7px;
+    cursor: pointer;
+    font-size: 11px
+}
+
+.level-row .level-select {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    text-align: left;
+    min-width: 160px
+}
+
+.level-select small {
+    color: #69766c
+}
+
+.level-properties,
+.level-add-form {
+    display: grid;
+    gap: 7px;
+    width: 100%;
+    padding: 7px
+}
+
+.level-properties label,
+.level-add-form label,
+.underlay-choice {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px
+}
+
+.level-properties input,
+.level-add-form input,
+.level-add-form select,
+.underlay-choice select {
+    width: 55%;
+    min-width: 0;
+    border: 1px solid #b9c5b9;
+    padding: 5px;
+    background: white;
+    color: #253a2d;
+    font: inherit
+}
+
+.underlay-choice {
+    padding: 9px 4px;
+    border-top: 1px solid #dce3dc
+}
+
+.level-add {
+    width: 100%;
+    margin-top: 8px
+}
+
+.level-actions {
+    justify-content: flex-end
+}
+
+@media(max-width:700px) {
+    .level-manager-body {
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: auto;
+        bottom: 0;
+        width: 100vw;
+        max-height: 70dvh;
+        border-radius: 12px 12px 0 0;
+        padding: 15px;
+        box-shadow: 0 -12px 35px #15241855
+    }
+
+    .level-manager>summary {
+        padding: 8px
+    }
+}

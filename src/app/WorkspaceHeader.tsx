@@ -33,7 +33,12 @@ export function WorkspaceHeader({ projectName, dirty, back, undo, redo, save, to
   return <>
     <header className="appbar">
       <button className="back" title="Projects" aria-label="Projects" onClick={back}><FiArrowLeft /></button>
-      <div className="app-name"><strong>ERECT <em>3D</em></strong><span>/</span><b>{projectName}</b></div>
+      <div className="app-name">
+        <strong>ERECT</strong>
+        <img className="app-logo" src="/favicon.svg" alt="Erect3D logo" />
+        <span>/</span>
+        <b>{projectName}</b>
+      </div>
       <div className="app-actions">
         <span className="save-state">{dirty ? 'Unsaved changes' : 'Saved locally'}</span>
         <button title="Undo" aria-label="Undo" onClick={undo}><FiRotateCcw /></button>

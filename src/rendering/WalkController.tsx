@@ -1,14 +1,14 @@
 import { useEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { Euler, Vector3 } from 'three'
-import type { Level } from '../domain/types'
+import type { Level, SiteFence } from '../domain/types'
 import { nearbyDoor, walkStart } from '../geometry/walk'
 import { stairHeightAt } from '../geometry/stairs'
-import { buildColliders, collidesPrepared, type Collider } from '../geometry/walls'
+import { buildColliders, collidesPrepared, siteFenceColliders, type Collider } from '../geometry/walls'
 
 type Props = { levels: Level[]; startLevelId: string; active: boolean; onUnlock: () => void; openDoors: ReadonlySet<string>
-  onToggleDoor: (id: string) => void; onPosition?: (x: number, z: number, yaw: number, level: Level) => void }
-export function WalkController({ levels, startLevelId, active, onUnlock, openDoors, onToggleDoor, onPosition }: Props) {
+  onToggleDoor: (id: string) => void; onPosition?: (x: number, z: number, yaw: number, level: Level) => void; siteFence?: SiteFence }
+export function WalkController({ levels, startLevelId, active, onUnlock, openDoors, onToggleDoor, onPosition, siteFence }: Props) {
   const { camera, gl } = useThree()
   const level = levels.find(item => item.id === startLevelId) || levels[0]
   const keys = useRef(new Set<string>())
@@ -20,10 +20,10 @@ export function WalkController({ levels, startLevelId, active, onUnlock, openDoo
     item.doors.map(door => [door.id, door.wallId, door.offset, door.width, door.height]),
     item.windows.map(window => [window.id, window.wallId, window.offset, window.width, window.sill, window.height]),
     item.passages?.map(passage => [passage.id, passage.wallId, passage.offset, passage.width, passage.height])]),
-  [...openDoors].sort()])
+  [...openDoors].sort(), siteFence])
   const colliderCache = useRef<{ signature: string; colliders: Map<string, Collider[]> } | null>(null)
   if (colliderCache.current?.signature !== signature) colliderCache.current = { signature, colliders: new Map(levels.map(item => [item.id,
-    buildColliders(item.walls, item.doors, item.windows, openDoors, item.passages)])) }
+    buildColliders(item.walls, item.doors, item.windows, openDoors, item.passages, undefined)])) }
   const colliders = colliderCache.current.colliders
   const currentLevel = useRef(level)
   useEffect(() => {
@@ -67,7 +67,8 @@ export function WalkController({ levels, startLevelId, active, onUnlock, openDoo
     const target = new Vector3(side, 0, -forward).normalize().applyEuler(new Euler(0, yaw.current, 0))
     target.multiplyScalar(keys.current.has('ShiftLeft') ? 3.8 : 2.3)
     speed.current.lerp(target, Math.min(1, step * 9))
-    const activeColliders = colliders.get(currentLevel.current.id) || []
+    const activeSiteFence = Math.abs(currentLevel.current.elevation) < .2 ? siteFence : undefined
+    const activeColliders = [...(colliders.get(currentLevel.current.id) || []), ...siteFenceColliders(activeSiteFence)]
     const nextX = camera.position.x + speed.current.x * step
     const x = collidesPrepared({ x: nextX, z: camera.position.z }, .22, activeColliders) ? camera.position.x : nextX
     const nextZ = camera.position.z + speed.current.z * step

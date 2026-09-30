@@ -1,4 +1,7 @@
-import { defaultRoof, uid, type Building, type Level, type Point, type Project, type Slab, type Wall } from './types'
+import { defaultRoof, uid, type Building, type Level, type Point, type Project, type Slab, type Stair, type Wall } from './types'
+import { containsPolygon } from '../geometry/polygons'
+import { findStairPlacement } from '../geometry/stairPlacement'
+import { stairOpening } from '../geometry/stairs'
 
 const moved = (point: Point, delta: Point): Point => ({ x: point.x + delta.x, z: point.z + delta.z })
 export function translateWalls<T extends { walls: Wall[] }>(draft: T, delta: Point): T {
@@ -35,6 +38,30 @@ export function refreshAutoSlabs(level: Level) {
   else if (level.autoSlab && !level.slabs.length) level.slabs.push(newSlab(polygon, level.slabThickness))
 }
 
+export function connectAdjacentLevels(project: Project) {
+  const levels = project.buildings[0].levels.toSorted((a, b) => a.elevation - b.elevation)
+  for (let index = 0; index < levels.length - 1; index++) {
+    const from = levels[index], to = levels[index + 1]
+    if (from.locked || to.locked) continue
+    const existing = from.stairs?.find(stair => stair.fromLevelId === from.id && stair.toLevelId === to.id)
+    const targetSlabs = to.slabs?.length ? to.slabs : [newSlab(wallEnvelope(to), to.slabThickness)]
+    const initial: Stair = existing || { id: uid('stair'), fromLevelId: from.id, toLevelId: to.id,
+      start: { x: 0, z: 0 }, direction: 0, form: 'straight', width: 1.1,
+      riserHeight: .17, treadDepth: .28, landingLength: 1.2, openingId: uid('opening') }
+    const stair = existing || findStairPlacement(initial, levels, targetSlabs)
+    if (!stair) continue
+    const openingPolygon = stairOpening(stair, levels)
+    const slab = targetSlabs.find(item => containsPolygon(item.polygon, openingPolygon))
+    if (!slab) continue
+    if (!existing) { from.stairs ||= []; from.stairs.push(stair) }
+    to.slabs ||= []
+    if (!to.slabs.length) to.slabs.push(slab)
+    const openingId = stair.openingId ||= uid('opening')
+    to.slabs.forEach(item => { item.openings = item.openings.filter(opening => opening.id !== openingId) })
+    to.slabs.find(item => item.id === slab.id)?.openings.push({ id: openingId, kind: 'stair', polygon: openingPolygon })
+  }
+}
+
 export function normalizeProject(input: Project): Project {
   const project = structuredClone(input)
   const legacy = project as Project & Partial<Level>
@@ -63,6 +90,7 @@ export function normalizeProject(input: Project): Project {
       if (!level.calibration && level === building.levels[0] && project.calibration) level.calibration = project.calibration
       level.alignment ||= { x: 0, z: 0 }
     }
+    connectAdjacentLevels({ ...project, buildings: [building] })
   }
   return project
 }

@@ -2,10 +2,23 @@ import { CanvasTexture, RepeatWrapping, SRGBColorSpace } from 'three'
 import type { MaterialKey } from '../domain/types'
 
 const cache = new Map<MaterialKey, CanvasTexture>()
+const scaledCache = new Map<string, CanvasTexture>()
 
-export function wallTexture(material: MaterialKey) {
+export function wallTexture(material: MaterialKey, width = 1, height = 1) {
+  const scaleX = material === 'brick' ? .78 : material === 'timber' || material === 'oak' ? 1.16 : material === 'tile' ? 1.67 : 1
+  const scaleY = material === 'brick' ? .5 : material === 'tile' ? 1.67 : 1
+  const repeatX = Math.max(.25, Math.round(width * scaleX * 4) / 4)
+  const repeatY = Math.max(.25, Math.round(height * scaleY * 4) / 4)
+  const key = `${material}:${repeatX}:${repeatY}`
+  const existing = scaledCache.get(key)
+  if (existing) return existing
   const cached = cache.get(material)
-  if (cached) return cached
+  if (cached) {
+    const texture = cached.clone()
+    texture.wrapS = RepeatWrapping; texture.wrapT = RepeatWrapping; texture.repeat.set(repeatX, repeatY)
+    scaledCache.set(key, texture)
+    return texture
+  }
   const canvas = document.createElement('canvas')
   canvas.width = 256; canvas.height = 256
   const ctx = canvas.getContext('2d')!
@@ -37,5 +50,8 @@ export function wallTexture(material: MaterialKey) {
   texture.wrapS = RepeatWrapping; texture.wrapT = RepeatWrapping
   texture.colorSpace = SRGBColorSpace; texture.anisotropy = 8
   cache.set(material, texture)
-  return texture
+  const scaled = texture.clone()
+  scaled.wrapS = RepeatWrapping; scaled.wrapT = RepeatWrapping; scaled.repeat.set(repeatX, repeatY)
+  scaledCache.set(key, scaled)
+  return scaled
 }

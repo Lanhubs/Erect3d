@@ -10,6 +10,7 @@ import { defaultRoof } from '../src/domain/types'
 import { roomArea } from '../src/geometry/math'
 import { roomShapes } from '../src/rendering/roomShape'
 import { findStairPlacement } from '../src/geometry/stairPlacement'
+import { connectAdjacentLevels, normalizeProject } from '../src/domain/levels'
 
 test('V1 data migrates to one level while preserving wall IDs and roof settings', () => {
   const original = fixtureProject(), level = original.buildings[0].levels[0]
@@ -150,6 +151,23 @@ test('new stairs find a clear route and fit an opening inside the upper slab', (
   expect(stair).not.toBeNull()
   expect(stair!.direction).toBe(90)
   expect(containsPolygon(building.levels[1].slabs![0].polygon, stairOpening(stair!, building.levels))).toBe(true)
+})
+
+test('adding a storey connects adjacent levels with a stair when a route fits', () => {
+  const project = normalizeProject(twoStoreyHouse())
+  const [ground, upper] = project.buildings[0].levels
+  expect(ground.stairs).toHaveLength(1)
+  expect(ground.stairs![0].toLevelId).toBe(upper.id)
+  expect(upper.slabs![0].openings.some(opening => opening.id === ground.stairs![0].openingId)).toBe(true)
+})
+
+test('normalizing an existing stair restores a missing upper-floor opening', () => {
+  const project = stairBuilding(), [ground, upper] = project.buildings[0].levels
+  upper.slabs![0].openings = []
+  const normalized = normalizeProject(project), [normalizedGround, normalizedUpper] = normalized.buildings[0].levels
+  expect(normalizedGround.stairs).toHaveLength(1)
+  expect(normalizedUpper.slabs![0].openings).toHaveLength(1)
+  expect(normalizedUpper.slabs![0].openings[0].id).toBe(normalizedGround.stairs![0].openingId)
 })
 
 test('duplicating a floor leaves orphaned stair openings behind', () => {

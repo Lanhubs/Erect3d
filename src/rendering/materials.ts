@@ -8,3 +8,8 @@ export const materialRoughness: Record<MaterialKey, number> = {
   plaster: .93, concrete: .92, brick: .94, timber: .72, tile: .42, oak: .68,
   marble: .24, carpet: 1, 'polished-concrete': .28, 'porcelain-tile': .22, laminate: .5,
 }
+
+export const façadePalette = {
+  plaster: '#d9d6cd', concrete: '#b7b6af', brick: '#a67862', timber: '#8c7154', tile: '#c5c8b8', oak: '#a98a60',
+  marble: '#e8e6e1', carpet: '#9fa29d', 'polished-concrete': '#a8a39e', 'porcelain-tile': '#e2e0dc', laminate: '#b8a17d',
+}

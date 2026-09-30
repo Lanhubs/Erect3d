@@ -11,7 +11,8 @@ export function Dashboard({ projects, open, create, remove }: Props) {
   const [building, setBuilding] = useState('')
   const [units, setUnits] = useState<Project['units']>('m')
   return <main className="dashboard">
-    <header className="dashboard-head"><div className="brand-mark">E<span>3</span></div>
+    <header className="dashboard-head">
+      <div className="brand-mark"><img src="/favicon.svg" alt="Erect3D logo" /></div>
       <div><strong>ERECT</strong><small>ARCHITECTURAL RECONSTRUCTION</small></div>
     </header>
     <div className="dashboard-main">
