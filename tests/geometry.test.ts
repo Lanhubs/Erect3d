@@ -2,7 +2,8 @@ import { describe, expect, test } from 'bun:test'
 import { fixtureProject } from '../src/domain/fixture'
 import { levelOf } from '../src/domain/types'
 import { atWall, calibrate, nearestPoint, roomArea, roomPerimeter, segmentIntersection, snapWallEnd, sourceToWorld, wallLength } from '../src/geometry/math'
-import { collides, wallSolids } from '../src/geometry/walls'
+import { collides, siteFenceColliders, wallSolids } from '../src/geometry/walls'
+import { generateSiteFence } from '../src/geometry/site'
 import { walkStart } from '../src/geometry/walk'
 import { formatArea, formatDistance, toMetres } from '../src/geometry/units'
 
@@ -52,5 +53,14 @@ describe('architectural units and openings', () => {
     const start = walkStart(level)
     expect(collides(start.point, .22, level.walls, level.doors, level.windows)).toBe(false)
     expect(start.point.z).toBeGreaterThan(8)
+  })
+  test('treats the site fence as ground-floor-only perimeter blocking', () => {
+    const project = fixtureProject()
+    const fence = generateSiteFence(project.buildings[0].levels[0])!
+    const front = fence.segments[0]
+    expect(siteFenceColliders(fence).length).toBeGreaterThan(0)
+    expect(siteFenceColliders({ ...fence, enabled: false })).toHaveLength(0)
+    expect(collides({ x: 7, z: 9.3 }, .22, level.walls, level.doors, level.windows, [], fence)).toBe(false)
+    expect(collides({ x: (front.start.x + front.end.x) / 2, z: front.start.z }, .22, level.walls, level.doors, level.windows, [], fence)).toBe(true)
   })
 })

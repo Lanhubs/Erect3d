@@ -94,3 +94,19 @@
 .roof-controls input[type=color] { padding: 2px; }
 .roof-controls input[type=range] { width: 100%; accent-color: #9a7047; }
 .roof-controls p { margin: 0; color: #849084; font-size: 10px; line-height: 1.5; }
+.site-controls { padding-bottom: 10px; border-bottom: 1px solid #d6dcd4; }
+.site-controls .panel-title { padding-top: 14px; }
+.site-toggle { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; color: #36443a; font-size: 12px; }
+.site-toggle input { accent-color: #55765b; }
+.site-actions { display: grid; gap: 6px; padding: 5px 15px; }
+.site-actions button, .site-add, .site-gate button { border: 1px solid #c4ccc1; background: #fff; color: #3c493f; padding: 6px 8px; font-size: 10px; text-align: left; }
+.site-actions button:disabled { opacity: .45; }
+.site-subtitle { padding: 9px 15px 3px; color: #788477; font: 600 9px 'IBM Plex Mono',monospace; }
+.site-point { display: grid; grid-template-columns: 24px 1fr 1fr 24px; align-items: center; gap: 5px; padding: 4px 15px; color: #788477; font-size: 9px; }
+.site-point label, .site-gate label { display: grid; gap: 2px; color: #788477; font-size: 9px; }
+.site-point input, .site-gate input, .site-gate select { min-width: 0; width: 100%; border: 1px solid #c9d1c6; background: white; color: #36443a; padding: 4px; font-size: 10px; }
+.site-point button { height: 25px; border: 1px solid #d1d8cf; background: white; color: #765b50; }
+.site-point button:disabled { opacity: .35; }
+.site-add { margin: 6px 15px; }
+.site-gate { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; padding: 6px 15px; }
+.site-gate strong { grid-column: 1 / -1; color: #465449; font-size: 10px; }

@@ -1,4 +1,4 @@
-import type { Door, Passage, Point, Wall, WindowUnit } from '../domain/types'
+import type { Door, Passage, Point, SiteFence, Wall, WindowUnit } from '../domain/types'
 import { atWall, wallLength } from './math'
 
 export type Solid = { start: number; end: number; bottom: number; top: number }
@@ -32,16 +32,43 @@ export function wallRect(wall: Wall, solid: Solid) {
     size: [solid.end - solid.start + .005, solid.top - solid.bottom, wall.thickness] as [number, number, number],
     rotation: -Math.atan2(b.z - a.z, b.x - a.x) }
 }
-export function buildColliders(walls: Wall[], doors: Door[], windows: WindowUnit[], openDoors?: ReadonlySet<string>, passages: Passage[] = []): Collider[] {
+function pointOnSegment(start: Point, end: Point, distance: number): Point {
+  const length = Math.hypot(end.x - start.x, end.z - start.z) || 1
+  const ratio = Math.max(0, Math.min(1, distance / length))
+  return { x: start.x + (end.x - start.x) * ratio, z: start.z + (end.z - start.z) * ratio }
+}
+
+export function siteFenceColliders(fence?: SiteFence): Collider[] {
+  if (!fence || fence.enabled === false) return []
+  const colliders: Collider[] = []
+  for (const segment of fence.segments) {
+    const gates = [...fence.gates].filter(item => item.segmentId === segment.id).sort((a, b) => a.offset - b.offset)
+    let cursor = 0
+    const totalLength = Math.hypot(segment.end.x - segment.start.x, segment.end.z - segment.start.z)
+    for (const gate of gates) {
+      const start = gate.offset
+      const end = gate.offset + gate.width
+      if (cursor < start - .001) {
+        colliders.push({ a: pointOnSegment(segment.start, segment.end, cursor), b: pointOnSegment(segment.start, segment.end, start), halfWidth: segment.thickness / 2 })
+      }
+      cursor = Math.max(cursor, end)
+    }
+    if (totalLength - cursor > .001) {
+      colliders.push({ a: pointOnSegment(segment.start, segment.end, cursor), b: segment.end, halfWidth: segment.thickness / 2 })
+    }
+  }
+  return colliders
+}
+
+export function buildColliders(walls: Wall[], doors: Door[], windows: WindowUnit[], openDoors?: ReadonlySet<string>, passages: Passage[] = [], siteFence?: SiteFence): Collider[] {
   const structure = walls.flatMap(wall => wallSolids(wall, doors, windows, passages)
     .filter(solid => solid.bottom < 1.1)
     .map(solid => ({ a: atWall(wall, solid.start), b: atWall(wall, solid.end), halfWidth: wall.thickness / 2 })))
-  if (!openDoors) return structure
-  const leaves = doors.filter(door => !openDoors.has(door.id)).flatMap(door => {
+  const leaves = !openDoors ? [] : doors.filter(door => !openDoors.has(door.id)).flatMap(door => {
     const wall = walls.find(item => item.id === door.wallId)
     return wall ? [{ a: atWall(wall, door.offset), b: atWall(wall, door.offset + door.width), halfWidth: .04 }] : []
   })
-  return [...structure, ...leaves]
+  return [...structure, ...leaves, ...siteFenceColliders(siteFence)]
 }
 export function collidesPrepared(point: Point, radius: number, colliders: Collider[]): boolean {
   return colliders.some(({ a, b, halfWidth }) => {
@@ -50,5 +77,5 @@ export function collidesPrepared(point: Point, radius: number, colliders: Collid
     return Math.hypot(point.x - a.x - t * dx, point.z - a.z - t * dz) < radius + halfWidth
   })
 }
-export const collides = (point: Point, radius: number, walls: Wall[], doors: Door[], windows: WindowUnit[], passages: Passage[] = []) =>
-  collidesPrepared(point, radius, buildColliders(walls, doors, windows, undefined, passages))
+export const collides = (point: Point, radius: number, walls: Wall[], doors: Door[], windows: WindowUnit[], passages: Passage[] = [], siteFence?: SiteFence) =>
+  collidesPrepared(point, radius, buildColliders(walls, doors, windows, undefined, passages, siteFence))

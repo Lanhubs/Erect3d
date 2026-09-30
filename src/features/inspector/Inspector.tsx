@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { Level, Selection } from '../../domain/types'
+import type { Building, Level, Selection } from '../../domain/types'
 import { uid } from '../../domain/types'
 import { roomArea, roomPerimeter, wallLength } from '../../geometry/math'
 import { resizeWall, rotateWall, splitPosition, splitWall, wallAngle } from '../../geometry/editWall'
@@ -9,6 +9,7 @@ import { formatArea, formatDistance, toDisplay, toMetres, type Unit } from '../.
 import { RoofControls } from './RoofControls'
 import { validateOpening } from '../../geometry/openingValidation'
 import { StructureInspector } from './StructureInspector'
+import { SiteControls } from './SiteControls'
 
 const materials = Object.keys(materialColor)
 const wallMaterials = materials.filter(item => !['marble', 'carpet', 'polished-concrete'].includes(item))
@@ -22,13 +23,14 @@ function NumberField({ label, value, onChange, unit, min = 0 }: {
       onChange={event => onChange(toMetres(Number(event.target.value), unit))} />
   </label>
 }
-export function Inspector({ level, selection, unit, open, onClose }: { level: Level; selection: Selection; unit: Unit; open?: boolean; onClose?: () => void }) {
+export function Inspector({ building, level, selection, unit, open, onClose }: { building: Building; level: Level; selection: Selection; unit: Unit; open?: boolean; onClose?: () => void }) {
   const [validation, setValidation] = useState('')
   const edit = useProject(s => s.edit), select = useProject(s => s.setSelection)
   const shell = `inspector${open ? ' mobile-open' : ''}`
   const mobileHead = <div className="inspector-mobile-head"><strong>{selection ? `${selection.kind} properties` : 'Properties'}</strong><button type="button" onClick={onClose} aria-label="Close properties">×</button></div>
   if (!selection) return <aside className={shell}>
     {mobileHead}
+    <SiteControls building={building} />
     <div className="panel-title">PROPERTIES</div>
     <div className="inspector-empty">Select a wall, opening, or room to edit its properties.</div>
     <div className="panel-title">LEVEL SUMMARY</div>
@@ -39,7 +41,7 @@ export function Inspector({ level, selection, unit, open, onClose }: { level: Le
     <RoofControls level={level} />
   </aside>
   if (selection.kind === 'slab' || selection.kind === 'column' || selection.kind === 'stair')
-    return <StructureInspector level={level} selection={selection} unit={unit} open={open} onClose={onClose} />
+    return <StructureInspector building={building} level={level} selection={selection} unit={unit} open={open} onClose={onClose} />
   const update = (kind: 'walls' | 'doors' | 'windows' | 'passages' | 'rooms', change: Record<string, string | number>) => {
     if (kind === 'doors' || kind === 'windows' || kind === 'passages') {
       const previous = (level[kind] || []).find(item => item.id === selection.id)
@@ -72,6 +74,7 @@ export function Inspector({ level, selection, unit, open, onClose }: { level: Le
     .filter(item => item.wallId === wall.id).map(item => item.offset + item.width + .05)) : .1
   return <aside className={shell}>
     {mobileHead}
+    <SiteControls building={building} />
     <div className="panel-title">PROPERTIES</div>
     <div className="entity-title"><strong>{selection.kind.toUpperCase()}</strong><small>{selection.id}</small></div>
     {validation && <div className="inline-error" role="alert">{validation}</div>}

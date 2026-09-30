@@ -18,7 +18,7 @@ export function Viewer({ building, activeLevelId, isolateId = null, selection, s
   const [top, setTop] = useState(false), [ceiling, setCeiling] = useState(false)
   const [buildingView, setBuildingView] = useState<BuildingView>(building.levels.length > 1 ? 'building' : 'current')
   const [sectionHeight, setSectionHeight] = useState<number | null>(null), [verticalSection, setVerticalSection] = useState<number | null>(null)
-  const [quality, setQuality] = useState<'performance' | 'balanced' | 'high'>('balanced')
+  const [quality, setQuality] = useState<'auto' | 'performance' | 'balanced' | 'high'>('auto')
   const [webglAvailable] = useState(() => {
     try { const probe = document.createElement('canvas'); const context = probe.getContext('webgl2') || probe.getContext('webgl')
       if (!context) return false
@@ -58,7 +58,7 @@ export function Viewer({ building, activeLevelId, isolateId = null, selection, s
   return <section className="viewer" ref={viewerRef}>
     <div className="viewport-head"><span>{presentation ? 'PRESENT · 3D' : '3D MODEL'}</span><div>
       {!presentation && <select aria-label="Render quality" value={quality} onChange={event => setQuality(event.target.value as typeof quality)}>
-        <option value="performance">Performance</option><option value="balanced">Balanced</option><option value="high">High</option>
+        <option value="auto">Auto</option><option value="performance">Performance</option><option value="balanced">Balanced</option><option value="high">High</option>
       </select>}
       <select aria-label="Building view" value={buildingView} onChange={event => setBuildingView(event.target.value as BuildingView)}>
         <option value="current">Current level</option><option value="building">Entire building</option><option value="exploded">Exploded view</option>
@@ -79,7 +79,7 @@ export function Viewer({ building, activeLevelId, isolateId = null, selection, s
     </div></div>
     {error && <div className="inline-error">{error}</div>}
     <div className="canvas-wrap">{webglAvailable ? <Canvas shadows={{ type: PCFShadowMap }}
-      dpr={quality === 'high' ? [1, 2] : quality === 'balanced' ? [1, 1.5] : [1, 1]}
+      dpr={quality === 'high' ? [1, 2] : quality === 'balanced' || quality === 'auto' ? [1, 1.5] : [1, 1]}
       camera={{ fov: 55, near: .03, far: 300 }} gl={{ antialias: true, toneMapping: ACESFilmicToneMapping }}>
       <BuildingScene building={building} activeLevelId={activeLevelId} view={buildingView} isolateId={isolateId}
         selection={selection} select={select} walk={walk} top={top} endWalk={endWalk} ceiling={ceiling}

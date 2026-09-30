@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import type { Level, Selection, Slab, Stair } from '../../domain/types'
+import type { Building, Level, Selection, Slab, Stair } from '../../domain/types'
 import { updateStair } from '../../domain/structure'
 import { polygonArea, slabArea } from '../../geometry/quantities'
 import { formatArea, toDisplay, toMetres, type Unit } from '../../geometry/units'
 import { useProject } from '../../state/project'
+import { SiteControls } from './SiteControls'
 
-export function StructureInspector({ level, selection, unit, open, onClose }: { level: Level; selection: Selection;
+export function StructureInspector({ building, level, selection, unit, open, onClose }: { building: Building; level: Level; selection: Selection;
   unit: Unit; open?: boolean; onClose?: () => void }) {
   const editProject = useProject(state => state.editProject), select = useProject(state => state.setSelection)
   const [error, setError] = useState('')
@@ -44,6 +45,7 @@ export function StructureInspector({ level, selection, unit, open, onClose }: { 
   }
   return <aside className={`inspector${open ? ' mobile-open' : ''}`}>
     <div className="inspector-mobile-head"><strong>{selection?.kind} properties</strong><button onClick={onClose} aria-label="Close properties">×</button></div>
+    <SiteControls building={building} />
     <div className="panel-title">STRUCTURE</div>
     <div className="entity-title"><strong>{selection?.kind.toUpperCase()}</strong><small>{selection?.id}</small></div>
     {error && <div className="inline-error" role="alert">{error}</div>}

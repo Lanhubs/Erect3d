@@ -147,8 +147,8 @@ export function Workspace({ project, back }: { project: Project; back: () => voi
     <WorkspaceHeader projectName={project.name} dirty={dirty} back={back} undo={undo} redo={redo} save={save}
       tool={tool} setTool={setTool} view={view} setView={chooseView} mode={mode} setMode={next => { setShowImport(false); setMode(next) }}
       walk={() => { setMode('edit'); chooseView('model'); setWalkRequest(value => value + 1) }}
-      selection={selection} inspectorOpen={inspectorOpen} toggleInspector={() => setInspectorOpen(value => !value)}
-      inspectorAvailable={mode === 'edit' && !showImport} />
+      selection={selection} inspectorOpen={inspectorOpen} toggleInspector={() => { setShowImport(false); setInspectorOpen(value => !value) }}
+      inspectorAvailable={mode === 'edit'} />
     <div className="workspace-body"><div className="work-main">
       <LevelManager project={project} activeId={level.id} isolateId={isolateId} setIsolateId={setIsolateId}
         underlayId={underlayId} setUnderlayId={setUnderlayId} />
@@ -193,7 +193,7 @@ export function Workspace({ project, back }: { project: Project; back: () => voi
       <WorkspaceStatus level={level} units={project.units} />
     </div>{mode === 'edit' && !showImport && <>
       {inspectorOpen && <button className="inspector-scrim" type="button" aria-label="Close properties" onClick={() => setInspectorOpen(false)} />}
-      <Inspector level={level} selection={selection} unit={project.units} open={inspectorOpen} onClose={() => setInspectorOpen(false)} />
+      <Inspector building={project.buildings[0]} level={level} selection={selection} unit={project.units} open={inspectorOpen} onClose={() => setInspectorOpen(false)} />
     </>}</div>
   </div>
 }

@@ -21,10 +21,15 @@ export type RoofShape = 'hidden' | 'gable' | 'hip' | 'shed'
 export type RoofMaterial = 'concrete' | 'standing-seam' | 'corrugated' | 'concrete-tile'
 export type Roof = { shape: RoofShape; material: RoofMaterial; color: string; pitch: number; overhang: number }
 export const defaultRoof: Roof = { shape: 'hip', material: 'standing-seam', color: '#5e6970', pitch: 24, overhang: .45 }
+export type FenceMaterial = 'timber' | 'metal' | 'concrete' | 'brick'
+export type SiteFenceGate = { id: string; kind: 'pedestrian' | 'vehicle'; segmentId: string; offset: number; width: number; height: number; material?: FenceMaterial; color?: string }
+export type SiteFenceSegment = { id: string; start: Point; end: Point; height: number; thickness: number; material?: FenceMaterial; color?: string }
+export type SiteFence = { id: string; name: string; height: number; thickness: number; material: FenceMaterial; segments: SiteFenceSegment[]; gates: SiteFenceGate[];
+  enabled?: boolean; color?: string; boundary?: Point[]; setbacks?: { front: number; rear: number; left: number; right: number } }
 export type Level = { id: string; name: string; elevation: number; floorToFloorHeight?: number; visible?: boolean; locked?: boolean;
   walls: Wall[]; doors: Door[]; windows: WindowUnit[]; passages?: Passage[]; rooms: Room[]; slabThickness: number;
   slabs?: Slab[]; autoSlab?: boolean; columns?: Column[]; stairs?: Stair[]; sourceId?: string; calibration?: Calibration; alignment?: Point; roof?: Roof }
-export type Building = { id: string; name: string; levels: Level[]; roof?: Roof }
+export type Building = { id: string; name: string; levels: Level[]; roof?: Roof; siteFence?: SiteFence }
 export type SourceDocument = { id: string; name: string; mime: string; originalBytes: number; width: number; height: number; page?: number; pages?: number }
 export type Calibration = { a: Point; b: Point; knownMetres: number; metresPerPixel: number;
   method?: 'auto' | 'manual'; basisPixels?: number }
