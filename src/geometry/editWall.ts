@@ -1,11 +1,12 @@
 import type { Door, Passage, Wall, WindowUnit } from '../domain/types'
 import { uid } from '../domain/types'
-import { atWall, wallLength } from './math'
+import { atWall, wallLength, wallTangentAngle, wallWithCurve } from './math'
 
 export function resizeWall(wall: Wall, length: number): Wall {
   if (!Number.isFinite(length) || length < .1) return wall
   const current = wallLength(wall)
   if (current < .0001) return wall
+  if (wall.curve) return wallWithCurve(wall, { ...wall.curve, radius: wall.curve.radius * length / current })
   return { ...wall, end: {
     x: wall.start.x + (wall.end.x - wall.start.x) * length / current,
     z: wall.start.z + (wall.end.z - wall.start.z) * length / current,
@@ -15,11 +16,18 @@ export function resizeWall(wall: Wall, length: number): Wall {
 export function rotateWall(wall: Wall, degrees: number): Wall {
   if (!Number.isFinite(degrees)) return wall
   const angle = degrees * Math.PI / 180, length = wallLength(wall)
+  if (wall.curve) {
+    const sweep = wall.curve.endAngle - wall.curve.startAngle
+    const startAngle = angle
+    const center = { x: wall.start.x - Math.cos(startAngle) * wall.curve.radius,
+      z: wall.start.z - Math.sin(startAngle) * wall.curve.radius }
+    return wallWithCurve(wall, { center, radius: wall.curve.radius, startAngle, endAngle: startAngle + sweep })
+  }
   return { ...wall, end: { x: wall.start.x + Math.cos(angle) * length, z: wall.start.z + Math.sin(angle) * length } }
 }
 
 export function wallAngle(wall: Wall) {
-  return Math.atan2(wall.end.z - wall.start.z, wall.end.x - wall.start.x) * 180 / Math.PI
+  return wallTangentAngle(wall, 0) * 180 / Math.PI
 }
 
 export function splitPosition(wall: Wall, doors: Door[], windows: WindowUnit[], passages: Passage[] = []): number | null {
@@ -35,8 +43,14 @@ export function splitWall(walls: Wall[], doors: Door[], windows: WindowUnit[], w
   const wall = walls.find(item => item.id === wallId)
   const offset = wall && splitPosition(wall, doors, windows, passages)
   if (!wall || offset === null || offset === undefined) return { walls, doors, windows, passages }
-  const next: Wall = { ...wall, id: uid('wall'), start: atWall(wall, offset) }
-  const first: Wall = { ...wall, end: next.start }
+  const length = wallLength(wall)
+  const split = atWall(wall, offset)
+  const next: Wall = wall.curve ? wallWithCurve({ ...wall, id: uid('wall') }, {
+    ...wall.curve, startAngle: wall.curve.startAngle + (wall.curve.endAngle - wall.curve.startAngle) * offset / length,
+  }) : { ...wall, id: uid('wall'), start: split }
+  const first: Wall = wall.curve ? wallWithCurve(wall, {
+    ...wall.curve, endAngle: wall.curve.startAngle + (wall.curve.endAngle - wall.curve.startAngle) * offset / length,
+  }) : { ...wall, end: split }
   return {
     walls: walls.flatMap(item => item.id === wallId ? [first, next] : [item]),
     doors: doors.map(item => item.wallId === wallId && item.offset > offset

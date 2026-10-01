@@ -841,3 +841,17 @@
     padding-inline: 1rem;
   }
 }
+
+
+@media (max-width: 600px) {
+  .landing-demo {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+  align-items: center;
+  min-height: 430px;
+}
+.landing-demo-divider{
+  transform:  rotateX(45deg);
+}
+}

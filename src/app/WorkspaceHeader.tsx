@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { FiArrowLeft, FiColumns, FiEdit3, FiLayers, FiMaximize2, FiMousePointer, FiMove,
-  FiRotateCcw, FiRotateCw, FiSave, FiSquare } from 'react-icons/fi'
+  FiPenTool, FiRotateCcw, FiRotateCw, FiSave, FiSquare, FiTrendingUp } from 'react-icons/fi'
 import type { Selection } from '../domain/types'
 import type { Tool, View } from '../state/project'
 
 export type WorkspaceMode = 'edit' | 'analyze' | 'present'
 const tools = [
   { id: 'select', label: 'Select', icon: FiMousePointer }, { id: 'pan', label: 'Pan', icon: FiMove },
-  { id: 'wall', label: 'Wall', icon: FiEdit3 }, { id: 'door', label: 'Door', icon: FiSquare },
+  { id: 'wall', label: 'Wall', icon: FiEdit3 }, { id: 'curve', label: 'Curve', icon: FiPenTool },
+  { id: 'ramp', label: 'Ramp', icon: FiTrendingUp }, { id: 'door', label: 'Door', icon: FiSquare },
   { id: 'window', label: 'Window', icon: FiMaximize2 }, { id: 'room', label: 'Room', icon: FiLayers },
   { id: 'measure', label: 'Measure', icon: FiColumns },
 ] as const

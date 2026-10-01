@@ -59,7 +59,6 @@ export function LandingPage({ projects, onStartDesigning, onOpenWorkspace }: Lan
       <main className="landing-main">
         <section className="hero-section">
           <div className="hero-copy">
-            <p className="eyebrow">BROWSER-BASED ARCHITECTURAL DESIGN</p>
             <h1>
               <span>Design in 2D.</span>
               <span>Experience it in 3D.</span>

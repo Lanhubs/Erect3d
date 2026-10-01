@@ -1,11 +1,39 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { ACESFilmicToneMapping, PCFShadowMap } from 'three'
+import { PerspectiveCamera } from 'three'
 import type { Building, Level, Selection } from '../domain/types'
 import { zoomEvent, type ZoomDetail } from '../app/useWorkspaceZoom'
 import { drawWalkMap } from './walkMap'
 import { SoftwarePreview } from './SoftwarePreview'
 import { BuildingScene, type BuildingView } from './BuildingScene'
+import { wallBoundsPoints } from '../geometry/math'
+
+function CanvasSizeSync() {
+  const { camera, gl } = useThree()
+  const resizeRef = useRef<() => void>(() => {})
+  useLayoutEffect(() => {
+    const host = gl.domElement.closest('.canvas-wrap')
+    if (!host) return
+    const resize = () => {
+      const { width, height } = host.getBoundingClientRect()
+      if (width < 1 || height < 1) return
+      gl.domElement.dataset.sizeSync = `${Math.round(width)}x${Math.round(height)}`
+      gl.setSize(Math.round(width), Math.round(height), false)
+      if (camera instanceof PerspectiveCamera) {
+        camera.aspect = width / height
+        camera.updateProjectionMatrix()
+      }
+    }
+    resizeRef.current = resize
+    resize()
+    const observer = new ResizeObserver(resize)
+    observer.observe(host)
+    return () => { observer.disconnect(); resizeRef.current = () => {} }
+  }, [camera, gl])
+  useFrame(() => resizeRef.current())
+  return null
+}
 
 export function Viewer({ building, activeLevelId, isolateId = null, selection, select, roofShown, setRoofShown,
   walkRequest = 0, presentation = false, onExitPresentation }: {
@@ -58,7 +86,7 @@ export function Viewer({ building, activeLevelId, isolateId = null, selection, s
   }, [walkRequest, walk, toggleWalk])
   const allHeights = building.levels.map(item => item.elevation + (item.floorToFloorHeight || 3))
   const maxHeight = Math.max(5, ...allHeights)
-  const xPoints = building.levels.flatMap(item => item.walls.flatMap(wall => [wall.start.x, wall.end.x]))
+  const xPoints = building.levels.flatMap(item => wallBoundsPoints(item.walls).map(point => point.x))
   const minX = Math.min(0, ...xPoints), maxX = Math.max(8, ...xPoints)
   return <section className="viewer" ref={viewerRef}>
     <div className="viewport-head"><span>{presentation ? 'PRESENT · 3D' : '3D MODEL'}</span><div>
@@ -86,6 +114,7 @@ export function Viewer({ building, activeLevelId, isolateId = null, selection, s
     <div className="canvas-wrap">{webglAvailable ? <Canvas shadows={{ type: PCFShadowMap }}
       dpr={quality === 'high' ? [1, 2] : quality === 'balanced' || quality === 'auto' ? [1, 1.5] : [1, 1]}
       camera={{ fov: 55, near: .03, far: 300 }} gl={{ antialias: true, toneMapping: ACESFilmicToneMapping }}>
+      <CanvasSizeSync />
       <BuildingScene building={building} activeLevelId={activeLevelId} view={buildingView} isolateId={isolateId}
         selection={selection} select={select} walk={walk} top={top} endWalk={endWalk} ceiling={ceiling}
         roofShown={roofShown} sectionHeight={sectionHeight} verticalSection={verticalSection} quality={quality}

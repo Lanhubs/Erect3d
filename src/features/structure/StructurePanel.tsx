@@ -78,7 +78,7 @@ export function StructurePanel({ project, level, select }: { project: Project; l
     setError(''); editProject(copy => { updateStair(copy, id, change); return copy })
   }
   return <section className="structure-panel" aria-label="Structural elements">
-    <button className="structure-toggle" onClick={() => setOpen(value => !value)} aria-expanded={open}>Structure · {level.slabs?.length || 0} slabs · {level.columns?.length || 0} columns · {level.stairs?.length || 0} stairs <span>{open ? '−' : '+'}</span></button>
+    <button className="structure-toggle" onClick={() => setOpen(value => !value)} aria-expanded={open}>Structure · {level.slabs?.length || 0} slabs · {level.columns?.length || 0} columns · {level.stairs?.length || 0} stairs · {level.ramps?.length || 0} ramps · {level.seatingSections?.length || 0} seating zones <span>{open ? '−' : '+'}</span></button>
     {open && <div className="structure-body">
       {error && <div className="inline-error" role="alert">{error}</div>}
       <div className="structure-row"><strong>Floor slabs</strong><button onClick={addSlab} disabled={!level.walls.length || level.locked}>Add from walls</button></div>

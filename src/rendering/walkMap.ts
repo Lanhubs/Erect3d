@@ -1,11 +1,11 @@
 import type { Level } from '../domain/types'
-import { atWall } from '../geometry/math'
+import { atWall, wallBoundsPoints, wallSubpath } from '../geometry/math'
 
 export function drawWalkMap(canvas: HTMLCanvasElement, level: Level, x: number, z: number, yaw: number) {
   const context = canvas.getContext('2d')
   if (!context) return
   const width = canvas.width, height = canvas.height
-  const points = level.walls.flatMap(wall => [wall.start, wall.end])
+  const points = wallBoundsPoints(level.walls)
   const minX = Math.min(x, ...points.map(point => point.x)) - 1
   const maxX = Math.max(x, ...points.map(point => point.x)) + 1
   const minZ = Math.min(z, ...points.map(point => point.z)) - 1
@@ -16,8 +16,9 @@ export function drawWalkMap(canvas: HTMLCanvasElement, level: Level, x: number, 
   context.fillStyle = '#f5f6f2'; context.fillRect(0, 0, width, height)
   context.strokeStyle = '#526057'; context.lineWidth = 3
   for (const wall of level.walls) {
-    context.beginPath(); context.moveTo(px(wall.start.x), py(wall.start.z))
-    context.lineTo(px(wall.end.x), py(wall.end.z)); context.stroke()
+    const path = wallSubpath(wall)
+    context.beginPath(); context.moveTo(px(path[0].x), py(path[0].z))
+    path.slice(1).forEach(point => context.lineTo(px(point.x), py(point.z))); context.stroke()
   }
   context.strokeStyle = '#be945b'; context.lineWidth = 4
   for (const door of level.doors) {

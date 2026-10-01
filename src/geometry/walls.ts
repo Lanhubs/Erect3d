@@ -1,5 +1,5 @@
 import type { Door, Passage, Point, SiteFence, Wall, WindowUnit } from '../domain/types'
-import { atWall, wallLength } from './math'
+import { atWall, distance, wallLength, wallSubpath } from './math'
 
 export type Solid = { start: number; end: number; bottom: number; top: number }
 export type Collider = { a: Point; b: Point; halfWidth: number }
@@ -32,6 +32,16 @@ export function wallRect(wall: Wall, solid: Solid) {
     size: [solid.end - solid.start + .005, solid.top - solid.bottom, wall.thickness] as [number, number, number],
     rotation: -Math.atan2(b.z - a.z, b.x - a.x) }
 }
+export function wallRects(wall: Wall, solid: Solid) {
+  if (!wall.curve) return [wallRect(wall, solid)]
+  const points = wallSubpath(wall, solid.start, solid.end, .35)
+  return points.slice(0, -1).map((a, index) => {
+    const b = points[index + 1]
+    return { center: [(a.x + b.x) / 2, (solid.bottom + solid.top) / 2, (a.z + b.z) / 2] as [number, number, number],
+      size: [distance(a, b) + .005, solid.top - solid.bottom, wall.thickness] as [number, number, number],
+      rotation: -Math.atan2(b.z - a.z, b.x - a.x) }
+  })
+}
 function pointOnSegment(start: Point, end: Point, distance: number): Point {
   const length = Math.hypot(end.x - start.x, end.z - start.z) || 1
   const ratio = Math.max(0, Math.min(1, distance / length))
@@ -63,7 +73,10 @@ export function siteFenceColliders(fence?: SiteFence): Collider[] {
 export function buildColliders(walls: Wall[], doors: Door[], windows: WindowUnit[], openDoors?: ReadonlySet<string>, passages: Passage[] = [], siteFence?: SiteFence): Collider[] {
   const structure = walls.flatMap(wall => wallSolids(wall, doors, windows, passages)
     .filter(solid => solid.bottom < 1.1)
-    .map(solid => ({ a: atWall(wall, solid.start), b: atWall(wall, solid.end), halfWidth: wall.thickness / 2 })))
+    .flatMap(solid => {
+      const points = wallSubpath(wall, solid.start, solid.end, .35)
+      return points.slice(0, -1).map((a, index) => ({ a, b: points[index + 1], halfWidth: wall.thickness / 2 }))
+    }))
   const leaves = !openDoors ? [] : doors.filter(door => !openDoors.has(door.id)).flatMap(door => {
     const wall = walls.find(item => item.id === door.wallId)
     return wall ? [{ a: atWall(wall, door.offset), b: atWall(wall, door.offset + door.width), halfWidth: .04 }] : []

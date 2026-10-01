@@ -3,7 +3,7 @@ import { Dashboard } from './features/projects/Dashboard'
 import { Workspace } from './app/Workspace'
 import { fixtureProject } from './domain/fixture'
 import type { Project } from './domain/types'
-import { levelOf } from './domain/types'
+import { levelOf, uid } from './domain/types'
 import { deleteProject, listProjects, loadProject, saveProject } from './state/database'
 import { useProject } from './state/project'
 import { LandingPage } from './features/landing/LandingPage'
@@ -79,6 +79,16 @@ function App() {
     setProject(next)
     navigateTo(`/${next.id}`)
   }
+  const openSample = async (source: Project, duplicate: boolean) => {
+    const next = structuredClone(source)
+    next.id = uid('project')
+    next.name = duplicate ? `${source.name} copy` : source.name
+    next.modified = Date.now()
+    await saveProject(next)
+    setProjects(items => [...items, next])
+    setProject(next)
+    navigateTo(`/${next.id}`)
+  }
   const remove = async (id: string) => {
     const target = projects.find(item => item.id === id)
     if (!target) return
@@ -114,8 +124,8 @@ function App() {
   if (error) return <div className="fatal-error">{error}</div>
   if (project && route === `/${project.id}`) return <Workspace project={project} back={back} />
   if (route === '/') return <LandingPage projects={projects} onStartDesigning={() => navigateTo('/projects')} onOpenWorkspace={openWorkspace} />
-  if (route === '/projects') return <Dashboard projects={projects} open={open} create={create} remove={remove} />
+  if (route === '/projects') return <Dashboard projects={projects} open={open} openSample={openSample} create={create} remove={remove} />
   if (projectId) return <div className="fatal-error">Loading project…</div>
-  return <Dashboard projects={projects} open={open} create={create} remove={remove} />
+  return <Dashboard projects={projects} open={open} openSample={openSample} create={create} remove={remove} />
 }
 export default App

@@ -1,12 +1,12 @@
 import { create } from 'zustand'
-import type { Door, Passage, Project, Roof, Room, Selection, Wall, WindowUnit } from '../domain/types'
+import type { Door, Passage, Project, Ramp, Roof, Room, SeatingSection, Selection, Wall, WindowUnit } from '../domain/types'
 import { activeLevel } from '../domain/types'
 import { normalizeProject, refreshAutoSlabs } from '../domain/levels'
 
-export type Tool = 'select' | 'pan' | 'wall' | 'door' | 'window' | 'room' | 'measure' | 'calibrate'
+export type Tool = 'select' | 'pan' | 'wall' | 'curve' | 'ramp' | 'door' | 'window' | 'room' | 'measure' | 'calibrate'
 export type View = 'plan' | 'split' | 'model'
 export type GridSettings = { visible: boolean; snap: boolean; step: number; angle: number; length: number }
-type Model = { walls: Wall[]; doors: Door[]; windows: WindowUnit[]; passages: Passage[]; rooms: Room[]; roof?: Roof }
+type Model = { walls: Wall[]; doors: Door[]; windows: WindowUnit[]; passages: Passage[]; rooms: Room[]; ramps: Ramp[]; seatingSections: SeatingSection[]; roof?: Roof }
 type State = {
   project: Project | null; activeLevelId: string | null; selection: Selection; tool: Tool; view: View; grid: GridSettings
   history: Project[]; future: Project[]; dirty: boolean; version: number
@@ -45,7 +45,8 @@ export const useProject = create<State>((set, get) => ({
     const level = activeLevel(next, state.activeLevelId)
     if (level.locked) return
     const before: Model = { walls: level.walls, doors: level.doors, windows: level.windows,
-      passages: level.passages || [], rooms: level.rooms, roof: level.roof }
+      passages: level.passages || [], rooms: level.rooms, ramps: level.ramps || [],
+      seatingSections: level.seatingSections || [], roof: level.roof }
     Object.assign(level, change(before))
     if (level.roof !== before.roof && level.roof) next.buildings[0].roof = level.roof
     if (level.walls !== before.walls) refreshAutoSlabs(level)

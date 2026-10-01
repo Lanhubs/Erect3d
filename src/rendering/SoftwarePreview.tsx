@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Level, Selection } from '../domain/types'
 import { defaultRoof } from '../domain/types'
-import { atWall } from '../geometry/math'
+import { atWall, wallBoundsPoints, wallSubpath } from '../geometry/math'
 import { roofLayout, type Vertex } from '../geometry/roof'
 import { wallSolids } from '../geometry/walls'
 import { zoomEvent, type ZoomDetail } from '../app/useWorkspaceZoom'
@@ -19,7 +19,7 @@ export function SoftwarePreview({ level, selection, select, roofShown, top, sect
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const drag = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null)
   const geometry = useMemo(() => {
-    const points = level.walls.flatMap(w => [w.start, w.end])
+    const points = wallBoundsPoints(level.walls)
     const minX = points.length ? Math.min(...points.map(p => p.x)) : 0
     const maxX = points.length ? Math.max(...points.map(p => p.x)) : 8
     const minZ = points.length ? Math.min(...points.map(p => p.z)) : 0
@@ -29,21 +29,24 @@ export function SoftwarePreview({ level, selection, select, roofShown, top, sect
       [maxX + .25, 0, maxZ + .25], [minX - .25, 0, maxZ + .25]]
     const faces: Face[] = [{ key: 'slab', vertices: slab, fill: '#bcb9ad', depth: -1000 }]
     for (const wall of level.walls) {
-      const vx = wall.end.x - wall.start.x, vz = wall.end.z - wall.start.z
-      const length = Math.hypot(vx, vz) || 1, nx = -vz / length * wall.thickness / 2, nz = vx / length * wall.thickness / 2
       for (const [i, solid] of wallSolids(wall, level.doors, level.windows, level.passages || []).entries()) {
-        const a = atWall(wall, solid.start), b = atWall(wall, solid.end)
         const high = sectionHeight === null ? solid.top : Math.min(solid.top, sectionHeight)
         if (high <= solid.bottom) continue
-        const base: Vertex[] = [[a.x + nx, solid.bottom, a.z + nz], [b.x + nx, solid.bottom, b.z + nz],
-          [b.x + nx, high, b.z + nz], [a.x + nx, high, a.z + nz]]
-        const cap: Vertex[] = [[a.x + nx, high, a.z + nz], [b.x + nx, high, b.z + nz],
-          [b.x - nx, high, b.z - nz], [a.x - nx, high, a.z - nz]]
         const selected = selection?.kind === 'wall' && selection.id === wall.id
-        faces.push({ key: `${wall.id}-${i}`, vertices: base, fill: selected ? '#c1a875' : wall.color || '#dedbd1',
-          stroke: '#8d8f88', depth: depth(base), select: { kind: 'wall', id: wall.id } })
-        faces.push({ key: `${wall.id}-${i}-cap`, vertices: cap, fill: selected ? '#ddc798' : '#f1efe8',
-          stroke: '#aaa99f', depth: depth(cap) + .001, select: { kind: 'wall', id: wall.id } })
+        const path = wallSubpath(wall, solid.start, solid.end, .35)
+        for (let segment = 0; segment < path.length - 1; segment++) {
+          const a = path[segment], b = path[segment + 1], dx = b.x - a.x, dz = b.z - a.z
+          const segmentLength = Math.hypot(dx, dz) || 1, offsetX = -dz / segmentLength * wall.thickness / 2,
+            offsetZ = dx / segmentLength * wall.thickness / 2
+          const base: Vertex[] = [[a.x + offsetX, solid.bottom, a.z + offsetZ], [b.x + offsetX, solid.bottom, b.z + offsetZ],
+            [b.x + offsetX, high, b.z + offsetZ], [a.x + offsetX, high, a.z + offsetZ]]
+          const cap: Vertex[] = [[a.x + offsetX, high, a.z + offsetZ], [b.x + offsetX, high, b.z + offsetZ],
+            [b.x - offsetX, high, b.z - offsetZ], [a.x - offsetX, high, a.z - offsetZ]]
+          faces.push({ key: `${wall.id}-${i}-${segment}`, vertices: base, fill: selected ? '#c1a875' : wall.color || '#dedbd1',
+            stroke: '#8d8f88', depth: depth(base), select: { kind: 'wall', id: wall.id } })
+          faces.push({ key: `${wall.id}-${i}-${segment}-cap`, vertices: cap, fill: selected ? '#ddc798' : '#f1efe8',
+            stroke: '#aaa99f', depth: depth(cap) + .001, select: { kind: 'wall', id: wall.id } })
+        }
       }
     }
     for (const door of level.doors) {

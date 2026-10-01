@@ -2,7 +2,7 @@ import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import type { Group } from 'three'
 import type { Door, Selection, Wall } from '../domain/types'
-import { atWall } from '../geometry/math'
+import { atWall, wallTangentAngle } from '../geometry/math'
 
 function Leaf({ door, width, hinge, pivot, selected, open }: {
   door: Door; width: number; hinge: 'left' | 'right'; pivot: number; selected: boolean; open: boolean
@@ -41,7 +41,7 @@ export function DoorMesh({ door, wall, selection, select, open }: {
   door: Door; wall: Wall; selection: Selection; select: (selection: Selection) => void; open: boolean
 }) {
   const center = atWall(wall, door.offset + door.width / 2)
-  const angle = -Math.atan2(wall.end.z - wall.start.z, wall.end.x - wall.start.x)
+  const angle = -wallTangentAngle(wall, door.offset + door.width / 2)
   const selected = selection?.kind === 'door' && selection.id === door.id
   const leaves = door.style === 'double'
     ? [{ width: (door.width - .12) / 2, hinge: 'left' as const, pivot: -door.width / 2 + .05 },

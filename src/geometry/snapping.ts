@@ -1,5 +1,5 @@
 import type { Point, Wall } from '../domain/types'
-import { distance, nearestPoint, snapWallEnd } from './math'
+import { atWall, distance, nearestPoint, snapWallEnd, wallLength } from './math'
 import type { GridSettings } from '../state/project'
 
 export function constrainPoint(point: Point, walls: Wall[], tolerance: number,
@@ -7,7 +7,7 @@ export function constrainPoint(point: Point, walls: Wall[], tolerance: number,
   const endpoint = nearestPoint(point, walls, tolerance)
   if (endpoint !== point) return endpoint
   for (const wall of walls) {
-    const midpoint = { x: (wall.start.x + wall.end.x) / 2, z: (wall.start.z + wall.end.z) / 2 }
+    const midpoint = atWall(wall, wallLength(wall) / 2)
     if (distance(point, midpoint) < tolerance) return midpoint
   }
   let result = start ? snapWallEnd(start, point, walls, tolerance) : point

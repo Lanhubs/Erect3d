@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import { DoubleSide } from 'three'
 import type { Door, Passage, Selection, Wall, WindowUnit } from '../domain/types'
-import { atWall, wallLength } from '../geometry/math'
-import { wallRect, wallSolids } from '../geometry/walls'
+import { atWall, wallLength, wallTangentAngle } from '../geometry/math'
+import { wallRects, wallSolids } from '../geometry/walls'
 import { materialColor, materialRoughness } from './materials'
 import { wallTexture } from './wallTextures'
 import { DoorMesh } from './DoorMesh'
@@ -14,13 +14,11 @@ export function WallMesh({ wall, doors, windows, passages, selection, select, op
     if (canvas) canvas.style.cursor = active ? 'pointer' : ''
   }
   const solids = useMemo(() => wallSolids(wall, doors, windows, passages), [wall, doors, windows, passages])
-  const angle = -Math.atan2(wall.end.z - wall.start.z, wall.end.x - wall.start.x)
   const len = wallLength(wall)
   const selected = selection?.kind === 'wall' && selection.id === wall.id
   return <group>
     {solids.map((solid, index) => {
-      const rect = wallRect(wall, solid)
-      return <group key={index} onClick={event => { event.stopPropagation(); select({ kind: 'wall', id: wall.id }) }}
+      return wallRects(wall, solid).map((rect, segmentIndex) => <group key={`${index}:${segmentIndex}`} onClick={event => { event.stopPropagation(); select({ kind: 'wall', id: wall.id }) }}
         onPointerOver={event => { event.stopPropagation(); hover(true) }} onPointerOut={() => hover(false)}>
         <mesh position={rect.center} rotation={[0, rect.rotation, 0]} castShadow receiveShadow>
           <boxGeometry args={rect.size} />
@@ -31,13 +29,13 @@ export function WallMesh({ wall, doors, windows, passages, selection, select, op
           <boxGeometry args={[rect.size[0], .09, wall.thickness + .018]} />
           <meshStandardMaterial color="#a4a299" roughness={.76} />
         </mesh>}
-      </group>
+      </group>)
     })}
     {doors.filter(door => door.wallId === wall.id && door.offset < len).map(door =>
       <DoorMesh key={door.id} door={door} wall={wall} selection={selection} select={select} open={openDoors.has(door.id)} />)}
     {passages.filter(item => item.wallId === wall.id).map(item => <group key={item.id}
       position={[atWall(wall, item.offset + item.width / 2).x, item.height / 2, atWall(wall, item.offset + item.width / 2).z]}
-      rotation={[0, angle, 0]} onClick={event => { event.stopPropagation(); select({ kind: 'passage', id: item.id }) }}>
+      rotation={[0, -wallTangentAngle(wall, item.offset + item.width / 2), 0]} onClick={event => { event.stopPropagation(); select({ kind: 'passage', id: item.id }) }}>
       {[-1, 1].map(side => <mesh key={side} position={[side * item.width / 2, 0, 0]}><boxGeometry args={[.06, item.height, wall.thickness + .02]} />
         <meshStandardMaterial color={selection?.id === item.id ? '#b69c6d' : '#a9a79e'} /></mesh>)}
       <mesh position={[0, item.height / 2, 0]}><boxGeometry args={[item.width, .06, wall.thickness + .02]} />
@@ -45,7 +43,8 @@ export function WallMesh({ wall, doors, windows, passages, selection, select, op
     </group>)}
     {windows.filter(item => item.wallId === wall.id).map(item => {
       const center = atWall(wall, item.offset + item.width / 2)
-      return <group key={item.id} position={[center.x, item.sill + item.height / 2, center.z]} rotation={[0, angle, 0]}
+      const windowAngle = -wallTangentAngle(wall, item.offset + item.width / 2)
+      return <group key={item.id} position={[center.x, item.sill + item.height / 2, center.z]} rotation={[0, windowAngle, 0]}
         onClick={event => { event.stopPropagation(); select({ kind: 'window', id: item.id }) }}
         onPointerOver={event => { event.stopPropagation(); hover(true) }} onPointerOut={() => hover(false)}>
         {[-1, 1].map(side => <mesh key={side} position={[side * item.width / 2, 0, 0]}>

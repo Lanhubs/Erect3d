@@ -1,9 +1,11 @@
 import { describe, expect, test } from 'bun:test'
 import { fixtureProject } from '../src/domain/fixture'
 import { levelOf } from '../src/domain/types'
-import { atWall, calibrate, nearestPoint, roomArea, roomPerimeter, segmentIntersection, snapWallEnd, sourceToWorld, wallLength } from '../src/geometry/math'
-import { collides, siteFenceColliders, wallSolids } from '../src/geometry/walls'
+import { atWall, calibrate, nearestPoint, roomArea, roomPerimeter, segmentIntersection, snapWallEnd, sourceToWorld,
+  wallBoundsPoints, wallCurveThroughPoints, wallLength, wallTangentAngle, nearestWallOffset, wallWithEndpoint } from '../src/geometry/math'
+import { buildColliders, collides, collidesPrepared, siteFenceColliders, wallSolids } from '../src/geometry/walls'
 import { generateSiteFence } from '../src/geometry/site'
+import { rampHeightAt } from '../src/geometry/ramps'
 import { walkStart } from '../src/geometry/walk'
 import { formatArea, formatDistance, toMetres } from '../src/geometry/units'
 
@@ -13,6 +15,25 @@ describe('architectural units and openings', () => {
     const north = level.walls[0]
     expect(wallLength(north)).toBe(12)
     expect(atWall(north, 3)).toEqual({ x: 3, z: 0 })
+  })
+  test('curved walls remain one semantic wall with arc-length offsets', () => {
+    const curve = wallCurveThroughPoints({ x: 5, z: 0 }, { x: 0, z: 5 }, { x: -5, z: 0 })!
+    const wall = { ...level.walls[0], start: { x: 5, z: 0 }, end: { x: -5, z: 0 }, curve }
+    expect(wallLength(wall)).toBeCloseTo(5 * Math.PI)
+    expect(atWall(wall, wallLength(wall) / 2).x).toBeCloseTo(0)
+    expect(atWall(wall, wallLength(wall) / 2).z).toBeCloseTo(5)
+    expect(wallTangentAngle(wall, wallLength(wall) / 2)).toBeCloseTo(Math.PI)
+    expect(nearestWallOffset(wall, { x: 0, z: 4.8 }).offset).toBeCloseTo(wallLength(wall) / 2, 1)
+    expect(Math.max(...wallBoundsPoints([wall]).map(point => point.z))).toBeGreaterThan(4.99)
+    const edited = wallWithEndpoint(wall, 'end', { x: -4, z: 3 })
+    expect(edited.end.x).toBeCloseTo(-4)
+    expect(edited.end.z).toBeCloseTo(3)
+    expect(edited.curve?.radius).toBeCloseTo(5)
+    const colliders = buildColliders([wall], [], [])
+    expect(colliders.length).toBeGreaterThan(1)
+    expect(collidesPrepared({ x: 0, z: 5 }, .08, colliders)).toBe(true)
+    expect(collidesPrepared({ x: 0, z: 5.6 }, .08, colliders)).toBe(false)
+    expect(wallCurveThroughPoints({ x: 0, z: 0 }, { x: 1, z: 1 }, { x: 2, z: 2 })).toBeNull()
   })
   test('calibrates image pixels to world coordinates', () => {
     const scale = calibrate({ x: 100, z: 50 }, { x: 500, z: 50 }, 4)
@@ -41,6 +62,13 @@ describe('architectural units and openings', () => {
     expect(toMetres(450, 'cm')).toBe(4.5)
     expect(formatDistance(2.7, 'mm')).toBe('2700 mm')
     expect(formatArea(4, 'cm')).toBe('40000 cm²')
+  })
+  test('ramps interpolate elevation only across their walkable width', () => {
+    const ramp = { id: 'r1', start: { x: 0, z: 0 }, end: { x: 4, z: 0 }, width: 2, thickness: .15,
+      startElevation: 0, endElevation: 1, material: 'reinforced-concrete' as const }
+    expect(rampHeightAt(ramp, { x: 2, z: .4 })).toBeCloseTo(.5)
+    expect(rampHeightAt(ramp, { x: 2, z: 1.1 })).toBeNull()
+    expect(rampHeightAt(ramp, { x: 4.1, z: 0 })).toBeNull()
   })
   test('segments a door gap and leaves it walkable', () => {
     const wall = level.walls[2]

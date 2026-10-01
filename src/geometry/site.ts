@@ -1,4 +1,5 @@
 import { uid, type Level, type Point, type SiteFence } from '../domain/types'
+import { wallBoundsPoints } from './math'
 
 export type SiteSetbacks = { front: number; rear: number; left: number; right: number }
 const defaultSetbacks: SiteSetbacks = { front: 4, rear: 3, left: 3, right: 3 }
@@ -24,8 +25,9 @@ export function groundFootprint(level: Level): Point[] {
   const edges = exterior.length ? exterior : level.walls
   if (!edges.length) return []
   const halfThickness = Math.max(0, ...edges.map(wall => wall.thickness / 2))
-  const xs = edges.flatMap(wall => [wall.start.x, wall.end.x])
-  const zs = edges.flatMap(wall => [wall.start.z, wall.end.z])
+  const points = wallBoundsPoints(edges)
+  const xs = points.map(point => point.x)
+  const zs = points.map(point => point.z)
   const minX = Math.min(...xs) - halfThickness, maxX = Math.max(...xs) + halfThickness
   const minZ = Math.min(...zs) - halfThickness, maxZ = Math.max(...zs) + halfThickness
   return [{ x: minX, z: minZ }, { x: maxX, z: minZ }, { x: maxX, z: maxZ }, { x: minX, z: maxZ }]

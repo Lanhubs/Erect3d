@@ -4,6 +4,7 @@ import { Euler, Vector3 } from 'three'
 import type { Level, SiteFence } from '../domain/types'
 import { nearbyDoor, walkStart } from '../geometry/walk'
 import { stairHeightAt } from '../geometry/stairs'
+import { rampHeightAt } from '../geometry/ramps'
 import { buildColliders, collidesPrepared, siteFenceColliders, type Collider } from '../geometry/walls'
 
 type Props = { levels: Level[]; startLevelId: string; active: boolean; onUnlock: () => void; openDoors: ReadonlySet<string>
@@ -20,6 +21,7 @@ export function WalkController({ levels, startLevelId, active, onUnlock, openDoo
     item.doors.map(door => [door.id, door.wallId, door.offset, door.width, door.height]),
     item.windows.map(window => [window.id, window.wallId, window.offset, window.width, window.sill, window.height]),
     item.passages?.map(passage => [passage.id, passage.wallId, passage.offset, passage.width, passage.height])]),
+    levels.map(item => item.ramps?.map(ramp => [ramp.id, ramp.start, ramp.end, ramp.width, ramp.startElevation, ramp.endElevation])),
   [...openDoors].sort(), siteFence])
   const colliderCache = useRef<{ signature: string; colliders: Map<string, Collider[]> } | null>(null)
   if (colliderCache.current?.signature !== signature) colliderCache.current = { signature, colliders: new Map(levels.map(item => [item.id,
@@ -81,8 +83,14 @@ export function WalkController({ levels, startLevelId, active, onUnlock, openDoo
       return from && height !== null ? { stair, elevation: from.elevation + height } : null
     }).filter(item => item !== null)
     const previousFloor = camera.position.y - 1.65
+    const rampFloor = levels.flatMap(item => (item.ramps || []).map(ramp => {
+      const height = rampHeightAt(ramp, point)
+      return height === null ? null : item.elevation + height
+    })).filter((height): height is number => height !== null)
+      .sort((a, b) => Math.abs(a - previousFloor) - Math.abs(b - previousFloor))[0]
     const stair = candidates.find(item => Math.abs(item.elevation - previousFloor) < .5)
-    let floor = stair?.elevation ?? currentLevel.current.elevation
+    let floor = rampFloor !== undefined && Math.abs(rampFloor - previousFloor) < 1.5
+      ? rampFloor : stair?.elevation ?? currentLevel.current.elevation
     if (!stair) {
       const landing = levels.filter(item => Math.abs(item.elevation - previousFloor) < .45)
         .sort((a, b) => Math.abs(a.elevation - previousFloor) - Math.abs(b.elevation - previousFloor))[0]

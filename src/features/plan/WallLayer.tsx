@@ -1,6 +1,6 @@
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import type { Point, Selection, Wall } from '../../domain/types'
-import { wallLength } from '../../geometry/math'
+import { atWall, wallLength, wallSubpath, wallTangentAngle } from '../../geometry/math'
 import { formatDistance, type Unit } from '../../geometry/units'
 
 export type WallDrag = { wallId: string; kind: 'end'; end: 'start' | 'end'; point: Point } | {
@@ -16,6 +16,14 @@ function WallDimension({ wall, unit }: { wall: Wall; unit: Unit }) {
   const dx = wall.end.x - wall.start.x, dz = wall.end.z - wall.start.z
   const length = Math.hypot(dx, dz)
   if (length < .1) return null
+  if (wall.curve) {
+    const midpoint = atWall(wall, wallLength(wall) / 2), angle = wallTangentAngle(wall, wallLength(wall) / 2) * 180 / Math.PI
+    return <g className="wall-dimension" pointerEvents="none">
+      <text x={midpoint.x} y={midpoint.z - .16} textAnchor="middle" transform={`rotate(${angle} ${midpoint.x} ${midpoint.z})`}>
+        {formatDistance(wallLength(wall), unit)}
+      </text>
+    </g>
+  }
   const nx = -dz / length * .42, nz = dx / length * .42
   const a = { x: wall.start.x + nx, z: wall.start.z + nz }
   const b = { x: wall.end.x + nx, z: wall.end.z + nz }
@@ -40,9 +48,12 @@ export function WallLayer({ walls, selection, drag, tool, unit, onWallDown, onEn
       : { ...item, start: { x: drag.start.x + drag.delta.x, z: drag.start.z + drag.delta.z },
         end: { x: drag.end.x + drag.delta.x, z: drag.end.z + drag.delta.z } }
     const selected = selection?.kind === 'wall' && selection.id === wall.id
+    const curvePoints = wall.curve ? wallSubpath(wall).map(point => `${point.x},${point.z}`).join(' ') : undefined
     return <g key={wall.id} className="plan-entity" onPointerDown={event => { if (tool === 'select') onWallDown(event, wall) }}>
-      <line x1={wall.start.x} y1={wall.start.z} x2={wall.end.x} y2={wall.end.z}
+      {wall.curve ? <polyline points={curvePoints} fill="none" stroke={selected ? '#b28b4a' : '#36403c'}
+        strokeWidth={wall.thickness} strokeLinecap="round" strokeLinejoin="round" /> : <line x1={wall.start.x} y1={wall.start.z} x2={wall.end.x} y2={wall.end.z}
         stroke={selected ? '#b28b4a' : '#36403c'} strokeWidth={wall.thickness} strokeLinecap="square" />
+      }
       {selected && <WallDimension wall={wall} unit={unit} />}
       {selected && (['start', 'end'] as const).map(end => <circle key={end}
         cx={wall[end].x} cy={wall[end].z} r=".12" fill="#f7f7f3" stroke="#a67c39" strokeWidth=".04"

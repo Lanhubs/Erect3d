@@ -94,6 +94,18 @@
 .roof-controls input[type=color] { padding: 2px; }
 .roof-controls input[type=range] { width: 100%; accent-color: #9a7047; }
 .roof-controls p { margin: 0; color: #849084; font-size: 10px; line-height: 1.5; }
+.roof-section-list { padding: 10px 15px 16px; display: grid; gap: 10px; }
+.roof-section-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #49564b; font-size: 11px; }
+.roof-section-toolbar button,.roof-section-remove { border: 1px solid #c4ccc1; background: #fff; color: #3c493f; padding: 6px 8px; font-size: 10px; }
+.roof-section-card { display: grid; gap: 5px; padding: 8px; border: 1px solid #d6dcd4; background: #fbfcf9; }
+.roof-section-range { display: grid; gap: 4px; color: #536055; font-size: 10px; }
+.roof-section-range input { width: 100%; accent-color: #9a7047; }
+.roof-section-outline { padding-top: 5px; border-top: 1px solid #e0e5de; color: #637068; font-size: 10px; }
+.roof-section-outline summary { cursor: pointer; }
+.roof-section-point { display: grid; grid-template-columns: 24px 1fr 1fr; gap: 5px; align-items: center; padding: 3px 0; }
+.roof-section-point label { display: grid; gap: 2px; }
+.roof-section-point input { min-width: 0; width: 100%; padding: 4px; border: 1px solid #c9d1c6; background: #fff; font-size: 10px; }
+.roof-section-list p { margin: 0; color: #849084; font-size: 10px; line-height: 1.5; }
 .site-controls { padding-bottom: 10px; border-bottom: 1px solid #d6dcd4; }
 .site-controls .panel-title { padding-top: 14px; }
 .site-toggle { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; color: #36443a; font-size: 12px; }
