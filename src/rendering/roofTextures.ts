@@ -11,8 +11,9 @@ export function roofTexture(material: RoofMaterial) {
   const ctx = canvas.getContext('2d')!
   ctx.fillStyle = material === 'concrete' ? '#e5e4e1' : '#e7e9e9'
   ctx.fillRect(0, 0, 256, 256)
-  if (material === 'standing-seam') {
-    for (let x = 0; x < 256; x += 64) {
+  if (material === 'standing-seam' || material === 'long-span-metal') {
+    const step = material === 'long-span-metal' ? 42 : 64
+    for (let x = 0; x < 256; x += step) {
       ctx.fillStyle = '#a4aeb0'; ctx.fillRect(x, 0, 4, 256)
       ctx.fillStyle = '#ffffff'; ctx.fillRect(x + 4, 0, 2, 256)
       ctx.fillStyle = '#d1d7d8'; ctx.fillRect(x + 6, 0, 7, 256)
@@ -24,13 +25,17 @@ export function roofTexture(material: RoofMaterial) {
       gradient.addColorStop(.7, '#d0d8d9'); gradient.addColorStop(1, '#9ea9ac')
       ctx.fillStyle = gradient; ctx.fillRect(x, 0, 18, 256)
     }
-  } else if (material === 'concrete-tile') {
-    for (let row = 0; row < 8; row++) for (let column = -1; column < 9; column++) {
-      const x = column * 38 + (row % 2) * 19, y = row * 32
-      ctx.fillStyle = row % 2 ? '#dadbdd' : '#e8e8e7'
-      ctx.fillRect(x + 2, y + 2, 35, 29)
-      ctx.strokeStyle = '#9b9f9f'; ctx.lineWidth = 2; ctx.strokeRect(x + 1, y + 1, 36, 30)
-      ctx.fillStyle = 'rgba(255,255,255,.42)'; ctx.fillRect(x + 4, y + 4, 30, 2)
+  } else if (material === 'concrete-tile' || material === 'clay-tile' || material === 'stone-coated-metal' || material === 'shingle') {
+    const shingle = material === 'shingle'
+    const width = shingle ? 29 : 38, height = shingle ? 24 : 32
+    for (let row = 0; row < Math.ceil(256 / height); row++) for (let column = -1; column < Math.ceil(256 / width) + 1; column++) {
+      const x = column * width + (row % 2) * width / 2, y = row * height
+      ctx.fillStyle = material === 'clay-tile' ? row % 2 ? '#ded0c4' : '#eee0d3'
+        : material === 'stone-coated-metal' ? row % 2 ? '#c5c4bf' : '#dddcd7'
+          : shingle ? row % 2 ? '#c4c5c4' : '#dcddda' : row % 2 ? '#dadbdd' : '#e8e8e7'
+      ctx.fillRect(x + 2, y + 2, width - 3, height - 3)
+      ctx.strokeStyle = '#9b9f9f'; ctx.lineWidth = 1.5; ctx.strokeRect(x + 1, y + 1, width - 2, height - 2)
+      ctx.fillStyle = 'rgba(255,255,255,.25)'; ctx.fillRect(x + 4, y + 4, width - 7, 2)
     }
   } else {
     for (let i = 0; i < 1200; i++) {

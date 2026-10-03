@@ -5,7 +5,20 @@ import { useProject } from '../../state/project'
 
 const materialColors: Record<Roof['material'], string> = {
   concrete: '#b8bbb8', 'standing-seam': '#5e6970', corrugated: '#78858a', 'concrete-tile': '#686c72',
+  'long-span-metal': '#849297', 'stone-coated-metal': '#7c7771', 'clay-tile': '#a76e55',
+  shingle: '#777d7b', membrane: '#7c8586', glass: '#a6c5ca',
 }
+const roofShapes: Array<[Roof['shape'], string]> = [
+  ['hidden', 'Flat'], ['gable', 'Gable'], ['hip', 'Hip'], ['shed', 'Shed'],
+  ['cross-gable', 'Cross-gable'], ['cross-hip', 'Cross-hip'], ['mansard', 'Mansard'],
+  ['butterfly', 'Butterfly'], ['terrace', 'Roof terrace'],
+]
+const roofMaterials: Array<[Roof['material'], string]> = [
+  ['concrete', 'Smooth concrete'], ['membrane', 'Flat roof membrane'], ['standing-seam', 'Standing-seam aluminium'],
+  ['long-span-metal', 'Long-span metal sheet'], ['corrugated', 'Corrugated aluminium'],
+  ['stone-coated-metal', 'Stone-coated metal'], ['clay-tile', 'Clay tile'],
+  ['concrete-tile', 'Concrete roof tile'], ['shingle', 'Shingles'], ['glass', 'Glass canopy'],
+]
 
 export function RoofControls({ level }: { level: Level }) {
   const editProject = useProject(state => state.editProject)
@@ -27,6 +40,7 @@ export function RoofControls({ level }: { level: Level }) {
     const next = pieces.map((footprint, index): RoofSection => ({
       id: uid('roof-section'), name: `${section?.name || 'Main roof'} ${index ? 'B' : 'A'}`,
       levelId: targetLevel.id, footprint, topHeight: section?.topHeight || Math.max(2.7, ...targetLevel.walls.map(wall => wall.height)),
+      framingSpacing: section?.framingSpacing,
       roof: { ...baseRoof, overhang: Math.min(.15, baseRoof.overhang) },
     }))
     editProject(copy => {
@@ -54,10 +68,7 @@ export function RoofControls({ level }: { level: Level }) {
           const shape = event.target.value as Roof['shape']
           update({ shape, pitch: shape === 'shed' ? Math.min(roof.pitch, 12) : roof.pitch })
         }}>
-          <option value="hidden">Hidden flat roof</option>
-          <option value="gable">Traditional gable</option>
-          <option value="hip">Pitched hip</option>
-          <option value="shed">Exposed mono-pitch</option>
+          {roofShapes.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
         </select>
       </label>
       <label>Covering
@@ -65,10 +76,7 @@ export function RoofControls({ level }: { level: Level }) {
           const material = event.target.value as Roof['material']
           update({ material, color: materialColors[material] })
         }}>
-          <option value="concrete">Smooth concrete</option>
-          <option value="standing-seam">Standing-seam aluminium</option>
-          <option value="corrugated">Corrugated aluminium</option>
-          <option value="concrete-tile">Concrete roof tile</option>
+          {roofMaterials.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
         </select>
       </label>
       <label>Colour
@@ -82,6 +90,14 @@ export function RoofControls({ level }: { level: Level }) {
         <input aria-label="Roof overhang" type="range" min="0" max="1.2" step="0.05" value={roof.overhang}
           onChange={event => update({ overhang: Number(event.target.value) })} />
       </label>
+      <label>Ridge direction<select aria-label="Ridge direction" value={roof.ridgeDirection || 'auto'}
+        onChange={event => update({ ridgeDirection: event.target.value as Roof['ridgeDirection'] })}>
+        <option value="auto">Automatic</option><option value="x">Along X</option><option value="z">Along Z</option>
+      </select></label>
+      <label>Fascia depth · m<input aria-label="Fascia depth" type="number" min="0" max=".8" step=".05"
+        value={roof.fasciaDepth ?? .18} onChange={event => update({ fasciaDepth: Math.max(0, Number(event.target.value)) })} /></label>
+      <label>Roof elevation · m<input aria-label="Roof elevation" type="number" min="-1" max="6" step=".1"
+        value={roof.elevationOffset || 0} onChange={event => update({ elevationOffset: Number(event.target.value) })} /></label>
       <p>Use Hide roof in 3D to inspect rooms and walls.</p>
       <button type="button" className="inspector-action" disabled={!building || !topLevel(building).walls.length}
         onClick={() => splitSection()}>Split into roof sections</button>
@@ -94,18 +110,21 @@ export function RoofControls({ level }: { level: Level }) {
           onBlur={event => updateSection(section.id, { name: event.target.value })} /></label>
         <label className="inspector-field"><span>Form</span><select value={section.roof.shape}
           onChange={event => updateSectionRoof(section.id, { shape: event.target.value as Roof['shape'] })}>
-          <option value="hidden">Flat</option><option value="gable">Gable</option><option value="hip">Hip</option><option value="shed">Shed</option>
+          {roofShapes.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
         </select></label>
         <label className="inspector-field"><span>Material</span><select value={section.roof.material}
           onChange={event => updateSectionRoof(section.id, { material: event.target.value as Roof['material'] })}>
-          <option value="concrete">Concrete</option><option value="standing-seam">Standing seam</option>
-          <option value="corrugated">Corrugated</option><option value="concrete-tile">Concrete tile</option>
+          {roofMaterials.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
         </select></label>
         <label className="inspector-field"><span>Color</span><input type="color" value={section.roof.color}
           onChange={event => updateSectionRoof(section.id, { color: event.target.value })} /></label>
         <label className="inspector-field"><span>Top height · m</span><input type="number" min="2" step="0.1"
           value={section.topHeight || 3} onChange={event => updateSection(section.id,
             { topHeight: Math.max(2, Number(event.target.value)) })} /></label>
+        {section.roof.shape === 'gable' && <label className="inspector-field"><span>Truss spacing · m (0 = none)</span>
+          <input type="number" min="0" max="24" step="0.5" value={section.framingSpacing || 0}
+            onChange={event => updateSection(section.id, { framingSpacing: Math.max(0, Number(event.target.value)) })} />
+        </label>}
         {section.roof.shape !== 'hidden' && <label className="roof-section-range">Pitch · {section.roof.pitch}°
           <input type="range" min={section.roof.shape === 'shed' ? 3 : 8} max={section.roof.shape === 'shed' ? 24 : 48}
             value={section.roof.pitch} onChange={event => updateSectionRoof(section.id, { pitch: Number(event.target.value) })} />
@@ -114,6 +133,13 @@ export function RoofControls({ level }: { level: Level }) {
           <input type="range" min="0" max="1.2" step="0.05" value={section.roof.overhang}
             onChange={event => updateSectionRoof(section.id, { overhang: Number(event.target.value) })} />
         </label>
+        <label className="inspector-field"><span>Ridge direction</span><select value={section.roof.ridgeDirection || 'auto'}
+          onChange={event => updateSectionRoof(section.id, { ridgeDirection: event.target.value as Roof['ridgeDirection'] })}>
+          <option value="auto">Automatic</option><option value="x">Along X</option><option value="z">Along Z</option>
+        </select></label>
+        <label className="inspector-field"><span>Fascia · m</span><input type="number" min="0" max=".8" step=".05"
+          value={section.roof.fasciaDepth ?? .18} onChange={event => updateSectionRoof(section.id,
+            { fasciaDepth: Math.max(0, Number(event.target.value)) })} /></label>
         <details className="roof-section-outline"><summary>Footprint · {section.footprint.length} points</summary>
           {section.footprint.map((point, index) => <div className="roof-section-point" key={index}>
             <span>P{index + 1}</span>{(['x','z'] as const).map(axis => <label key={axis}>{axis.toUpperCase()}

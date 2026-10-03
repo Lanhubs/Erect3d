@@ -21,11 +21,17 @@ export type Stair = { id: string; fromLevelId: string; toLevelId: string; start:
 export type Ramp = { id: string; start: Point; end: Point; width: number; thickness: number;
   startElevation: number; endElevation: number; material: SlabMaterial }
 export type SeatingSection = { id: string; name: string; start: Point; end: Point; outward: Point; rows: number;
-  seatsPerRow: number; rowDepth: number; rowRise: number; baseElevation: number; seatColor: string }
-export type RoofShape = 'hidden' | 'gable' | 'hip' | 'shed'
-export type RoofMaterial = 'concrete' | 'standing-seam' | 'corrugated' | 'concrete-tile'
-export type Roof = { shape: RoofShape; material: RoofMaterial; color: string; pitch: number; overhang: number }
-export type RoofSection = { id: string; name: string; levelId: string; footprint: Point[]; topHeight?: number; roof: Roof }
+  seatsPerRow: number; rowDepth: number; rowRise: number; baseElevation: number; seatColor: string; aisle?: boolean }
+export type ArchitecturalDetail = { id: string; name: string; kind: 'railing' | 'screen' | 'fin' | 'canopy' | 'parapet' | 'pergola' | 'arch';
+  start: Point; end: Point; baseElevation: number; height: number; depth: number; spacing: number;
+  material: 'concrete' | 'steel' | 'timber' | 'glass'; color?: string }
+export type RoofShape = 'hidden' | 'gable' | 'hip' | 'shed' | 'mansard' | 'butterfly' | 'terrace' | 'cross-gable' | 'cross-hip'
+export type RoofMaterial = 'concrete' | 'standing-seam' | 'corrugated' | 'concrete-tile' | 'long-span-metal'
+  | 'stone-coated-metal' | 'clay-tile' | 'shingle' | 'membrane' | 'glass'
+export type Roof = { shape: RoofShape; material: RoofMaterial; color: string; pitch: number; overhang: number;
+  ridgeDirection?: 'auto' | 'x' | 'z'; fasciaDepth?: number; elevationOffset?: number }
+export type RoofSection = { id: string; name: string; levelId: string; footprint: Point[]; topHeight?: number;
+  framingSpacing?: number; roof: Roof }
 export const defaultRoof: Roof = { shape: 'hip', material: 'standing-seam', color: '#5e6970', pitch: 24, overhang: .45 }
 export type FenceMaterial = 'timber' | 'metal' | 'concrete' | 'brick'
 export type SiteFenceGate = { id: string; kind: 'pedestrian' | 'vehicle'; segmentId: string; offset: number; width: number; height: number; material?: FenceMaterial; color?: string }
@@ -35,13 +41,14 @@ export type SiteFence = { id: string; name: string; height: number; thickness: n
 export type Level = { id: string; name: string; elevation: number; floorToFloorHeight?: number; visible?: boolean; locked?: boolean;
   walls: Wall[]; doors: Door[]; windows: WindowUnit[]; passages?: Passage[]; rooms: Room[]; slabThickness: number;
   slabs?: Slab[]; autoSlab?: boolean; columns?: Column[]; stairs?: Stair[]; ramps?: Ramp[]; seatingSections?: SeatingSection[];
+  details?: ArchitecturalDetail[];
   sourceId?: string; calibration?: Calibration; alignment?: Point; roof?: Roof }
 export type Building = { id: string; name: string; levels: Level[]; roof?: Roof; roofSections?: RoofSection[]; siteFence?: SiteFence }
 export type SourceDocument = { id: string; name: string; mime: string; originalBytes: number; width: number; height: number; page?: number; pages?: number }
 export type Calibration = { a: Point; b: Point; knownMetres: number; metresPerPixel: number;
   method?: 'auto' | 'manual'; basisPixels?: number }
 export type Project = { id: string; name: string; modified: number; buildings: Building[]; sources: SourceDocument[]; calibration?: Calibration; units: 'm' | 'cm' | 'mm' }
-export type EntityKind = 'wall' | 'door' | 'window' | 'passage' | 'room' | 'slab' | 'column' | 'stair' | 'ramp' | 'seating'
+export type EntityKind = 'wall' | 'door' | 'window' | 'passage' | 'room' | 'slab' | 'column' | 'stair' | 'ramp' | 'seating' | 'detail'
 export type Selection = { kind: EntityKind; id: string } | null
 export const uid = (prefix: string) => `${prefix}_${crypto.randomUUID()}`
 export const levelOf = (project: Project) => project.buildings[0].levels[0]

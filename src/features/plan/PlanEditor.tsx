@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { uid, type Level, type Point, type Ramp, type Selection } from '../../domain/types'
-import { distance, nearestWallOffset, roomArea, wallCurveThroughPoints, wallLength, wallSubpath, wallWithEndpoint } from '../../geometry/math'
+import { distance, nearestWallOffset, wallCurveThroughPoints, wallLength, wallWithEndpoint } from '../../geometry/math'
 import { constrainPoint } from '../../geometry/snapping'
 import { useProject } from '../../state/project'
-import { formatArea, formatDistance, type Unit } from '../../geometry/units'
-import { zoomEvent, type ZoomDetail } from '../../app/useWorkspaceZoom'
+import { type Unit } from '../../geometry/units'
+import { usePlanZoom } from './usePlanZoom'
 import { WallLayer, type WallDrag } from './WallLayer'
 import { PlanSettings } from './PlanSettings'
 import { ReviewLayer, type ReviewView } from './ReviewLayer'
@@ -15,6 +15,9 @@ import { LevelUnderlay } from './LevelUnderlay'
 import { SlabLayer } from './SlabLayer'
 import { RampLayer } from './RampLayer'
 import { SeatingLayer } from './SeatingLayer'
+import { PlanRoomLayer } from './PlanRoomLayer'
+import { PlanDraftLayer } from './PlanDraftLayer'
+import { ArchitecturalDetailLayer } from './ArchitecturalDetailLayer'
 import { fitBounds, type PlanBox, type PlanSourceRect } from './planBounds'
 type Props = {
   level: Level; selection: Selection; select: (selection: Selection) => void; unit: Unit
@@ -34,26 +37,7 @@ export function PlanEditor({ level, selection, select, unit, source, underlay, r
   const [message, setMessage] = useState('')
   const [drag, setDrag] = useState<WallDrag | null>(null)
   const [pan, setPan] = useState<Point | null>(null)
-  useEffect(() => {
-    const node = svg.current, host = node?.parentElement
-    if (!node || !host) return
-    const zoom = (event: Event) => {
-      const { factor, reset, clientX, clientY } = (event as CustomEvent<ZoomDetail>).detail
-      if (reset) { setBox(fitBounds(level, source)); return }
-      const bounds = node.getBoundingClientRect()
-      const point = node.createSVGPoint()
-      point.x = clientX !== undefined && clientX >= bounds.left && clientX <= bounds.right ? clientX : bounds.left + bounds.width / 2
-      point.y = clientY !== undefined && clientY >= bounds.top && clientY <= bounds.bottom ? clientY : bounds.top + bounds.height / 2
-      const anchor = point.matrixTransform(node.getScreenCTM()!.inverse())
-      setBox(current => {
-        const scale = Math.max(.25 / current.width, Math.min(2000 / current.width, factor || 1))
-        return { x: anchor.x + (current.x - anchor.x) * scale, z: anchor.y + (current.z - anchor.y) * scale,
-          width: current.width * scale, height: current.height * scale }
-      })
-    }
-    host.addEventListener(zoomEvent, zoom)
-    return () => host.removeEventListener(zoomEvent, zoom)
-  }, [level, source])
+  usePlanZoom(svg, level, source, setBox)
   const tool = useProject(s => s.tool), edit = useProject(s => s.edit)
   const grid = useProject(s => s.grid), setGrid = useProject(s => s.setGrid)
   const point = (event: { clientX: number; clientY: number }): Point => {
@@ -186,12 +170,7 @@ export function PlanEditor({ level, selection, select, unit, source, underlay, r
         <rect x={-1000} y={-1000} width={2000} height={2000} fill="url(#grid-major)" />
       </g>}
       {review && <ReviewLayer svg={svg} {...review} />}
-      {!review && level.rooms.map(room => <g key={room.id} className="plan-entity" onPointerDown={event => { if (tool === 'select') { event.stopPropagation(); select({ kind: 'room', id: room.id }) } }}>
-        <polygon points={room.polygon.map(p => `${p.x},${p.z}`).join(' ')} fill={selection?.id === room.id ? '#c5ba98' : '#e2dfd4'} fillOpacity={.65} stroke="#bdc1bb" strokeWidth=".02" />
-        <text x={room.polygon.reduce((a, p) => a + p.x, 0) / room.polygon.length}
-          y={room.polygon.reduce((a, p) => a + p.z, 0) / room.polygon.length}
-          textAnchor="middle" className="room-label">{room.name} · {formatArea(roomArea(room), unit)}</text>
-      </g>)}
+      {!review && <PlanRoomLayer rooms={level.rooms} selection={selection} select={select} tool={tool} unit={unit} />}
       {!review && <WallLayer walls={level.walls} selection={selection} drag={drag} tool={tool} unit={unit}
         onWallDown={(event, wall) => {
           event.stopPropagation(); select({ kind: 'wall', id: wall.id })
@@ -205,27 +184,10 @@ export function PlanEditor({ level, selection, select, unit, source, underlay, r
         }} />}
       {!review && <RampLayer ramps={level.ramps || []} selection={selection} select={select} tool={tool} />}
       {!review && <SeatingLayer sections={level.seatingSections || []} selection={selection} select={select} tool={tool} />}
+      {!review && <ArchitecturalDetailLayer details={level.details || []} selection={selection} select={select} tool={tool} />}
       {!review && <OpeningLayer svg={svg} level={level} selection={selection} select={select} tool={tool} />}
-      {draft.length > 0 && cursor && <polyline points={[...draft, cursor].map(p => `${p.x},${p.z}`).join(' ')} fill="none" stroke="#b28b4a" strokeWidth=".045" strokeDasharray=".14 .09" />}
-      {tool === 'curve' && curveDraft.length > 0 && cursor && <>
-        {curveDraft.length === 1 ? <line x1={curveDraft[0].x} y1={curveDraft[0].z} x2={cursor.x} y2={cursor.z}
-          stroke="#b28b4a" strokeWidth=".035" strokeDasharray=".12 .08" /> : (() => {
-          const curve = wallCurveThroughPoints(curveDraft[0], curveDraft[1], cursor)
-          const points = curve ? wallSubpath({ id: 'preview', start: curveDraft[0], end: cursor, curve,
-            thickness: .1, height: 2.8, material: 'plaster' }, 0, undefined, .2) : []
-          return points.length ? <polyline points={points.map(point => `${point.x},${point.z}`).join(' ')}
-            fill="none" stroke="#b28b4a" strokeWidth=".045" strokeDasharray=".14 .09" /> : null
-        })()}
-      </>}
-      {tool === 'ramp' && rampDraft.length > 0 && cursor && <line x1={rampDraft[0].x} y1={rampDraft[0].z}
-        x2={cursor.x} y2={cursor.z} stroke="#a96f30" strokeWidth="1.2" strokeOpacity=".5" strokeDasharray=".2 .12" />}
-      {snapGuide && <circle cx={snapGuide.x} cy={snapGuide.z} r=".09" fill="none" stroke="#b28b4a" strokeWidth=".035" pointerEvents="none" />}
-      {measure.length === 2 && <g>
-        <line x1={measure[0].x} y1={measure[0].z} x2={measure[1].x} y2={measure[1].z}
-          stroke="#ad7145" strokeWidth=".035" />
-        <text x={(measure[0].x + measure[1].x) / 2} y={(measure[0].z + measure[1].z) / 2 - .12}
-          textAnchor="middle" className="measure-label">{formatDistance(distance(measure[0], measure[1]), unit)}</text>
-      </g>}
+      <PlanDraftLayer tool={tool} draft={draft} curveDraft={curveDraft} rampDraft={rampDraft}
+        cursor={cursor} snapGuide={snapGuide} measure={measure} unit={unit} />
     </svg>
     <div className="viewport-foot">{message || (tool === 'wall' ? 'Click two points to draw · Shift disables snap · Esc cancels'
       : tool === 'curve' ? `Click start, bulge, end · ${curveDraft.length}/2 points · Esc cancels`

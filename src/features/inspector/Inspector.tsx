@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import type { Building, Level, Selection, WallCurve } from '../../domain/types'
-import { uid } from '../../domain/types'
 import { roomArea, roomPerimeter, wallLength } from '../../geometry/math'
 import { resizeWall, rotateWall, splitPosition, splitWall, wallAngle } from '../../geometry/editWall'
 import { useProject } from '../../state/project'
@@ -9,6 +8,8 @@ import { formatArea, formatDistance, toDisplay, toMetres, type Unit } from '../.
 import { RoofControls } from './RoofControls'
 import { validateOpening } from '../../geometry/openingValidation'
 import { StructureInspector } from './StructureInspector'
+import { DetailInspector } from './DetailInspector'
+import { OpeningInspector } from './OpeningInspector'
 import { SiteControls } from './SiteControls'
 import { wallWithCurve } from '../../geometry/math'
 
@@ -43,6 +44,8 @@ export function Inspector({ building, level, selection, unit, open, onClose }: {
   </aside>
   if (selection.kind === 'slab' || selection.kind === 'column' || selection.kind === 'stair')
     return <StructureInspector building={building} level={level} selection={selection} unit={unit} open={open} onClose={onClose} />
+  if (selection.kind === 'detail')
+    return <DetailInspector level={level} selection={selection} open={open} onClose={onClose} />
   const update = (kind: 'walls' | 'doors' | 'windows' | 'passages' | 'rooms', change: Record<string, string | number>) => {
     if (kind === 'doors' || kind === 'windows' || kind === 'passages') {
       const previous = (level[kind] || []).find(item => item.id === selection.id)
@@ -173,70 +176,8 @@ export function Inspector({ building, level, selection, unit, open, onClose }: {
         onChange={event => edit(model => ({ ...model, seatingSections: model.seatingSections.map(item => item.id === seating.id
           ? { ...item, seatColor: event.target.value } : item) }))} /></label>
     </div>}
-    {door && <div className="fields">
-      <div className="readout"><span>Host wall</span><b>{door.wallId}</b></div>
-      <label className="inspector-field"><span>Door design</span>
-        <select aria-label="Door design" value={door.style || 'flush'} onChange={event => update('doors', { style: event.target.value })}>
-          <option value="flush">Flush</option><option value="panel">Panel</option><option value="glazed">Glazed</option><option value="double">Double leaf</option>
-        </select>
-      </label>
-      <label className="inspector-field"><span>Hinge side</span>
-        <select aria-label="Hinge side" value={door.hinge} onChange={event => update('doors', { hinge: event.target.value })}>
-          <option value="left">Left</option><option value="right">Right</option>
-        </select>
-      </label>
-      <label className="inspector-field"><span>Opening</span>
-        <select aria-label="Door opening direction" value={door.swing || 'in'} onChange={event => update('doors', { swing: event.target.value })}>
-          <option value="in">Into room</option><option value="out">Outward</option>
-        </select></label>
-      <label className="inspector-field"><span>Door material</span>
-        <select aria-label="Door material" value={door.material || 'timber'} onChange={event => update('doors', { material: event.target.value })}>
-          <option value="timber">Timber</option><option value="metal">Metal</option>
-        </select></label>
-      <NumberField label="Offset" unit={unit} value={door.offset} onChange={offset => update('doors', { offset })} />
-      <NumberField label="Width" unit={unit} value={door.width} min={.4} onChange={width => update('doors', { width })} />
-      <NumberField label="Height" unit={unit} value={door.height} min={1.5} onChange={height => update('doors', { height })} />
-      <button className="inspector-action" onClick={() => {
-        const next = { ...door, id: uid('door'), offset: door.offset + door.width + .15 }
-        const issue = validateOpening(level, next)
-        if (issue) setValidation(issue); else edit(model => ({ ...model, doors: [...model.doors, next] }))
-      }}>Duplicate door</button>
-      <button className="inspector-action" onClick={() => { const id = uid('window'); edit(model => ({ ...model,
-        doors: model.doors.filter(item => item.id !== door.id), windows: [...model.windows, { id, wallId: door.wallId,
-          offset: door.offset, width: door.width, height: 1.2, sill: .85 }] })); select({ kind: 'window', id }) }}>Convert to window</button>
-      <button className="inspector-action" onClick={() => { const id = uid('passage'); edit(model => ({ ...model,
-        doors: model.doors.filter(item => item.id !== door.id), passages: [...model.passages, { id, wallId: door.wallId,
-          offset: door.offset, width: door.width, height: door.height }] })); select({ kind: 'passage', id }) }}>Convert to open passage</button>
-    </div>}
-    {windowUnit && <div className="fields">
-      <div className="readout"><span>Host wall</span><b>{windowUnit.wallId}</b></div>
-      <label className="inspector-field"><span>Frame</span><select aria-label="Window frame" value={windowUnit.frame || 'aluminium'}
-        onChange={event => update('windows', { frame: event.target.value })}>
-        <option value="aluminium">Aluminium</option><option value="timber">Timber</option>
-      </select></label>
-      <label className="inspector-field"><span>Window type</span><select aria-label="Window type" value={windowUnit.type || 'sliding'}
-        onChange={event => update('windows', { type: event.target.value })}>
-        <option value="fixed">Fixed</option><option value="sliding">Sliding</option><option value="casement">Casement</option>
-      </select></label>
-      <label className="inspector-field"><span>Glazing</span><select aria-label="Window glazing" value={windowUnit.glazing || 'clear'}
-        onChange={event => update('windows', { glazing: event.target.value })}>
-        <option value="clear">Clear</option><option value="frosted">Frosted</option>
-      </select></label>
-      <NumberField label="Offset" unit={unit} value={windowUnit.offset} onChange={offset => update('windows', { offset })} />
-      <NumberField label="Width" unit={unit} value={windowUnit.width} min={.3} onChange={width => update('windows', { width })} />
-      <NumberField label="Height" unit={unit} value={windowUnit.height} min={.3} onChange={height => update('windows', { height })} />
-      <NumberField label="Sill" unit={unit} value={windowUnit.sill} onChange={sill => update('windows', { sill })} />
-      <button className="inspector-action" onClick={() => { const id = uid('door'); edit(model => ({ ...model,
-        windows: model.windows.filter(item => item.id !== windowUnit.id), doors: [...model.doors, { id,
-          wallId: windowUnit.wallId, offset: windowUnit.offset, width: windowUnit.width, height: 2.1, hinge: 'left' }] }));
-        select({ kind: 'door', id }) }}>Convert to door</button>
-    </div>}
-    {passage && <div className="fields">
-      <div className="readout"><span>Host wall</span><b>{passage.wallId}</b></div>
-      <NumberField label="Offset" unit={unit} value={passage.offset} onChange={offset => update('passages', { offset })} />
-      <NumberField label="Width" unit={unit} value={passage.width} min={.3} onChange={width => update('passages', { width })} />
-      <NumberField label="Height" unit={unit} value={passage.height} min={1.5} onChange={height => update('passages', { height })} />
-    </div>}
+    <OpeningInspector level={level} door={door} windowUnit={windowUnit} passage={passage} unit={unit}
+      update={update} setValidation={setValidation} />
     {room && <div className="fields">
       <label className="inspector-field"><span>Name</span>
         <input value={room.name} onChange={event => update('rooms', { name: event.target.value })} />

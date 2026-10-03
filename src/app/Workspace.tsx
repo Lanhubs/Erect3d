@@ -1,6 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
-import type { Calibration, Project, Selection } from '../domain/types'
-import { activeLevel } from '../domain/types'
+import { activeLevel, type Calibration, type Project, type Selection } from '../domain/types'
 import { newSlab, translateWalls, wallEnvelope } from '../domain/levels'
 import { reusedGroundCalibration, setLevelCalibration } from '../domain/levelCalibration'
 import { calibrate } from '../geometry/math'
@@ -23,6 +22,7 @@ import { WorkspaceHeader, type WorkspaceMode } from './WorkspaceHeader'
 import { modelViewAction } from './modelViewAction'
 import { LevelManager } from '../features/levels/LevelManager'
 import { StructurePanel } from '../features/structure/StructurePanel'
+import { ArchitecturalDetailsPanel } from '../features/structure/ArchitecturalDetailsPanel'
 import { SourceStrip } from './SourceStrip'
 import { SourceNotice } from './SourceNotice'
 import { WorkspaceStatus } from './WorkspaceStatus'
@@ -153,6 +153,7 @@ export function Workspace({ project, back }: { project: Project; back: () => voi
       <LevelManager project={project} activeId={level.id} isolateId={isolateId} setIsolateId={setIsolateId}
         underlayId={underlayId} setUnderlayId={setUnderlayId} />
       <StructurePanel project={project} level={level} select={selectEntity} />
+      <ArchitecturalDetailsPanel level={level} select={selectEntity} />
       <SourceStrip source={source} showImport={showImport} toggle={() => setShowImport(value => !value)}
         importFile={async chosen => { if (await importFile(chosen)) { setPage(1); setShowImport(false); setManualScale(false); setMode('edit'); setView('plan') } }} />
       <ReconstructionFlow source={source} calibrated={Boolean(calibration)} calibrationOpen={showImport} ready={Boolean(url && !busy)}

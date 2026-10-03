@@ -6,7 +6,7 @@ export function SeatingMesh({ section, selection, select }: { section: SeatingSe
   const length = Math.hypot(section.end.x - section.start.x, section.end.z - section.start.z)
   const seatsPerRow = Math.max(1, Math.min(180, section.seatsPerRow))
   const rows = Math.max(1, Math.min(40, section.rows))
-  const seatCount = seatsPerRow * rows
+  const seatCount = section.aisle ? 0 : seatsPerRow * rows
   const yaw = -Math.atan2(section.end.z - section.start.z, section.end.x - section.start.x)
   const tangent = { x: (section.end.x - section.start.x) / Math.max(length, .001), z: (section.end.z - section.start.z) / Math.max(length, .001) }
   const outwardLength = Math.hypot(section.outward.x, section.outward.z) || 1
@@ -16,20 +16,21 @@ export function SeatingMesh({ section, selection, select }: { section: SeatingSe
   const geometry = useMemo(() => new BoxGeometry(1, 1, 1), [])
   const treadMatrices = useMemo(() => Array.from({ length: rows }, (_, index) => {
     const object = new Object3D(), along = length / 2
+    const rise = section.baseElevation + (index + 1) * section.rowRise
     object.position.set(section.start.x + tangent.x * along + outward.x * (index + .5) * section.rowDepth,
-      section.baseElevation + index * section.rowRise, section.start.z + tangent.z * along + outward.z * (index + .5) * section.rowDepth)
+      rise / 2, section.start.z + tangent.z * along + outward.z * (index + .5) * section.rowDepth)
     object.rotation.y = yaw
-    object.scale.set(length, Math.max(.08, section.rowRise * .62), section.rowDepth * .9)
+    object.scale.set(length, rise, section.rowDepth * .98)
     object.updateMatrix()
     return object.matrix.clone()
   }), [rows, length, section.start.x, section.start.z, section.baseElevation, section.rowRise, section.rowDepth, tangent.x, tangent.z, outward.x, outward.z, yaw])
   const seatMatrices = useMemo(() => {
     const seats: Matrix4[] = [], backs: Matrix4[] = [], object = new Object3D()
-    for (let row = 0; row < rows; row++) for (let seat = 0; seat < seatsPerRow; seat++) {
+    for (let row = 0; row < rows && !section.aisle; row++) for (let seat = 0; seat < seatsPerRow; seat++) {
       const along = length * (seat + .5) / seatsPerRow
       const x = section.start.x + tangent.x * along + outward.x * (row + .5) * section.rowDepth
       const z = section.start.z + tangent.z * along + outward.z * (row + .5) * section.rowDepth
-      const y = section.baseElevation + row * section.rowRise + .16
+      const y = section.baseElevation + (row + 1) * section.rowRise + .08
       object.rotation.y = yaw
       object.position.set(x, y, z); object.scale.set(seatWidth, .08, section.rowDepth * .45)
       object.updateMatrix(); seats.push(object.matrix.clone())
@@ -38,7 +39,7 @@ export function SeatingMesh({ section, selection, select }: { section: SeatingSe
     }
     return { seats, backs }
   }, [rows, seatsPerRow, length, section.start.x, section.start.z, section.baseElevation, section.rowRise,
-    section.rowDepth, tangent.x, tangent.z, outward.x, outward.z, yaw, seatWidth])
+    section.rowDepth, section.aisle, tangent.x, tangent.z, outward.x, outward.z, yaw, seatWidth])
   useLayoutEffect(() => {
     const write = (mesh: InstancedMesh | null, matrices: Matrix4[]) => {
       if (!mesh) return
@@ -53,11 +54,13 @@ export function SeatingMesh({ section, selection, select }: { section: SeatingSe
     <instancedMesh ref={treadMesh} args={[geometry, undefined, rows]} castShadow receiveShadow>
       <meshStandardMaterial color={selected ? '#c3a36e' : '#9b9b94'} roughness={.88} />
     </instancedMesh>
-    <instancedMesh ref={seatMesh} args={[geometry, undefined, seatCount]} castShadow receiveShadow>
-      <meshStandardMaterial color={section.seatColor} roughness={.54} />
-    </instancedMesh>
-    <instancedMesh ref={backMesh} args={[geometry, undefined, seatCount]} castShadow receiveShadow>
-      <meshStandardMaterial color={section.seatColor} roughness={.5} />
-    </instancedMesh>
+    {!section.aisle && <>
+      <instancedMesh ref={seatMesh} args={[geometry, undefined, seatCount]} castShadow receiveShadow>
+        <meshStandardMaterial color={section.seatColor} roughness={.54} />
+      </instancedMesh>
+      <instancedMesh ref={backMesh} args={[geometry, undefined, seatCount]} castShadow receiveShadow>
+        <meshStandardMaterial color={section.seatColor} roughness={.5} />
+      </instancedMesh>
+    </>}
   </group>
 }

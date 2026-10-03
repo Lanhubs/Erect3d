@@ -22,7 +22,9 @@ function SamplePlan({ sample }: { sample: ArchitecturalSample }) {
     viewBox={`${minX - pad} ${minZ - pad} ${width + pad * 2} ${height + pad * 2}`}>
     <rect x={minX - pad} y={minZ - pad} width={width + pad * 2} height={height + pad * 2} fill="#f3f4ef" />
     {level.rooms.map(room => <polygon key={room.id} points={room.polygon.map(point => `${point.x},${point.z}`).join(' ')}
-      fill={room.category === 'atrium' || room.category === 'field' ? '#dfe8e6' : '#e9e5d9'} stroke="#bcc4bb" strokeWidth={Math.max(.04, width * .002)} />)}
+      fill={room.category === 'football-pitch' ? '#83a876' : room.category === 'table-tennis-hall' ? '#b4c6bc'
+        : room.category === 'atrium' || room.category === 'field' ? '#dfe8e6' : '#e9e5d9'}
+      stroke="#bcc4bb" strokeWidth={Math.max(.04, width * .002)} />)}
     {(level.slabs || []).flatMap(slab => slab.openings).map(opening => <polygon key={opening.id}
       points={opening.polygon.map(point => `${point.x},${point.z}`).join(' ')} fill="#f3f4ef" stroke="#7d918e"
       strokeDasharray={`${width * .008} ${width * .005}`} strokeWidth={Math.max(.04, width * .0018)} />)}
@@ -36,7 +38,8 @@ function SamplePlan({ sample }: { sample: ArchitecturalSample }) {
       const outerEnd = { x: section.end.x + ox * section.rows * section.rowDepth, z: section.end.z + oz * section.rows * section.rowDepth }
       return <g key={section.id}>
         <polygon points={[section.start, section.end, outerEnd, outerStart].map(point => `${point.x},${point.z}`).join(' ')}
-          fill={section.seatColor} fillOpacity=".2" stroke="#61756d" strokeWidth={Math.max(.04, width * .0015)} />
+          fill={section.aisle ? '#c6bca5' : section.seatColor} fillOpacity={section.aisle ? '.85' : '.2'}
+          stroke="#61756d" strokeWidth={Math.max(.04, width * .0015)} />
         {Array.from({ length: section.rows }, (_, row) => {
           const offset = (row + .5) * section.rowDepth
           return <line key={row} x1={section.start.x + ox * offset} y1={section.start.z + oz * offset}
@@ -54,7 +57,6 @@ export function Dashboard({ projects, open, openSample, create, remove }: Props)
   const [units, setUnits] = useState<Project['units']>('m')
   const [previewId, setPreviewId] = useState<string | null>(null)
   const samples = useMemo(() => createSampleLibrary(), [])
-  const [path, setPath ] = useState(window.location.pathname)
   return <main className="dashboard">
     <header className="dashboard-head">
       

@@ -92,6 +92,7 @@ export function normalizeProject(input: Project): Project {
       level.stairs ||= []
       level.ramps ||= []
       level.seatingSections ||= []
+      level.details ||= []
       level.visible ??= true
       level.locked ??= false
       level.slabs ??= wallEnvelope(level).length ? [newSlab(wallEnvelope(level), level.slabThickness)] : []
@@ -107,7 +108,7 @@ export function normalizeProject(input: Project): Project {
 
 export function blankLevel(name: string, elevation: number, floorToFloorHeight: number): Level {
   return { id: uid('level'), name, elevation, floorToFloorHeight, visible: true, locked: false,
-    walls: [], doors: [], windows: [], passages: [], rooms: [], slabs: [], columns: [], stairs: [],
+    walls: [], doors: [], windows: [], passages: [], rooms: [], slabs: [], columns: [], stairs: [], details: [],
     slabThickness: .2, alignment: { x: 0, z: 0 }, autoSlab: true }
 }
 
@@ -126,6 +127,7 @@ export function duplicateLevel(source: Level, name: string, elevation: number): 
   level.columns?.forEach(column => { column.id = uid('column') })
   level.ramps?.forEach(ramp => { ramp.id = uid('ramp') })
   level.seatingSections?.forEach(section => { section.id = uid('seating') })
+  level.details?.forEach(detail => { detail.id = uid('detail') })
   return level
 }
 

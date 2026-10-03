@@ -10,7 +10,7 @@ import { useProject } from '../src/state/project'
 const bounds = { minX: 0, maxX: 12, minZ: 0, maxZ: 8, top: 2.9 }
 
 test('all roof forms produce finite surfaces over the building footprint', () => {
-  for (const shape of ['hidden', 'gable', 'hip', 'shed'] as RoofShape[]) {
+  for (const shape of ['hidden', 'gable', 'hip', 'shed', 'mansard', 'butterfly', 'terrace', 'cross-gable', 'cross-hip'] as RoofShape[]) {
     const layout = roofLayout(bounds, { ...defaultRoof, shape })
     expect(layout.faces.length).toBeGreaterThan(0)
     expect(layout.faces.flat(2).every(Number.isFinite)).toBe(true)

@@ -11,14 +11,25 @@ export function roofLayout(bounds: RoofBounds, roof: Roof): RoofLayout {
   const z0 = minZ - roof.overhang, z1 = maxZ + roof.overhang
   const mx = (x0 + x1) / 2, mz = (z0 + z1) / 2
   const pitch = Math.tan(roof.pitch * Math.PI / 180)
-  const eave = top + .12
+  const eave = top + (roof.elevationOffset || 0) + .12
   const p = (x: number, y: number, z: number): Vertex => [x, y, z]
-  if (roof.shape === 'hidden') {
+  if (roof.shape === 'cross-gable' || roof.shape === 'cross-hip') {
+    const shape = roof.shape === 'cross-gable' ? 'gable' : 'hip'
+    const alongX = roof.ridgeDirection === 'x' || (roof.ridgeDirection !== 'z' && x1 - x0 >= z1 - z0)
+    const main = roofLayout(bounds, { ...roof, shape, ridgeDirection: alongX ? 'x' : 'z' })
+    const wingBounds = alongX
+      ? { ...bounds, minX: mx - (maxX - minX) * .19, maxX: mx + (maxX - minX) * .19, top: top + .18 }
+      : { ...bounds, minZ: mz - (maxZ - minZ) * .19, maxZ: mz + (maxZ - minZ) * .19, top: top + .18 }
+    const wing = roofLayout(wingBounds, { ...roof, shape, ridgeDirection: alongX ? 'z' : 'x', overhang: .06 })
+    return { faces: [...main.faces, ...wing.faces], gables: [...main.gables, ...wing.gables],
+      eaves: [...main.eaves, ...wing.eaves], ridge: [...main.ridge, ...wing.ridge] }
+  }
+  if (roof.shape === 'hidden' || roof.shape === 'terrace') {
     const face = [p(x0, eave, z0), p(x1, eave, z0), p(x1, eave, z1), p(x0, eave, z1)]
     return { faces: [face], gables: [], eaves: [[face[0], face[1]], [face[1], face[2]], [face[2], face[3]], [face[3], face[0]]], ridge: [] }
   }
   if (roof.shape === 'shed') {
-    const alongX = x1 - x0 <= z1 - z0
+    const alongX = roof.ridgeDirection === 'z' || (roof.ridgeDirection !== 'x' && x1 - x0 <= z1 - z0)
     const rise = Math.min((alongX ? x1 - x0 : z1 - z0) * pitch, 3.8)
     const heightAt = (value: number) => eave + rise * (value - (alongX ? x0 : z0)) / (alongX ? x1 - x0 : z1 - z0)
     const face = alongX
@@ -35,7 +46,29 @@ export function roofLayout(bounds: RoofBounds, roof: Roof): RoofLayout {
     ]
     return { faces: [face], gables, eaves: [[face[0], face[1]], [face[1], face[2]], [face[2], face[3]], [face[3], face[0]]], ridge: [] }
   }
-  const alongX = x1 - x0 >= z1 - z0
+  const alongX = roof.ridgeDirection === 'x' || (roof.ridgeDirection !== 'z' && x1 - x0 >= z1 - z0)
+  if (roof.shape === 'butterfly') {
+    const rise = Math.min((alongX ? z1 - z0 : x1 - x0) / 2 * pitch, 4)
+    const high = eave + rise
+    const a = alongX ? p(x0, eave, mz) : p(mx, eave, z0)
+    const b = alongX ? p(x1, eave, mz) : p(mx, eave, z1)
+    const left = alongX ? [p(x0, high, z0), p(x1, high, z0), b, a]
+      : [p(x0, high, z0), a, b, p(x0, high, z1)]
+    const right = alongX ? [a, b, p(x1, high, z1), p(x0, high, z1)]
+      : [a, p(x1, high, z0), p(x1, high, z1), b]
+    return { faces: [left, right], gables: [], eaves: [], ridge: [[a, b]] }
+  }
+  if (roof.shape === 'mansard') {
+    const inset = Math.min(x1 - x0, z1 - z0) * .18
+    const y = eave + Math.min(inset * pitch * 1.6, 3.8)
+    const a = p(x0 + inset, y, z0 + inset), b = p(x1 - inset, y, z0 + inset)
+    const c = p(x1 - inset, y, z1 - inset), d = p(x0 + inset, y, z1 - inset)
+    return { faces: [
+      [p(x0, eave, z0), p(x1, eave, z0), b, a], [b, p(x1, eave, z0), p(x1, eave, z1), c],
+      [d, c, p(x1, eave, z1), p(x0, eave, z1)], [p(x0, eave, z0), a, d, p(x0, eave, z1)], [a, b, c, d],
+    ], gables: [], eaves: [[p(x0, eave, z0), p(x1, eave, z0)], [p(x1, eave, z0), p(x1, eave, z1)],
+      [p(x1, eave, z1), p(x0, eave, z1)], [p(x0, eave, z1), p(x0, eave, z0)]], ridge: [] }
+  }
   if (roof.shape === 'gable') {
     const rise = (alongX ? (z1 - z0) / 2 : (x1 - x0) / 2) * pitch
     const y = eave + rise

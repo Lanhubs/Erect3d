@@ -10,7 +10,7 @@ const p = (x: number, z: number): Point => ({ x, z })
 function Marking({ start, end, thickness, color = '#f5f2e7' }: { start: Point; end: Point; thickness: number; color?: string }) {
   const dx = end.x - start.x, dz = end.z - start.z, length = Math.hypot(dx, dz)
   if (length < .01) return null
-  return <mesh position={[(start.x + end.x) / 2, .024, (start.z + end.z) / 2]} rotation={[0, -Math.atan2(dz, dx), 0]}>
+  return <mesh position={[(start.x + end.x) / 2, .065, (start.z + end.z) / 2]} rotation={[0, -Math.atan2(dz, dx), 0]}>
     <boxGeometry args={[length, .025, thickness]} /><meshBasicMaterial color={color} />
   </mesh>
 }
@@ -28,10 +28,10 @@ function SportsFloorDetails({ room }: { room: Room }) {
     <Marking start={p(maxX, maxZ)} end={p(minX, maxZ)} thickness={.11} />
     <Marking start={p(minX, maxZ)} end={p(minX, minZ)} thickness={.11} />
     <Marking start={p(centerX, minZ)} end={p(centerX, maxZ)} thickness={.1} />
-    <mesh position={[centerX, .026, centerZ]} rotation={[-Math.PI / 2, 0, 0]}>
+    <mesh position={[centerX, .067, centerZ]} rotation={[-Math.PI / 2, 0, 0]}>
       <ringGeometry args={[9.08, 9.2, 48]} /><meshBasicMaterial color={marking} side={DoubleSide} />
     </mesh>
-    <mesh position={[centerX, .035, centerZ]}><cylinderGeometry args={[.14, .14, .025, 16]} />
+    <mesh position={[centerX, .07, centerZ]}><cylinderGeometry args={[.14, .14, .025, 16]} />
       <meshBasicMaterial color={marking} /></mesh>
     {[minX + width * .16, maxX - width * .16].map((x, index) => {
       const innerX = x + (index ? -2.5 : 2.5), goalX = index ? maxX + 2.5 : minX - 2.5
@@ -46,7 +46,7 @@ function SportsFloorDetails({ room }: { room: Room }) {
         </mesh>)}
         <mesh position={[goalX, .8, centerZ]}><boxGeometry args={[.12, .12, 7.32]} />
           <meshStandardMaterial color="#d7ded0" metalness={.42} roughness={.45} /></mesh>
-        <mesh position={[innerX, .035, centerZ]}><cylinderGeometry args={[.12, .12, .025, 12]} />
+        <mesh position={[innerX, .07, centerZ]}><cylinderGeometry args={[.12, .12, .025, 12]} />
           <meshBasicMaterial color={marking} /></mesh>
       </group>
     })}
@@ -62,7 +62,7 @@ function SportsFloorDetails({ room }: { room: Room }) {
       <mesh position={[x, .84, centerZ]}><boxGeometry args={[2.74, .015, .035]} /><meshBasicMaterial color="#f8f5ec" /></mesh>
       <mesh position={[x, .91, centerZ]}><boxGeometry args={[.025, .14, 1.55]} /><meshStandardMaterial color="#ddd9cb" /></mesh>
     </group>)}
-    <mesh position={[centerX, .022, minZ + .65]}><boxGeometry args={[width * .72, .025, .08]} /><meshBasicMaterial color="#f5f2e7" /></mesh>
+    <mesh position={[centerX, .065, minZ + .65]}><boxGeometry args={[width * .72, .025, .08]} /><meshBasicMaterial color="#f5f2e7" /></mesh>
   </group>
   return null
 }
@@ -70,8 +70,8 @@ function SportsFloorDetails({ room }: { room: Room }) {
 export function RoomSurface({ room, ceiling, select, openings = [] }: { room: Room; ceiling?: boolean;
   select?: (selection: Selection) => void; openings?: Point[][] }) {
   const shapes = useMemo(() => roomShapes(room, openings), [room, openings])
-  const position: [number, number, number] = [0, ceiling ? (room.ceilingHeight || 2.9) : .006, 0]
   const specialFloor = room.category === 'football-pitch' || room.category === 'table-tennis-hall'
+  const position: [number, number, number] = [0, ceiling ? (room.ceilingHeight || 2.9) : specialFloor ? .04 : .006, 0]
   return <group><mesh rotation={[Math.PI / 2, 0, 0]} position={position} receiveShadow
     onPointerOver={event => { if (ceiling) return; event.stopPropagation(); const canvas = document.querySelector<HTMLCanvasElement>('.viewer canvas'); if (canvas) canvas.style.cursor = 'pointer' }}
     onPointerOut={() => { if (!ceiling) { const canvas = document.querySelector<HTMLCanvasElement>('.viewer canvas'); if (canvas) canvas.style.cursor = '' } }}
@@ -79,6 +79,7 @@ export function RoomSurface({ room, ceiling, select, openings = [] }: { room: Ro
     <shapeGeometry args={[shapes]} />
     {ceiling ? <meshStandardMaterial color="#e8e5dd" roughness={.96} side={DoubleSide} />
       : <meshStandardMaterial color={specialFloor ? room.category === 'football-pitch' ? '#4c8850' : '#72866a' : '#ffffff'}
-        map={specialFloor ? undefined : floorTexture(room.material)} roughness={specialFloor ? .94 : materialRoughness[room.material]} side={DoubleSide} />}
+        map={specialFloor ? undefined : floorTexture(room.material)} roughness={specialFloor ? .94 : materialRoughness[room.material]}
+        side={DoubleSide} />}
   </mesh>{!ceiling && specialFloor && <SportsFloorDetails room={room} />}</group>
 }

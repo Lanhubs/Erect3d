@@ -55,9 +55,14 @@ export function WallMesh({ wall, doors, windows, passages, selection, select, op
           <boxGeometry args={[item.width + .16, .09, wall.thickness + .18]} />
           <meshStandardMaterial color={item.frame === 'timber' ? '#8a785f' : '#aaa89f'} roughness={.72} side={DoubleSide} />
         </mesh>
-        <mesh><boxGeometry args={[item.width - .14, item.height - .14, .035]} />
-          <meshStandardMaterial color={item.glazing === 'frosted' ? '#b9c6c7' : '#718a91'} metalness={.28}
-            roughness={item.glazing === 'frosted' ? .52 : .2} transparent opacity={item.glazing === 'frosted' ? .72 : .52} side={DoubleSide} /></mesh>
+        <mesh position={[0, 0, -.035]}><boxGeometry args={[item.width - .14, item.height - .14, .025]} />
+          <meshPhysicalMaterial color={item.glazing === 'frosted' ? '#c3d0cf' : '#91afb7'} metalness={.02}
+            roughness={item.glazing === 'frosted' ? .55 : .08} transmission={item.glazing === 'frosted' ? .12 : .42}
+            transparent opacity={item.glazing === 'frosted' ? .84 : .62} side={DoubleSide} depthWrite={false} /></mesh>
+        <mesh position={[0, 0, -wall.thickness / 2 - .04]}>
+          <boxGeometry args={[item.width - .16, item.height - .16, .012]} />
+          <meshStandardMaterial color="#41565b" metalness={.35} roughness={.32} transparent opacity={.28} />
+        </mesh>
         {item.type !== 'fixed' && <mesh position={[0, 0, .08]}><boxGeometry args={[.035, item.height, .035]} /><meshStandardMaterial color="#555d5c" /></mesh>}
         {item.type === 'casement' && <mesh position={[item.width * .38, 0, .12]}>
           <boxGeometry args={[.025, .14, .04]} /><meshStandardMaterial color="#5b615c" metalness={.65} /></mesh>}

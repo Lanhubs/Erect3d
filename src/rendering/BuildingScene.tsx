@@ -11,9 +11,11 @@ import { SectionPlane } from './SectionPlane'
 import { SlabMesh } from './SlabMesh'
 import { ColumnMesh } from './ColumnMesh'
 import { InspectionCamera } from './InspectionCamera'
+import type { CameraPreset } from './InspectionCamera'
 import { StairMesh } from './StairMesh'
 import { RampMesh } from './RampMesh'
 import { SeatingMesh } from './SeatingMesh'
+import { ArchitecturalDetailMesh } from './ArchitecturalDetailMesh'
 import { siteBounds } from '../geometry/site'
 import { wallBoundsPoints } from '../geometry/math'
 
@@ -22,7 +24,7 @@ type Props = { building: Building; activeLevelId: string; view: BuildingView; is
   selection: Selection; select: (selection: Selection) => void; walk: boolean; top: boolean; endWalk: () => void;
   ceiling: boolean; roofShown: boolean; sectionHeight: number | null; verticalSection: number | null;
   quality: 'auto' | 'performance' | 'balanced' | 'high'; openDoors: ReadonlySet<string>; toggleDoor: (id: string) => void;
-  onWalkPosition: (x: number, z: number, yaw: number, level: Level) => void }
+  onWalkPosition: (x: number, z: number, yaw: number, level: Level) => void; cameraPreset?: CameraPreset }
 
 function LevelGeometry({ level, levels, selection, select, ceiling, walk, openDoors }: Pick<Props, 'selection' | 'select' | 'ceiling' | 'walk' | 'openDoors'> & { level: Level; levels: Level[] }) {
   const points = wallBoundsPoints(level.walls)
@@ -41,7 +43,10 @@ function LevelGeometry({ level, levels, selection, select, ceiling, walk, openDo
     {level.stairs?.map(stair => <StairMesh key={stair.id} stair={stair} levels={levels} selection={selection} select={select} />)}
     {level.ramps?.map(ramp => <RampMesh key={ramp.id} ramp={ramp} selection={selection} select={select} />)}
     {level.seatingSections?.map(section => <SeatingMesh key={section.id} section={section} selection={selection} select={select} />)}
-    {(ceiling || walk) && level.rooms.length > 0 && level.rooms.map(room => <RoomSurface key={`ceiling-${room.id}`} room={room} openings={ceilingOpenings} ceiling />)}
+    {level.details?.map(detail => <ArchitecturalDetailMesh key={detail.id} detail={detail} selection={selection} select={select} />)}
+    {(ceiling || walk) && level.rooms.length > 0 && level.rooms.filter(room =>
+      room.category !== 'football-pitch' && room.category !== 'table-tennis-hall').map(room =>
+      <RoomSurface key={`ceiling-${room.id}`} room={room} openings={ceilingOpenings} ceiling />)}
     {(ceiling || walk) && level.rooms.length === 0 && bounds && !ceilingOpenings.length && <mesh position={[(bounds.minX + bounds.maxX) / 2, height + .04, (bounds.minZ + bounds.maxZ) / 2]} receiveShadow>
       <boxGeometry args={[bounds.maxX - bounds.minX, .08, bounds.maxZ - bounds.minZ]} /><meshStandardMaterial color="#e4e1d8" roughness={.95} side={DoubleSide} />
     </mesh>}
@@ -49,7 +54,7 @@ function LevelGeometry({ level, levels, selection, select, ceiling, walk, openDo
 }
 
 export function BuildingScene({ building, activeLevelId, view, isolateId, selection, select, walk, top, endWalk,
-  ceiling, roofShown, sectionHeight, verticalSection, quality, openDoors, toggleDoor, onWalkPosition }: Props) {
+  ceiling, roofShown, sectionHeight, verticalSection, quality, openDoors, toggleDoor, onWalkPosition, cameraPreset }: Props) {
   const topFloor = topLevel(building)
   const shown = useMemo(() => building.levels.filter(level => level.visible !== false &&
     (walk || (!isolateId || level.id === isolateId) && (view !== 'current' || level.id === activeLevelId))),
@@ -69,6 +74,8 @@ export function BuildingScene({ building, activeLevelId, view, isolateId, select
     minZ: Math.min(bounds.minZ, site.minZ), maxZ: Math.max(bounds.maxZ, site.maxZ) } : bounds
   const frameWidth = Math.max(2, frameBounds.maxX - frameBounds.minX), frameDepth = Math.max(2, frameBounds.maxZ - frameBounds.minZ)
   const center: [number, number, number] = [(frameBounds.minX + frameBounds.maxX) / 2, topY / 2, (frameBounds.minZ + frameBounds.maxZ) / 2]
+  const sportsKind = building.levels.some(level => level.rooms.some(room => room.category === 'football-pitch')) ? 'stadium'
+    : building.levels.some(level => level.rooms.some(room => room.category === 'table-tennis-hall')) ? 'arena' : null
   const sun = useRef<DirectionalLight>(null)
   useLayoutEffect(() => {
     if (!sun.current) return
@@ -77,7 +84,8 @@ export function BuildingScene({ building, activeLevelId, view, isolateId, select
   }, [center[0], center[2]])
   return <>
     <SectionPlane height={sectionHeight} vertical={verticalSection} />
-    <InspectionCamera walk={walk} top={top} center={center} span={Math.max(frameWidth, frameDepth, topY * 1.4)} />
+    <InspectionCamera walk={walk} top={top} center={center} span={Math.max(frameWidth, frameDepth, topY * 1.4)}
+      preset={cameraPreset} sportsKind={sportsKind} />
     <ambientLight intensity={.28} /><hemisphereLight intensity={.62} color="#f8f2df" groundColor="#687367" />
     <directionalLight ref={sun} position={[center[0] - 8, center[1] + 18, center[2] + 7]} intensity={2.25} castShadow={quality !== 'performance'}
       shadow-mapSize={quality === 'high' ? [2048, 2048] : [1024, 1024]}
@@ -94,7 +102,7 @@ export function BuildingScene({ building, activeLevelId, view, isolateId, select
       const bounds = { minX: Math.min(...xs), maxX: Math.max(...xs), minZ: Math.min(...zs), maxZ: Math.max(...zs),
         top: section.topHeight || Math.max(2.7, ...level.walls.map(wall => wall.height)) }
       return <group key={section.id} position={[0, level.elevation + offset(level), 0]}>
-        <RoofAssembly bounds={bounds} roof={section.roof} />
+        <RoofAssembly bounds={bounds} roof={section.roof} framingSpacing={section.framingSpacing} />
       </group>
     }) : roofShown && shown.some(level => level.id === topFloor.id) && topFloor.walls.length > 0 &&
       <group position={[0, topFloor.elevation + offset(topFloor), 0]}>
