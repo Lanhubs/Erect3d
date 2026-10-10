@@ -68,7 +68,7 @@ function PlotSurface({ boundary, y }: { boundary: Point[]; y: number }) {
   </mesh>
 }
 
-function FenceMesh({ siteFence }: { siteFence?: SiteFence }) {
+function FenceMesh({ siteFence, onSelect }: { siteFence?: SiteFence; onSelect?: () => void }) {
   if (!siteFence || siteFence.enabled === false) return null
   const segments = siteFence.segments.flatMap(segment => {
     const totalLength = Math.hypot(segment.end.x - segment.start.x, segment.end.z - segment.start.z)
@@ -104,7 +104,7 @@ function FenceMesh({ siteFence }: { siteFence?: SiteFence }) {
       </group>,
     ]
   })
-  return <group>{siteFence.material === 'metal' ? <InstancedMetalFence parts={segments} color={siteFence.color || '#68716e'} /> : segments.map((part, index) => {
+  return <group onClick={event => { if (onSelect) { event.stopPropagation(); onSelect() } }}>{siteFence.material === 'metal' ? <InstancedMetalFence parts={segments} color={siteFence.color || '#68716e'} /> : segments.map((part, index) => {
     const dx = part.end.x - part.start.x, dz = part.end.z - part.start.z
     const length = Math.hypot(dx, dz) || .001
     const centerX = (part.start.x + part.end.x) / 2, centerZ = (part.start.z + part.end.z) / 2
@@ -144,7 +144,7 @@ function siteTexture() {
   return groundMap
 }
 
-export function SiteEnvironment({ bounds, slabThickness, siteFence }: { bounds: RoofBounds; slabThickness: number; siteFence?: SiteFence }) {
+export function SiteEnvironment({ bounds, slabThickness, siteFence, baseShown = true, onFenceSelect }: { bounds: RoofBounds; slabThickness: number; siteFence?: SiteFence; baseShown?: boolean; onFenceSelect?: () => void }) {
   const sky = useMemo(() => {
     const value = new Sky()
     value.scale.setScalar(450000)
@@ -165,14 +165,14 @@ export function SiteEnvironment({ bounds, slabThickness, siteFence }: { bounds: 
   const plotBoundary = plot ? siteFence?.boundary?.length ? siteFence.boundary : siteFence?.segments.map(segment => segment.start) : undefined
   return <>
     <primitive object={sky} />
-    {plotBoundary && plotBoundary.length >= 3 ? <PlotSurface boundary={plotBoundary} y={-slabThickness} /> : <mesh position={[groundCenterX, -slabThickness - .055, groundCenterZ]} receiveShadow>
+    {plotBoundary && plotBoundary.length >= 3 ? <PlotSurface boundary={plotBoundary} y={-slabThickness} /> : baseShown && <mesh position={[groundCenterX, -slabThickness - .055, groundCenterZ]} receiveShadow>
       <boxGeometry args={[groundWidth, .12, groundDepth]} />
       <meshStandardMaterial color={plot ? '#90958c' : '#898d86'} roughness={.96} />
     </mesh>}
-    <mesh position={[groundCenterX, -slabThickness - .15, groundCenterZ]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+    <mesh position={[groundCenterX, -slabThickness - (baseShown ? .15 : .015), groundCenterZ]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
       <planeGeometry args={[250, 250]} />
       <meshStandardMaterial map={siteTexture()} roughness={1} />
     </mesh>
-    <FenceMesh siteFence={siteFence} />
+    <FenceMesh siteFence={siteFence} onSelect={onFenceSelect} />
   </>
 }

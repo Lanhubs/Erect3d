@@ -1,11 +1,11 @@
 import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
-import { uid, type Level, type Point, type Ramp, type Selection } from '../../domain/types'
-import { distance, nearestWallOffset, wallCurveThroughPoints, wallLength, wallWithEndpoint } from '../../geometry/math'
+import { uid, type Level, type Point, type Ramp, type Selection, type SiteFence } from '../../domain/types'
+import { distance, nearestWallOffset, wallCurveThroughPoints, wallLength } from '../../geometry/math'
 import { constrainPoint } from '../../geometry/snapping'
 import { useProject } from '../../state/project'
 import { type Unit } from '../../geometry/units'
 import { usePlanZoom } from './usePlanZoom'
-import { WallLayer, type WallDrag } from './WallLayer'
+import { WallLayer } from './WallLayer'
 import { PlanSettings } from './PlanSettings'
 import { ReviewLayer, type ReviewView } from './ReviewLayer'
 import { OpeningLayer } from './OpeningLayer'
@@ -18,34 +18,36 @@ import { SeatingLayer } from './SeatingLayer'
 import { PlanRoomLayer } from './PlanRoomLayer'
 import { PlanDraftLayer } from './PlanDraftLayer'
 import { ArchitecturalDetailLayer } from './ArchitecturalDetailLayer'
-import { fitBounds, type PlanBox, type PlanSourceRect } from './planBounds'
+import { InterpretationLayer } from './InterpretationLayer'
+import type { PlanDetail } from '../../domain/interpretationTypes'
+import { fitBounds, pointerPlanPoint, type PlanBox, type PlanSourceRect } from './planBounds'
+import { FencePlanLayer } from './FencePlanLayer'
+import { ElementHandles } from './ElementHandles'
+import { StructureEditLayer } from './StructureEditLayer'
+import { useElementEditing } from '../editing/useElementEditing'
 type Props = {
   level: Level; selection: Selection; select: (selection: Selection) => void; unit: Unit
-  source?: PlanSourceRect; underlay?: Level
+  source?: PlanSourceRect; underlay?: Level; fence?: SiteFence
   review?: { candidates: Level['walls']; openings: OpeningCandidate[]; view: ReviewView; selected: string | null;
-    setSelected: (id: string | null) => void; setCandidates: (change: (walls: Level['walls']) => Level['walls']) => void }
+    setSelected: (id: string | null) => void; setCandidates: (change: (walls: Level['walls']) => Level['walls']) => void;
+    rooms?: Point[][]; spaceChoices?: Record<string, boolean>; selectedSpace?: string | null; selectSpace?: (key: string) => void; details?: PlanDetail[]; detailChoices?: Record<string, boolean> }
 }
-export function PlanEditor({ level, selection, select, unit, source, underlay, review }: Props) {
+export function PlanEditor({ level, selection, select, unit, source, underlay, review, fence }: Props) {
   const svg = useRef<SVGSVGElement>(null)
-  const [box, setBox] = useState<PlanBox>(() => fitBounds(level, source))
+  const dragMatrix = useRef<DOMMatrix | null>(null)
+  const [box, setBox] = useState<PlanBox>(() => fitBounds(level, source, fence))
   const [draft, setDraft] = useState<Point[]>([])
   const [curveDraft, setCurveDraft] = useState<Point[]>([])
   const [rampDraft, setRampDraft] = useState<Point[]>([])
   const [cursor, setCursor] = useState<Point | null>(null)
   const [snapGuide, setSnapGuide] = useState<Point | null>(null)
-  const [measure, setMeasure] = useState<Point[]>([])
-  const [message, setMessage] = useState('')
-  const [drag, setDrag] = useState<WallDrag | null>(null)
+  const [measure, setMeasure] = useState<Point[]>([]), [message, setMessage] = useState('')
   const [pan, setPan] = useState<Point | null>(null)
-  usePlanZoom(svg, level, source, setBox)
+  usePlanZoom(svg, level, source, setBox, fence)
   const tool = useProject(s => s.tool), edit = useProject(s => s.edit)
+  const editing = useElementEditing(!review && tool === 'select')
   const grid = useProject(s => s.grid), setGrid = useProject(s => s.setGrid)
-  const point = (event: { clientX: number; clientY: number }): Point => {
-    const local = svg.current!.createSVGPoint()
-    local.x = event.clientX; local.y = event.clientY
-    const result = local.matrixTransform(svg.current!.getScreenCTM()!.inverse())
-    return { x: result.x, z: result.y }
-  }
+  const point = (event: { clientX: number; clientY: number }) => pointerPlanPoint(svg.current!, event, dragMatrix.current)
   const snap = (p: Point, start?: Point) => constrainPoint(p, level.walls, box.width * .012, grid, start)
   const nearestWall = (p: Point) => {
     let match: { id: string; offset: number; gap: number } | null = null
@@ -114,7 +116,7 @@ export function PlanEditor({ level, selection, select, unit, source, underlay, r
     }
     if (tool === 'room') setDraft(points => [...points, p])
     if (tool === 'measure') setMeasure(points => points.length === 1 ? [points[0], p] : [p])
-    if (tool === 'select' && !drag) select(null)
+    if (tool === 'select') select(null)
   }
   const move = (event: ReactPointerEvent<SVGSVGElement>) => {
     const p = point(event)
@@ -123,40 +125,24 @@ export function PlanEditor({ level, selection, select, unit, source, underlay, r
     setCursor(aligned)
     setSnapGuide(distance(p, aligned) > .001 ? aligned : null)
     if (pan) { setBox(current => ({ ...current, x: current.x + pan.x - p.x, z: current.z + pan.z - p.z })); return }
-    if (drag?.kind === 'end') setDrag({ ...drag, point: snap(p) })
-    if (drag?.kind === 'wall') setDrag({ ...drag, delta: { x: p.x - drag.origin.x, z: p.z - drag.origin.z } })
+    editing.move(p, event.shiftKey)
   }
   const finishRoom = () => {
     if (draft.length >= 3) edit(model => ({ ...model, rooms: [...model.rooms, { id: uid('room'), name: `Room ${model.rooms.length + 1}`, polygon: draft, material: 'oak' }] }))
     else setMessage('A room needs at least three points.')
     setDraft([])
   }
-  const finishDrag = () => {
-    if (drag?.kind === 'end') {
-      const wall = level.walls.find(item => item.id === drag.wallId)
-      const proposed = wall && wallWithEndpoint(wall, drag.end, drag.point)
-      const required = Math.max(.1, ...[...level.doors, ...level.windows, ...(level.passages || [])]
-        .filter(item => item.wallId === drag.wallId).map(item => item.offset + item.width + .05))
-      if (proposed && wallLength(proposed) < required) setMessage('This wall would become too short for its openings.')
-      else if (proposed) edit(model => ({ ...model, walls: model.walls.map(item => item.id === drag.wallId ? proposed : item) }))
-    }
-    if (drag?.kind === 'wall' && Math.hypot(drag.delta.x, drag.delta.z) > .01) edit(model => ({ ...model, walls: model.walls.map(wall => wall.id === drag.wallId ? {
-      ...wall, start: { x: drag.start.x + drag.delta.x, z: drag.start.z + drag.delta.z },
-      end: { x: drag.end.x + drag.delta.x, z: drag.end.z + drag.delta.z },
-      ...(wall.curve ? { curve: { ...wall.curve, center: { x: wall.curve.center.x + drag.delta.x, z: wall.curve.center.z + drag.delta.z } } } : {}),
-    } : wall) }))
-    setPan(null); setDrag(null)
-  }
+  const finishDrag = () => { dragMatrix.current = null; setPan(null); editing.finish() }
   return <section className="plan-editor">
     <div className="viewport-head"><span>{level.name.toUpperCase()} · PLAN</span><div>
       <PlanSettings grid={grid} setGrid={setGrid} unit={unit} />
-      <button onClick={() => setBox(fitBounds(level, source))}>Fit</button>
+      <button onClick={() => setBox(fitBounds(level, source, fence))}>Fit</button>
       {tool === 'room' && draft.length > 2 && <button onClick={finishRoom}>Close room</button>}
       {(draft.length > 0 || curveDraft.length > 0 || rampDraft.length > 0) &&
         <button onClick={() => { setDraft([]); setCurveDraft([]); setRampDraft([]) }}>Cancel</button>}
     </div></div>
-    <svg ref={svg} className={`plan-svg tool-${tool}${drag || pan ? ' is-dragging' : ''}`} viewBox={`${box.x} ${box.z} ${box.width} ${box.height}`} onPointerDown={down}
-      onPointerMove={move} onPointerLeave={() => setSnapGuide(null)} onPointerUp={finishDrag} onDoubleClick={finishRoom}>
+    <svg ref={svg} tabIndex={0} aria-label="Editable floor plan" onKeyDown={event => { editing.keyboard(event); if (event.key === 'Escape') dragMatrix.current = null }} onPointerDownCapture={() => svg.current?.focus()} className={`plan-svg tool-${tool}${pan ? ' is-dragging' : ''}`} viewBox={`${box.x} ${box.z} ${box.width} ${box.height}`} onPointerDown={down}
+      onPointerMove={move} onPointerLeave={() => setSnapGuide(null)} onPointerUp={finishDrag} onPointerCancel={() => { dragMatrix.current = null; editing.cancel() }} onDoubleClick={finishRoom}>
       <defs>
         <pattern id="grid-minor" width={grid.step} height={grid.step} patternUnits="userSpaceOnUse"><path d={`M ${grid.step} 0 L 0 0 0 ${grid.step}`} fill="none" stroke="#cbd5ca" strokeWidth=".008" /></pattern>
         <pattern id="grid-major" width="1" height="1" patternUnits="userSpaceOnUse"><path d="M 1 0 L 0 0 0 1" fill="none" stroke="#aebbae" strokeWidth=".018" /></pattern>
@@ -169,23 +155,28 @@ export function PlanEditor({ level, selection, select, unit, source, underlay, r
         <rect x={-1000} y={-1000} width={2000} height={2000} fill="url(#grid-minor)" />
         <rect x={-1000} y={-1000} width={2000} height={2000} fill="url(#grid-major)" />
       </g>}
-      {review && <ReviewLayer svg={svg} {...review} />}
+      {review && <ReviewLayer svg={svg} {...review} selectSpace={tool === 'select' ? review.selectSpace : undefined} />}
       {!review && <PlanRoomLayer rooms={level.rooms} selection={selection} select={select} tool={tool} unit={unit} />}
-      {!review && <WallLayer walls={level.walls} selection={selection} drag={drag} tool={tool} unit={unit}
+      {!review && <StructureEditLayer level={level} select={select} />}
+      {!review && <InterpretationLayer details={level.stairGuides?.map(guide => ({ ...guide, kind: 'stair' as const, confidence: .8 }))} />}
+      {!review && <WallLayer walls={level.walls} selection={selection} drag={null} tool={tool} unit={unit}
         onWallDown={(event, wall) => {
+          dragMatrix.current = svg.current!.getScreenCTM()!.inverse()
           event.stopPropagation(); select({ kind: 'wall', id: wall.id })
-          setDrag({ wallId: wall.id, kind: 'wall', origin: point(event), start: wall.start,
-            end: wall.end, delta: { x: 0, z: 0 } })
+          editing.start('move', point(event))
           svg.current?.setPointerCapture(event.pointerId)
         }}
         onEndDown={(event, wall, end) => {
-          event.stopPropagation(); setDrag({ wallId: wall.id, kind: 'end', end, point: wall[end] })
+          dragMatrix.current = svg.current!.getScreenCTM()!.inverse()
+          event.stopPropagation(); select({ kind: 'wall', id: wall.id }); editing.start(end === 'start' ? 0 : 1, point(event))
           svg.current?.setPointerCapture(event.pointerId)
         }} />}
       {!review && <RampLayer ramps={level.ramps || []} selection={selection} select={select} tool={tool} />}
       {!review && <SeatingLayer sections={level.seatingSections || []} selection={selection} select={select} tool={tool} />}
       {!review && <ArchitecturalDetailLayer details={level.details || []} selection={selection} select={select} tool={tool} />}
       {!review && <OpeningLayer svg={svg} level={level} selection={selection} select={select} tool={tool} />}
+      {fence && <FencePlanLayer svg={svg} fence={fence} selected={selection?.kind === 'fence'} select={select} enabled={tool === 'select'} />}
+      {!review && <ElementHandles svg={svg} level={level} size={box.width} />}
       <PlanDraftLayer tool={tool} draft={draft} curveDraft={curveDraft} rampDraft={rampDraft}
         cursor={cursor} snapGuide={snapGuide} measure={measure} unit={unit} />
     </svg>
@@ -194,6 +185,6 @@ export function PlanEditor({ level, selection, select, unit, source, underlay, r
         : tool === 'ramp' ? 'Click ramp start and end · Esc cancels'
       : tool === 'room' ? 'Click vertices · Double click or Close room to finish'
         : tool === 'measure' ? 'Click two points to measure'
-          : 'Ctrl + scroll zoom · Ctrl + / − zoom · Ctrl + 0 fit · Middle drag pan')}</div>
+          : editing.message || 'Select → drag handles · Arrows move · Shift fine · [ / ] rotate · , / . resize · PgUp / PgDn height · Ctrl scroll zoom')}</div>
   </section>
 }

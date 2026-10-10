@@ -30,7 +30,7 @@ export function Inspector({ building, level, selection, unit, open, onClose }: {
   const edit = useProject(s => s.edit), select = useProject(s => s.setSelection)
   const shell = `inspector${open ? ' mobile-open' : ''}`
   const mobileHead = <div className="inspector-mobile-head"><strong>{selection ? `${selection.kind} properties` : 'Properties'}</strong><button type="button" onClick={onClose} aria-label="Close properties">×</button></div>
-  if (!selection) return <aside className={shell}>
+  if (!selection || selection.kind === 'fence') return <aside className={shell}>
     {mobileHead}
     <SiteControls building={building} />
     <div className="panel-title">PROPERTIES</div>

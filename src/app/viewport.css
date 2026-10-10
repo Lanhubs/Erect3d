@@ -1,12 +1,18 @@
+.element-handle { cursor: grab; touch-action: none; }
+.element-handle:active { cursor: grabbing; }
+.plan-svg:focus-visible, .viewer:focus-visible { outline: 2px solid #2477ae; outline-offset: -2px; }
+.veranda-controls { display: grid; gap: 9px; margin: 5px 0; padding: 10px; border: 1px solid #bfcac1; }
+.veranda-controls legend { font-weight: 600; }
+.veranda-controls small { color: #647267; line-height: 1.4; }
 .viewport-head{
   position:relative;
   z-index:4;
-  height:37px;
+  height:33px;
   flex:none;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:0 12px;
+  padding:0 9px;
   border-bottom:1px solid #c9d0c9;
   background:#f9faf7;
   font:600 10px 'IBM Plex Mono',monospace;

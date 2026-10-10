@@ -1,4 +1,5 @@
 import type { Roof } from '../domain/types'
+import { crossRoofLayout } from './crossRoof'
 
 export type Vertex = [number, number, number]
 export type RoofFace = Vertex[]
@@ -14,15 +15,7 @@ export function roofLayout(bounds: RoofBounds, roof: Roof): RoofLayout {
   const eave = top + (roof.elevationOffset || 0) + .12
   const p = (x: number, y: number, z: number): Vertex => [x, y, z]
   if (roof.shape === 'cross-gable' || roof.shape === 'cross-hip') {
-    const shape = roof.shape === 'cross-gable' ? 'gable' : 'hip'
-    const alongX = roof.ridgeDirection === 'x' || (roof.ridgeDirection !== 'z' && x1 - x0 >= z1 - z0)
-    const main = roofLayout(bounds, { ...roof, shape, ridgeDirection: alongX ? 'x' : 'z' })
-    const wingBounds = alongX
-      ? { ...bounds, minX: mx - (maxX - minX) * .19, maxX: mx + (maxX - minX) * .19, top: top + .18 }
-      : { ...bounds, minZ: mz - (maxZ - minZ) * .19, maxZ: mz + (maxZ - minZ) * .19, top: top + .18 }
-    const wing = roofLayout(wingBounds, { ...roof, shape, ridgeDirection: alongX ? 'z' : 'x', overhang: .06 })
-    return { faces: [...main.faces, ...wing.faces], gables: [...main.gables, ...wing.gables],
-      eaves: [...main.eaves, ...wing.eaves], ridge: [...main.ridge, ...wing.ridge] }
+    return crossRoofLayout(bounds, roof)
   }
   if (roof.shape === 'hidden' || roof.shape === 'terrace') {
     const face = [p(x0, eave, z0), p(x1, eave, z0), p(x1, eave, z1), p(x0, eave, z1)]

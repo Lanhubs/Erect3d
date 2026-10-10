@@ -1,18 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { Level, Selection } from '../domain/types'
-import { defaultRoof } from '../domain/types'
+import type { Building, Level, Selection } from '../domain/types'
 import { atWall, wallBoundsPoints, wallSubpath } from '../geometry/math'
-import { roofLayout, type Vertex } from '../geometry/roof'
+import { type Vertex } from '../geometry/roof'
 import { wallSolids } from '../geometry/walls'
 import { zoomEvent, type ZoomDetail } from '../app/useWorkspaceZoom'
+import { projectSoftware as project } from './softwareProjection'
+import { SoftwareElementHandles } from './SoftwareElementHandles'
+import { verandaGeometry } from '../geometry/veranda'
+import { softwareDetails, type SoftwareFace as Face } from './softwareDetails'
+import { softwareRoofs } from './softwareRoofs'
 
-type Face = { key: string; vertices: Vertex[]; fill: string; stroke?: string; depth: number; select?: Selection }
-const project = ([x, y, z]: Vertex, top: boolean) => top ? [x, z] : [(x - z) * .866, (x + z) * .5 - y * 1.15]
 const depth = (points: Vertex[]) => points.reduce((sum, [x, , z]) => sum + x + z, 0) / points.length
 const asPoints = (vertices: Vertex[], top: boolean) => vertices.map(p => project(p, top).join(',')).join(' ')
 
-export function SoftwarePreview({ level, selection, select, roofShown, top, sectionHeight }: {
-  level: Level; selection: Selection; select: (value: Selection) => void; roofShown: boolean; top: boolean; sectionHeight: number | null
+export function SoftwarePreview({ level, levels = [level], building, selection, select, roofShown, top, sectionHeight }: {
+  level: Level; levels?: Level[]; building?: Building; selection: Selection; select: (value: Selection) => void; roofShown: boolean; top: boolean; sectionHeight: number | null
 }) {
   const svg = useRef<SVGSVGElement>(null)
   const [zoom, setZoom] = useState(1)
@@ -24,10 +26,11 @@ export function SoftwarePreview({ level, selection, select, roofShown, top, sect
     const maxX = points.length ? Math.max(...points.map(p => p.x)) : 8
     const minZ = points.length ? Math.min(...points.map(p => p.z)) : 0
     const maxZ = points.length ? Math.max(...points.map(p => p.z)) : 6
-    const height = Math.max(2.7, ...level.walls.map(w => w.height))
     const slab: Vertex[] = [[minX - .25, 0, minZ - .25], [maxX + .25, 0, minZ - .25],
       [maxX + .25, 0, maxZ + .25], [minX - .25, 0, maxZ + .25]]
-    const faces: Face[] = [{ key: 'slab', vertices: slab, fill: '#bcb9ad', depth: -1000 }]
+    const faces: Face[] = level.slabs?.length ? level.slabs.map(item => ({ key: item.id,
+      vertices: item.polygon.map(point => [point.x, item.elevation, point.z] as Vertex), fill: '#bcb9ad', depth: -1000, select: { kind: 'slab', id: item.id } }))
+      : level.autoSlab === false ? [] : [{ key: 'slab', vertices: slab, fill: '#bcb9ad', depth: -1000 }]
     for (const wall of level.walls) {
       for (const [i, solid] of wallSolids(wall, level.doors, level.windows, level.passages || []).entries()) {
         const high = sectionHeight === null ? solid.top : Math.min(solid.top, sectionHeight)
@@ -56,6 +59,9 @@ export function SoftwarePreview({ level, selection, select, roofShown, top, sect
       const vertices: Vertex[] = [[a.x, 0, a.z], [b.x, 0, b.z], [b.x, door.height, b.z], [a.x, door.height, a.z]]
       faces.push({ key: door.id, vertices, fill: selection?.id === door.id ? '#c69c56' : '#876b52',
         stroke: '#594a3b', depth: depth(vertices) + .1, select: { kind: 'door', id: door.id } })
+      const veranda = verandaGeometry(level, door)
+      if (veranda) { const vertices = veranda.polygon.map(p => [p.x, 0, p.z] as Vertex)
+        faces.push({ key: `veranda:${door.id}`, vertices, fill: '#c9c6b2', depth: -999, select: { kind: 'door', id: door.id } }) }
     }
     for (const window of level.windows) {
       const wall = level.walls.find(w => w.id === window.wallId)
@@ -66,34 +72,31 @@ export function SoftwarePreview({ level, selection, select, roofShown, top, sect
       faces.push({ key: window.id, vertices, fill: selection?.id === window.id ? '#e6ce96' : '#91b9c4',
         stroke: '#4c626a', depth: depth(vertices) + .1, select: { kind: 'window', id: window.id } })
     }
-    if (roofShown && sectionHeight === null && level.walls.length) {
-      const layout = roofLayout({ minX, maxX, minZ, maxZ, top: height }, level.roof || defaultRoof)
-      for (const [i, vertices] of layout.faces.entries()) faces.push({ key: `roof-${i}`, vertices,
-        fill: (level.roof || defaultRoof).color, stroke: '#454d50', depth: 1000 + depth(vertices) })
-      for (const [i, vertices] of layout.gables.entries()) faces.push({ key: `gable-${i}`, vertices,
-        fill: '#d2d0c7', stroke: '#8d8f88', depth: 999 + depth(vertices) })
-    }
+    if (roofShown && sectionHeight === null) faces.push(...softwareRoofs(level, building))
+    faces.push(...softwareDetails(level, levels, roofShown))
     faces.sort((a, b) => a.depth - b.depth)
-    const projected = faces.flatMap(f => f.vertices.map(p => project(p, top)))
+    const projected = faces.length ? faces.flatMap(f => f.vertices.map(p => project(p, top))) : [[0, 0], [8, 6]]
     const left = Math.min(...projected.map(p => p[0])), right = Math.max(...projected.map(p => p[0]))
     const upper = Math.min(...projected.map(p => p[1])), lower = Math.max(...projected.map(p => p[1]))
     return { faces, centerX: (left + right) / 2, centerY: (upper + lower) / 2,
       width: Math.max(4, right - left) * 1.25, height: Math.max(4, lower - upper) * 1.35 }
-  }, [level, selection, roofShown, top, sectionHeight])
+  }, [level, levels, building, selection, roofShown, top, sectionHeight])
+  const [frame, setFrame] = useState(() => geometry), geometryRef = useRef(geometry)
+  useEffect(() => { geometryRef.current = geometry }, [geometry])
   useEffect(() => {
     const host = svg.current?.closest('.viewer')
     const onZoom = (event: Event) => {
       const detail = (event as CustomEvent<ZoomDetail>).detail
-      if (detail.reset) { setZoom(1); setPan({ x: 0, y: 0 }) }
+      if (detail.reset) { setZoom(1); setPan({ x: 0, y: 0 }); setFrame(geometryRef.current) }
       else setZoom(value => Math.max(.2, Math.min(8, value / (detail.factor || 1))))
     }
     host?.addEventListener(zoomEvent, onZoom)
     return () => host?.removeEventListener(zoomEvent, onZoom)
   }, [])
-  const width = geometry.width / zoom, height = geometry.height / zoom
+  const width = frame.width / zoom, height = frame.height / zoom
   return <div className="software-preview">
     <svg ref={svg} role="img" aria-label="Software-rendered 3D building preview"
-      viewBox={`${geometry.centerX + pan.x - width / 2} ${geometry.centerY + pan.y - height / 2} ${width} ${height}`}
+      viewBox={`${frame.centerX + pan.x - width / 2} ${frame.centerY + pan.y - height / 2} ${width} ${height}`}
       preserveAspectRatio="xMidYMid meet" onWheel={event => { event.preventDefault(); event.stopPropagation()
         setZoom(value => Math.max(.2, Math.min(8, value * Math.exp(-event.deltaY * .001)))) }}
       onPointerDown={event => { if (event.button !== 0 && event.button !== 1) return
@@ -109,6 +112,7 @@ export function SoftwarePreview({ level, selection, select, roofShown, top, sect
         stroke={face.stroke || 'none'} strokeWidth=".025" strokeLinejoin="round"
         style={{ cursor: face.select ? 'pointer' : undefined }}
         onClick={event => { event.stopPropagation(); if (face.select) select(face.select) }} />)}
+      <SoftwareElementHandles svg={svg} level={level} top={top} size={width} />
     </svg>
     <span className="software-preview-note">3D preview · WebGL unavailable. Walkthrough needs a WebGL enabled browser.</span>
   </div>

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { zoomEvent, type ZoomDetail } from '../app/useWorkspaceZoom'
+import { manipulationEvent } from './ElementGizmo'
 
 export type CameraPreset = 'default' | 'exterior' | 'overview' | 'interior'
 export function InspectionCamera({ walk, top, center, span, preset = 'default', sportsKind }: {
@@ -10,10 +11,13 @@ export function InspectionCamera({ walk, top, center, span, preset = 'default', 
   const { camera, gl } = useThree()
   const controlsRef = useRef<OrbitControls | null>(null)
   const [cx, cy, cz] = center
+  const framing = useRef({ cx, cy, cz, span })
+  useEffect(() => { framing.current = { cx, cy, cz, span } }, [cx, cy, cz, span])
   useFrame(() => controlsRef.current?.update())
   useEffect(() => {
     if (walk) return
     const frame = () => {
+      const { cx, cy, cz, span } = framing.current
       const targetY = sportsKind === 'stadium' ? 3.5 : sportsKind === 'arena' ? 4 : cy
       if (top) camera.position.set(cx, span * 1.8, cz + .001)
       else if (preset === 'interior' && sportsKind === 'stadium') camera.position.set(cx + span * .18, 4.2, cz + span * .24)
@@ -29,20 +33,23 @@ export function InspectionCamera({ walk, top, center, span, preset = 'default', 
     }
     frame()
     const controls = new OrbitControls(camera, gl.domElement)
+    const { cx, cy, cz, span } = framing.current
     controls.target.set(cx, top ? cy : sportsKind ? sportsKind === 'stadium' ? 3.5 : 4 : cy, cz)
     controls.enableDamping = true; controls.enableRotate = !top; controls.enableZoom = true
     controls.minDistance = 2; controls.maxDistance = Math.max(160, span * 4)
     controlsRef.current = controls
     const host = gl.domElement.closest('.viewer')
+    const manipulate = (event: Event) => { controls.enabled = !(event as CustomEvent<boolean>).detail }
+    host?.addEventListener(manipulationEvent, manipulate)
     const zoom = (event: Event) => {
       const { factor, reset } = (event as CustomEvent<ZoomDetail>).detail
-      if (reset) { frame(); controls.target.set(cx, top ? cy : sportsKind === 'stadium' ? 3.5 : sportsKind === 'arena' ? 4 : cy, cz); controls.update(); return }
+      if (reset) { frame(); const { cx, cy, cz } = framing.current; controls.target.set(cx, top ? cy : sportsKind === 'stadium' ? 3.5 : sportsKind === 'arena' ? 4 : cy, cz); controls.update(); return }
       const offset = camera.position.clone().sub(controls.target)
       offset.multiplyScalar(factor || 1).clampLength(controls.minDistance, controls.maxDistance)
       camera.position.copy(controls.target).add(offset); controls.update()
     }
     host?.addEventListener(zoomEvent, zoom)
-    return () => { host?.removeEventListener(zoomEvent, zoom); controlsRef.current = null; controls.dispose() }
-  }, [walk, top, camera, gl, cx, cy, cz, span, preset, sportsKind])
+    return () => { host?.removeEventListener(zoomEvent, zoom); host?.removeEventListener(manipulationEvent, manipulate); controlsRef.current = null; controls.dispose() }
+  }, [walk, top, camera, gl, preset, sportsKind])
   return null
 }

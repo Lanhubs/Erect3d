@@ -9,11 +9,19 @@ npm install
 npm run dev
 ```
 
-The dashboard includes a sample building so the 2D → 3D → walkthrough pipeline can be inspected without a floor plan. Create a blank project and import a PNG, JPEG, or PDF floor plan. Set scale by clicking two points on a known dimension; the calibration input accepts metres, centimetres, millimetres, feet, or inches. **Apply scale & generate 3D** analyzes the image, creates editable wall geometry, and opens the 3D draft. Use **Edit walls** to correct detection errors and add doors, windows, and rooms. **Reanalyze plan** lets you review dashed wall candidates before replacing the draft. Projects save locally through IndexedDB.
+The dashboard includes editable sample buildings so the 2D → 3D → walkthrough pipeline can be inspected without a floor plan. Create a blank project and import a PNG, JPEG, or PDF floor plan. Analysis starts automatically and estimates scale from consistent door symbols or wall strokes; picking calibration points is optional. **Accept & generate 3D**, or the **3D** view button after analysis, creates the editable draft. Verify scale against a known dimension for measured work; manual calibration accepts metres, centimetres, millimetres, feet, or inches. **Reanalyze plan** lets you inspect and correct proposals before replacing the draft. Projects save locally through IndexedDB.
 
 The **Roof design** controls offer hidden flat, gable, hip, and exposed mono-pitch forms; concrete, standing-seam aluminium, corrugated aluminium, and concrete tile coverings; plus colour, pitch, and overhang. Roof geometry follows the current walls. **Hide roof** reveals the editable interior. Existing projects use the hip roof default until a roof choice is saved.
 
-Automatic reconstruction detects straight wall runs and suggests doors or windows for some gaps. All suggestions need review; rooms, furniture, roofs, and stairs need manual placement. The draft is an aid to tracing, not a finished architectural model.
+Automatic reconstruction combines solid wall strokes, paired wall outlines and thick diagonal runs, consolidating overlapping measurements into a single wall body. Wall-jamb leaves, quarter-circle swing symbols and parallel glazing strokes support door/window proposals. Closed wall boundaries become editable spaces and floor polygons; empty margins and open courtyards are not filled by a bounding-box slab. Imported roof sections follow those polygons. Repeated treads with side rails are preserved as stair footprints for connecting to a reviewed upper floor. Compact column marks are optional, unchecked proposals.
+
+Use **Spaces**, **Details** and the interpretation popover to inspect these proposals. This is local image interpretation, without OCR or semantic recognition of furniture, room names, curved walls, roofs or storey heights. Dense annotations can still be confused with structure and small raster drawings lose fine symbols. All generated geometry needs review; automatic scale is an estimate, and stair connections must fit the measured footprint, wall clearances and upper-floor slab. Prefer the original PDF or a larger image when available.
+
+Before generating 3D, open **Floors & roofs** to locate each space and uncheck enclosed areas that should stay uncovered. Selecting a space highlights its outline; excluded spaces keep their walls but generate neither a floor nor a roof. Choices follow the polygon rather than its list position. Roof section settings can be expanded individually in Properties. Thin perpendicular door leaves can be proposed without a swing arc; these weaker proposals still need review. Duplicate traces of one line are not treated as window glazing.
+
+Connected spaces share one continuous building roof, including courtyard cutouts. **Properties → Roof design** always provides form, covering, colour, pitch and overhang choices for the whole roof; independent sections are optional. Earlier automatically generated per-room roofs are repaired when a project is reopened. **Use one building roof** rebuilds the roof from the included spaces.
+
+The site fence uses the full ground footprint. Click it in 3D or select its boundary in the plan to edit fence and gate settings; drag selected boundary points in the plan to reshape it. **Fit around building** regenerates the full perimeter using the setbacks. Manual boundary edits are preserved; automatic fences follow ground-level wall and alignment changes.
 
 Select a door in the plan or 3D model to edit its design (flush, panel, glazed, or double leaf), hinge side, and dimensions in Properties. Reanalyze an imported plan to apply improved thick-wall detection to an existing draft. On narrow screens, selecting an element opens its Properties sheet; the toolbar remains above the main viewport.
 
@@ -27,6 +35,9 @@ PNG imports keep the original image for source viewing. A scaled bitmap is used 
 - 3D: drag to orbit, right drag to pan, scroll or pinch on the model to zoom, or use the on-screen +/−/Fit buttons. Ctrl/Cmd+scroll and Ctrl/Cmd++/− also zoom the camera; Ctrl/Cmd+0 fits the model. The workspace intercepts these browser zoom shortcuts while it is open.
 - Walkthrough: click **Enter walkthrough**, use WASD and mouse; Esc releases the pointer.
 - Undo/redo: Ctrl/Cmd+Z and Ctrl/Cmd+Shift+Z.
+- Building editing: select an element in 2D or 3D, then drag the blue centre to move or blue edge handles to reshape; purple rotates, green resizes, and amber adjusts height. Arrows nudge 0.1 m, Shift makes movement ten times finer, [ / ] rotate 5°, , / . resize, and Page Up / Down adjust height. Esc cancels a drag; one completed drag makes one undo step. Openings stay on their host walls and stairs keep their linked upper-floor opening.
+- Verandas: select a door on any floor and choose **Add entrance veranda** or **Add upper-floor veranda** in Properties. Set width, projection, outside face, guardrails, floor finish and flat or single-slope cover. Verandas follow their door and are saved with the project.
+- Roofs follow the actual building outlines, retain courtyards, close gaps above wall tops and omit portions covered by higher floors. Whole-roof and independent section design choices remain in Properties.
 
 ## Checks
 

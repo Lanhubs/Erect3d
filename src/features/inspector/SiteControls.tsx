@@ -1,6 +1,6 @@
 import type { Building, FenceMaterial, Point, SiteFence } from '../../domain/types'
 import { uid } from '../../domain/types'
-import { generateSiteFence, insertBoundaryPoint, updateFenceBoundary } from '../../geometry/site'
+import { generateSiteFence, insertBoundaryPoint, updateFenceBoundary, repairGeneratedFence } from '../../geometry/site'
 import { useProject } from '../../state/project'
 
 const materialOptions: Array<[FenceMaterial, string]> = [
@@ -15,7 +15,7 @@ export function SiteControls({ building }: { building: Building }) {
   const ground = [...building.levels].sort((a, b) => a.elevation - b.elevation)[0]
   const updateFence = (change: (current: SiteFence | undefined) => SiteFence | undefined) => editProject(project => {
     const target = project.buildings.find(item => item.id === building.id)
-    if (target) target.siteFence = change(target.siteFence)
+    if (target) { target.siteFence = change(target.siteFence); repairGeneratedFence(target) }
     return project
   })
   const changeBoundary = (next: Point[]) => updateFence(current => current ? updateFenceBoundary(current, next) : current)
@@ -43,7 +43,7 @@ export function SiteControls({ building }: { building: Building }) {
     <div className="panel-title">SITE · BOUNDARY & FENCE</div>
     <label className="site-toggle"><span>Site fence</span><input aria-label="Site fence" type="checkbox" checked={enabled} onChange={onToggle} /></label>
     <div className="site-actions">
-      <button type="button" disabled={!ground.walls.length} onClick={onAutoGenerate}>Auto generate</button>
+      <button type="button" disabled={!ground.walls.length && !ground.slabs?.length} onClick={onAutoGenerate}>{fence ? 'Fit around building' : 'Auto generate'}</button>
       {fence && <label className="inspector-field"><span>Material</span><select value={fence.material}
         onChange={event => updateFence(current => current && { ...current, material: event.target.value as FenceMaterial,
           segments: current.segments.map(segment => ({ ...segment, material: event.target.value as FenceMaterial })) })}>

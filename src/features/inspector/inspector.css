@@ -1,124 +1,353 @@
-.inspector{
-  width:260px;
-  flex:none;
-  background:#f6f7f4;
-  border-left:1px solid #cbd2c8;
-  overflow:auto
+.inspector {
+  width: 260px;
+  flex: none;
+  background: #f6f7f4;
+  border-left: 1px solid #cbd2c8;
+  overflow: auto
 }
-.panel-title{
-  padding:14px 15px 9px;
-  border-bottom:1px solid #d6dcd4;
-  font:600 10px 'IBM Plex Mono',monospace;
-  letter-spacing:.1em;
-  color:#6c786d
+
+.panel-title {
+  padding: 14px 15px 9px;
+  border-bottom: 1px solid #d6dcd4;
+  font: 600 10px 'IBM Plex Mono', monospace;
+  letter-spacing: .1em;
+  color: #6c786d
 }
-.inspector-empty{
-  padding:18px 15px 24px;
-  color:#829084;
-  font-size:12px;
-  line-height:1.55
+
+.inspector-empty {
+  padding: 18px 15px 24px;
+  color: #829084;
+  font-size: 12px;
+  line-height: 1.55
 }
-.summary-grid{
-  display:grid;
-  grid-template-columns:1fr auto;
-  gap:9px;
-  padding:16px;
-  color:#68756a;
-  font-size:12px
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 9px;
+  padding: 16px;
+  color: #68756a;
+  font-size: 12px
 }
-.summary-grid b{
-  color:#354239
+
+.summary-grid b {
+  color: #354239
 }
-.entity-title{
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-  padding:15px;
-  border-bottom:1px solid #d8ded5
+
+.entity-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 15px;
+  border-bottom: 1px solid #d8ded5
 }
-.entity-title strong{
-  font:600 14px 'IBM Plex Mono',monospace;
-  letter-spacing:.03em
+
+.entity-title strong {
+  font: 600 14px 'IBM Plex Mono', monospace;
+  letter-spacing: .03em
 }
-.entity-title small{
-  font:10px 'IBM Plex Mono',monospace;
-  color:#8b978b;
-  overflow:hidden;
-  text-overflow:ellipsis
+
+.entity-title small {
+  font: 10px 'IBM Plex Mono', monospace;
+  color: #8b978b;
+  overflow: hidden;
+  text-overflow: ellipsis
 }
-.fields{
-  padding:7px 15px
+
+.fields {
+  padding: 7px 15px
 }
-.inspector-field,.readout{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  min-height:39px;
-  font-size:11px;
-  color:#647066;
-  border-bottom:1px solid #e4e8e1
+
+.inspector-field,
+.readout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 39px;
+  font-size: 11px;
+  color: #647066;
+  border-bottom: 1px solid #e4e8e1
 }
-.inspector-field input,.inspector-field select{
-  width:95px;
-  border:1px solid #c9d1c6;
-  background:#fff;
-  color:#36443a;
-  padding:5px 6px;
-  font-size:11px
+.inspector-field{
+  margin: auto 10px auto 10px;
 }
-.inspector-field input[type=color]{
-  height:27px;
-  padding:2px
+
+.inspector-field input,
+.inspector-field select {
+  width: 95px;
+  border: 1px solid #c9d1c6;
+  background: #fff;
+  color: #36443a;
+  padding: 5px 6px;
+  font-size: 11px
 }
-.readout b{
-  font-weight:600;
-  color:#3c493f;
-  text-align:right;
-  max-width:130px;
-  overflow:hidden;
-  text-overflow:ellipsis
+
+.inspector-field input[type=color] {
+  height: 27px;
+  padding: 2px
 }
-.delete-button{
-  margin:16px;
-  border:1px solid #c8b9b3;
-  background:#f8f2ef;
-  color:#8d574c;
-  font-size:11px;
-  padding:7px 9px
+
+.readout b {
+  font-weight: 600;
+  color: #3c493f;
+  text-align: right;
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis
 }
-.inspector-action{margin:12px 0 6px;border:1px solid #b8c6b9;background:#e9eee8;color:#35513b;padding:8px 10px;font-size:11px}
-.roof-controls { padding: 12px 15px 18px; display: grid; gap: 12px; }
-.roof-controls label { display: grid; gap: 5px; color: #536055; font-size: 11px; }
-.roof-controls select, .roof-controls input[type=color] { width: 100%; min-height: 30px; border: 1px solid #c4ccc1; background: white; color: #344238; padding: 4px 6px; }
-.roof-controls input[type=color] { padding: 2px; }
-.roof-controls input[type=range] { width: 100%; accent-color: #9a7047; }
-.roof-controls p { margin: 0; color: #849084; font-size: 10px; line-height: 1.5; }
-.roof-section-list { padding: 10px 15px 16px; display: grid; gap: 10px; }
-.roof-section-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #49564b; font-size: 11px; }
-.roof-section-toolbar button,.roof-section-remove { border: 1px solid #c4ccc1; background: #fff; color: #3c493f; padding: 6px 8px; font-size: 10px; }
-.roof-section-card { display: grid; gap: 5px; padding: 8px; border: 1px solid #d6dcd4; background: #fbfcf9; }
-.roof-section-range { display: grid; gap: 4px; color: #536055; font-size: 10px; }
-.roof-section-range input { width: 100%; accent-color: #9a7047; }
-.roof-section-outline { padding-top: 5px; border-top: 1px solid #e0e5de; color: #637068; font-size: 10px; }
-.roof-section-outline summary { cursor: pointer; }
-.roof-section-point { display: grid; grid-template-columns: 24px 1fr 1fr; gap: 5px; align-items: center; padding: 3px 0; }
-.roof-section-point label { display: grid; gap: 2px; }
-.roof-section-point input { min-width: 0; width: 100%; padding: 4px; border: 1px solid #c9d1c6; background: #fff; font-size: 10px; }
-.roof-section-list p { margin: 0; color: #849084; font-size: 10px; line-height: 1.5; }
-.site-controls { padding-bottom: 10px; border-bottom: 1px solid #d6dcd4; }
-.site-controls .panel-title { padding-top: 14px; }
-.site-toggle { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; color: #36443a; font-size: 12px; }
-.site-toggle input { accent-color: #55765b; }
-.site-actions { display: grid; gap: 6px; padding: 5px 15px; }
-.site-actions button, .site-add, .site-gate button { border: 1px solid #c4ccc1; background: #fff; color: #3c493f; padding: 6px 8px; font-size: 10px; text-align: left; }
-.site-actions button:disabled { opacity: .45; }
-.site-subtitle { padding: 9px 15px 3px; color: #788477; font: 600 9px 'IBM Plex Mono',monospace; }
-.site-point { display: grid; grid-template-columns: 24px 1fr 1fr 24px; align-items: center; gap: 5px; padding: 4px 15px; color: #788477; font-size: 9px; }
-.site-point label, .site-gate label { display: grid; gap: 2px; color: #788477; font-size: 9px; }
-.site-point input, .site-gate input, .site-gate select { min-width: 0; width: 100%; border: 1px solid #c9d1c6; background: white; color: #36443a; padding: 4px; font-size: 10px; }
-.site-point button { height: 25px; border: 1px solid #d1d8cf; background: white; color: #765b50; }
-.site-point button:disabled { opacity: .35; }
-.site-add { margin: 6px 15px; }
-.site-gate { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; padding: 6px 15px; }
-.site-gate strong { grid-column: 1 / -1; color: #465449; font-size: 10px; }
+
+.delete-button {
+  margin: 16px;
+  border: 1px solid #c8b9b3;
+  background: #f8f2ef;
+  color: #8d574c;
+  font-size: 11px;
+  padding: 7px 9px
+}
+
+.inspector-action {
+  margin: 12px 0 6px;
+  border: 1px solid #b8c6b9;
+  background: #e9eee8;
+  color: #35513b;
+  padding: 8px 10px;
+  font-size: 11px
+}
+
+.roof-controls {
+  padding: 12px 15px 18px;
+  display: grid;
+  gap: 12px;
+}
+
+.roof-controls label {
+  display: grid;
+  gap: 5px;
+  color: #536055;
+  font-size: 11px;
+}
+
+.roof-controls select,
+.roof-controls input[type=color] {
+  width: 100%;
+  min-height: 30px;
+  border: 1px solid #c4ccc1;
+  background: white;
+  color: #344238;
+  padding: 4px 6px;
+}
+
+.roof-controls input[type=color] {
+  padding: 2px;
+}
+
+.roof-controls input[type=range] {
+  width: 100%;
+  accent-color: #9a7047;
+}
+
+.roof-controls p {
+  margin: 0;
+  color: #849084;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.roof-section-list {
+  padding: 10px 15px 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.roof-section-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #49564b;
+  font-size: 11px;
+}
+
+.roof-section-toolbar button,
+.roof-section-remove {
+  border: 1px solid #c4ccc1;
+  background: #fff;
+  color: #3c493f;
+  padding: 6px 8px;
+  font-size: 10px;
+}
+
+.roof-section-card {
+  display: grid;
+  gap: 5px;
+  padding: 8px;
+  border: 1px solid #d6dcd4;
+  background: #fbfcf9;
+}
+
+.roof-section-card>summary {
+  cursor: pointer;
+  color: #49564b;
+  font-size: 11px;
+  padding: 3px 0;
+}
+
+.roof-section-range {
+  display: grid;
+  gap: 4px;
+  color: #536055;
+  font-size: 10px;
+}
+
+.roof-section-range input {
+  width: 100%;
+  accent-color: #9a7047;
+}
+
+.roof-section-outline {
+  padding-top: 5px;
+  border-top: 1px solid #e0e5de;
+  color: #637068;
+  font-size: 10px;
+}
+
+.roof-section-outline summary {
+  cursor: pointer;
+}
+
+.roof-section-point {
+  display: grid;
+  grid-template-columns: 24px 1fr 1fr;
+  gap: 5px;
+  align-items: center;
+  padding: 3px 0;
+}
+
+.roof-section-point label {
+  display: grid;
+  gap: 2px;
+}
+
+.roof-section-point input {
+  min-width: 0;
+  width: 100%;
+  padding: 4px;
+  border: 1px solid #c9d1c6;
+  background: #fff;
+  font-size: 10px;
+}
+
+.roof-section-list p {
+  margin: 0;
+  color: #849084;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.site-controls {
+  padding-bottom: 10px;
+  border-bottom: 1px solid #d6dcd4;
+}
+
+.site-controls .panel-title {
+  padding-top: 14px;
+}
+
+.site-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  color: #36443a;
+  font-size: 12px;
+}
+
+.site-toggle input {
+  accent-color: #55765b;
+}
+
+.site-actions {
+  display: grid;
+  gap: 6px;
+  padding: 5px 15px;
+}
+
+.site-actions button,
+.site-add,
+.site-gate button {
+  border: 1px solid #c4ccc1;
+  background: #fff;
+  color: #3c493f;
+  padding: 6px 8px;
+  font-size: 10px;
+  text-align: left;
+}
+
+.site-actions button:disabled {
+  opacity: .45;
+}
+
+.site-subtitle {
+  padding: 9px 15px 3px;
+  color: #788477;
+  font: 600 9px 'IBM Plex Mono', monospace;
+}
+
+.site-point {
+  display: grid;
+  grid-template-columns: 24px 1fr 1fr 24px;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 15px;
+  color: #788477;
+  font-size: 9px;
+}
+
+.site-point label,
+.site-gate label {
+  display: grid;
+  gap: 2px;
+  color: #788477;
+  font-size: 9px;
+}
+
+.site-point input,
+.site-gate input,
+.site-gate select {
+  min-width: 0;
+  width: 100%;
+  border: 1px solid #c9d1c6;
+  background: white;
+  color: #36443a;
+  padding: 4px;
+  font-size: 10px;
+}
+
+.site-point button {
+  height: 25px;
+  border: 1px solid #d1d8cf;
+  background: white;
+  color: #765b50;
+}
+
+.site-point button:disabled {
+  opacity: .35;
+}
+
+.site-add {
+  margin: 6px 15px;
+}
+
+.site-gate {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  padding: 6px 15px;
+}
+
+.site-gate strong {
+  grid-column: 1 / -1;
+  color: #465449;
+  font-size: 10px;
+}

@@ -1,4 +1,5 @@
 import cvModule from '@techstark/opencv-js'
+import { diagonalWalls } from './diagonalWalls'
 
 let ready: Promise<typeof cvModule> | undefined
 
@@ -36,4 +37,14 @@ export async function preparePlan(pixels: Uint8ClampedArray, width: number, heig
   } finally {
     rgba.delete(); gray.delete(); smooth.delete(); binary.delete(); fine.delete()
   }
+}
+
+export async function scanDiagonals(mask: Uint8Array, width: number, height: number) {
+  const cv = await openCV(), image = new cv.Mat(height, width, cv.CV_8UC1), lines = new cv.Mat()
+  try {
+    image.data.set(mask.map(value => value ? 255 : 0))
+    const minimum = Math.max(20, Math.min(width, height) * .04)
+    cv.HoughLinesP(image, lines, 1, Math.PI / 360, Math.round(minimum), minimum, 2)
+    return diagonalWalls(lines.data32S, mask, width, height)
+  } finally { image.delete(); lines.delete() }
 }

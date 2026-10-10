@@ -9,6 +9,8 @@ import { SoftwarePreview } from './SoftwarePreview'
 import { BuildingScene, type BuildingView } from './BuildingScene'
 import type { CameraPreset } from './InspectionCamera'
 import { wallBoundsPoints } from '../geometry/math'
+import { useElementEditing } from '../features/editing/useElementEditing'
+import { useProject } from '../state/project'
 
 function CanvasSizeSync() {
   const { camera, gl } = useThree()
@@ -92,7 +94,9 @@ export function Viewer({ building, activeLevelId, isolateId = null, selection, s
   const minX = Math.min(0, ...xPoints), maxX = Math.max(8, ...xPoints)
   const sportsKind = building.levels.some(item => item.rooms.some(room => room.category === 'football-pitch')) ? 'stadium'
     : building.levels.some(item => item.rooms.some(room => room.category === 'table-tennis-hall')) ? 'arena' : null
-  return <section className="viewer" ref={viewerRef}>
+  const tool = useProject(state => state.tool), editing = useElementEditing(!walk && !presentation && tool === 'select')
+  return <section className="viewer" ref={viewerRef} tabIndex={0} aria-label="Editable 3D building" onKeyDown={editing.keyboard}
+    onPointerDownCapture={event => { if (!(event.target as HTMLElement).closest('button,input,select')) viewerRef.current?.focus() }}>
     <div className="viewport-head"><span>{presentation ? 'PRESENT · 3D' : '3D MODEL'}</span><div>
       <button className="primary walk-trigger" onClick={toggleWalk} title="Use WASD to move. Drag or lock the pointer to look around.">
         {walk ? 'Exit walk' : 'Walk'}</button>
@@ -133,7 +137,7 @@ export function Viewer({ building, activeLevelId, isolateId = null, selection, s
         selection={selection} select={select} walk={walk} top={top} endWalk={endWalk} ceiling={ceiling}
         roofShown={roofShown} sectionHeight={sectionHeight} verticalSection={verticalSection} quality={quality}
         openDoors={openDoors} toggleDoor={toggleDoor} onWalkPosition={onWalkPosition} cameraPreset={cameraPreset} />
-    </Canvas> : <SoftwarePreview level={level} selection={selection} select={select} roofShown={roofShown}
+    </Canvas> : <SoftwarePreview key={`${level.id}:${top}`} level={level} levels={building.levels} building={building} selection={selection} select={select} roofShown={roofShown}
       top={top} sectionHeight={sectionHeight} />}
       {sectionHeight !== null && <label className="section-control">Cut height · {sectionHeight.toFixed(1)} m
         <input aria-label="Section cut height" type="range" min="0.4" max={maxHeight} step="0.1" value={sectionHeight}
@@ -150,6 +154,7 @@ export function Viewer({ building, activeLevelId, isolateId = null, selection, s
     </div>
     <div className="viewport-foot">{walk
       ? `W A S D move · ${lockedWalk ? 'Mouse look · Esc release' : 'Drag to look · Exit walk to leave'} · E open/close nearby door`
-      : 'Drag rotate · Right drag pan · Scroll or pinch zoom · Ctrl + / − zoom · Ctrl + 0 fit'}</div>
+      : editing.message || (selection ? 'Handles: blue move/reshape · purple rotate · green resize · amber height · Arrows move · Shift fine · Esc cancel'
+        : 'Drag rotate · Right drag pan · Scroll or pinch zoom · Ctrl + / − zoom · Ctrl + 0 fit')}</div>
   </section>
 }

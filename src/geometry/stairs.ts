@@ -16,10 +16,10 @@ export function stairSteps(stair: Stair, levels: Level[]): Step[] {
       return { u: (index + .5) * stair.treadDepth, v: 0, height: (index + 1) * riser,
         width: stair.width, depth: stair.treadDepth, turn: 0 }
     const second = index - split
-    if (stair.form === 'L') return { u: split * stair.treadDepth + stair.landingLength,
-      v: (second + .5) * stair.treadDepth, height: (index + 1) * riser,
+    if (stair.form === 'L') return { u: split * stair.treadDepth + stair.width / 2,
+      v: stair.width / 2 + (second + .5) * stair.treadDepth, height: (index + 1) * riser,
       width: stair.width, depth: stair.treadDepth, turn: Math.PI / 2 }
-    return { u: (split - second - .5) * stair.treadDepth, v: stair.width + stair.landingLength,
+    return { u: split * stair.treadDepth + stair.landingLength - (second + .5) * stair.treadDepth, v: stair.width + stair.landingLength,
       height: (index + 1) * riser, width: stair.width, depth: stair.treadDepth, turn: Math.PI }
   })
 }
@@ -33,25 +33,25 @@ export function stairLanding(stair: Stair, levels: Level[]): Landing | null {
   const steps = stairSteps(stair, levels)
   if (!steps.length) return null
   const split = Math.ceil(steps.length / 2), end = split * stair.treadDepth
-  if (stair.form === 'L') return { u: end + (stair.landingLength + stair.width / 2) / 2, v: 0,
-    height: steps[split - 1].height, sizeU: stair.landingLength + stair.width / 2, sizeV: stair.width }
-  return { u: end - stair.width / 2, v: (stair.width + stair.landingLength) / 2,
-    height: steps[split - 1].height, sizeU: stair.width + .25, sizeV: stair.width * 2 + stair.landingLength }
+  if (stair.form === 'L') return { u: end + stair.width / 2, v: 0,
+    height: steps[split - 1].height, sizeU: stair.width, sizeV: stair.width }
+  return { u: end + stair.landingLength / 2, v: (stair.width + stair.landingLength) / 2,
+    height: steps[split - 1].height, sizeU: stair.landingLength, sizeV: stair.width * 2 + stair.landingLength }
 }
 export function stairOpening(stair: Stair, levels: Level[]): Point[] {
   const steps = stairSteps(stair, levels)
   if (!steps.length) return []
-  const cornersOf = (u: number, v: number, sizeU: number, sizeV: number) =>
-    [-1, 1].flatMap(a => [-1, 1].map(b => localToWorld(stair, u + a * sizeU / 2, v + b * sizeV / 2)))
-  const corners = steps.flatMap(step => {
-    return cornersOf(step.u, step.v, step.turn === 0 || step.turn === Math.PI ? step.depth : step.width,
-      step.turn === 0 || step.turn === Math.PI ? step.width : step.depth)
+  const corners: [number, number][] = steps.flatMap(step => {
+    const sizeU = step.turn === Math.PI / 2 ? step.width : step.depth
+    const sizeV = step.turn === Math.PI / 2 ? step.depth : step.width
+    return [-1, 1].flatMap(a => [-1, 1].map(b => [step.u + a * sizeU / 2, step.v + b * sizeV / 2] as [number, number]))
   })
   const landing = stairLanding(stair, levels)
-  if (landing) corners.push(...cornersOf(landing.u, landing.v, landing.sizeU, landing.sizeV))
-  const minX = Math.min(...corners.map(point => point.x)) - .12, maxX = Math.max(...corners.map(point => point.x)) + .12
-  const minZ = Math.min(...corners.map(point => point.z)) - .12, maxZ = Math.max(...corners.map(point => point.z)) + .12
-  return [{ x: minX, z: minZ }, { x: maxX, z: minZ }, { x: maxX, z: maxZ }, { x: minX, z: maxZ }]
+  if (landing) corners.push(...[-1, 1].flatMap(a => [-1, 1].map(b =>
+    [landing.u + a * landing.sizeU / 2, landing.v + b * landing.sizeV / 2] as [number, number])))
+  const minU = Math.min(...corners.map(point => point[0])) - .12, maxU = Math.max(...corners.map(point => point[0])) + .12
+  const minV = Math.min(...corners.map(point => point[1])) - .12, maxV = Math.max(...corners.map(point => point[1])) + .12
+  return [[minU, minV], [maxU, minV], [maxU, maxV], [minU, maxV]].map(([u, v]) => localToWorld(stair, u, v))
 }
 export function stairHeightAt(stair: Stair, levels: Level[], point: Point): number | null {
   const steps = stairSteps(stair, levels)

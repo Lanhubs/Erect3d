@@ -12,18 +12,18 @@ export function roofTexture(material: RoofMaterial) {
   ctx.fillStyle = material === 'concrete' ? '#e5e4e1' : '#e7e9e9'
   ctx.fillRect(0, 0, 256, 256)
   if (material === 'standing-seam' || material === 'long-span-metal') {
-    const step = material === 'long-span-metal' ? 42 : 64
+    const step = material === 'long-span-metal' ? 128 : 64
     for (let x = 0; x < 256; x += step) {
-      ctx.fillStyle = '#a4aeb0'; ctx.fillRect(x, 0, 4, 256)
-      ctx.fillStyle = '#ffffff'; ctx.fillRect(x + 4, 0, 2, 256)
-      ctx.fillStyle = '#d1d7d8'; ctx.fillRect(x + 6, 0, 7, 256)
+      ctx.fillStyle = '#b4bec0'; ctx.fillRect(x, 0, 3, 256)
+      ctx.fillStyle = '#f1f3f2'; ctx.fillRect(x + 3, 0, 2, 256)
+      ctx.fillStyle = '#d9dfe0'; ctx.fillRect(x + 5, 0, 8, 256)
     }
   } else if (material === 'corrugated') {
-    for (let x = 0; x < 256; x += 18) {
-      const gradient = ctx.createLinearGradient(x, 0, x + 18, 0)
-      gradient.addColorStop(0, '#a7b0b3'); gradient.addColorStop(.35, '#f7f8f8')
-      gradient.addColorStop(.7, '#d0d8d9'); gradient.addColorStop(1, '#9ea9ac')
-      ctx.fillStyle = gradient; ctx.fillRect(x, 0, 18, 256)
+    for (let x = 0; x < 256; x += 32) {
+      const gradient = ctx.createLinearGradient(x, 0, x + 32, 0)
+      gradient.addColorStop(0, '#bec7c8'); gradient.addColorStop(.35, '#e9eded')
+      gradient.addColorStop(.7, '#d5dddd'); gradient.addColorStop(1, '#b7c2c4')
+      ctx.fillStyle = gradient; ctx.fillRect(x, 0, 32, 256)
     }
   } else if (material === 'concrete-tile' || material === 'clay-tile' || material === 'stone-coated-metal' || material === 'shingle') {
     const shingle = material === 'shingle'
@@ -43,8 +43,6 @@ export function roofTexture(material: RoofMaterial) {
       ctx.fillStyle = i % 2 ? 'rgba(80,85,85,.06)' : 'rgba(255,255,255,.12)'
       ctx.fillRect(x, y, 1 + i % 3, 1 + i % 2)
     }
-    ctx.strokeStyle = 'rgba(90,95,95,.1)'; ctx.lineWidth = 2
-    ctx.strokeRect(0, 0, 255, 255)
   }
   const texture = new CanvasTexture(canvas)
   texture.wrapS = RepeatWrapping; texture.wrapT = RepeatWrapping

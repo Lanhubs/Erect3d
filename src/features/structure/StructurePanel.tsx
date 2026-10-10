@@ -5,8 +5,9 @@ import { uid, type Level, type Point, type Project, type Selection, type Slab, t
 import { stairOpening } from '../../geometry/stairs'
 import { containsPolygon } from '../../geometry/polygons'
 import { polygonArea } from '../../geometry/quantities'
-import { findStairPlacement } from '../../geometry/stairPlacement'
+import { findStairPlacement, stairPlacementValid } from '../../geometry/stairPlacement'
 import { useProject } from '../../state/project'
+import { StairGuidesPanel } from './StairGuidesPanel'
 import './structure.css'
 
 const number = (value: string, fallback: number) => Number.isFinite(Number(value)) ? Number(value) : fallback
@@ -77,6 +78,13 @@ export function StructurePanel({ project, level, select }: { project: Project; l
     if (issue) { setError(issue); return }
     setError(''); editProject(copy => { updateStair(copy, id, change); return copy })
   }
+  const repositionStair = (stair: Stair) => {
+    const levels = project.buildings[0].levels
+    const destination = levels.find(item => item.id === stair.toLevelId)
+    const placed = findStairPlacement(stair, levels, destination?.slabs || [], stair.start)
+    if (!placed) { setError('No clear stair route fits the destination floor. Check the slab, walls and existing openings.'); return }
+    changeStair(stair.id, { start: placed.start, direction: placed.direction })
+  }
   return <section className="structure-panel" aria-label="Structural elements">
     <button className="structure-toggle" onClick={() => setOpen(value => !value)} aria-expanded={open}>Structure · {level.slabs?.length || 0} slabs · {level.columns?.length || 0} columns · {level.stairs?.length || 0} stairs · {level.ramps?.length || 0} ramps · {level.seatingSections?.length || 0} seating zones <span>{open ? '−' : '+'}</span></button>
     {open && <div className="structure-body">
@@ -115,8 +123,10 @@ export function StructurePanel({ project, level, select }: { project: Project; l
       </div>)}
       <div className="structure-row"><strong>Stairs</strong><button onClick={addStair} disabled={!target || level.locked || target.locked}>Connect to level</button></div>
       {upper.length > 0 && <div className="structure-row"><select aria-label="Destination level" value={target?.id || ''} onChange={event => setTargetId(event.target.value)}>{upper.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select><select aria-label="Stair form" value={form} onChange={event => setForm(event.target.value as Stair['form'])}><option value="straight">Straight</option><option value="L">L turn</option><option value="U">U turn</option></select></div>}
+      <StairGuidesPanel project={project} level={level} target={target} form={form} />
       {level.stairs?.map(stair => <div className="structure-card" key={stair.id}>
         <div className="structure-row"><b>{stair.form} stair → {project.buildings[0].levels.find(item => item.id === stair.toLevelId)?.name}</b><button onClick={() => select({ kind: 'stair', id: stair.id })}>Inspect</button><button onClick={() => editProject(copy => { const levels = copy.buildings[0].levels; const from = levels.find(item => item.id === level.id), to = levels.find(item => item.id === stair.toLevelId); if (from) from.stairs = from.stairs?.filter(item => item.id !== stair.id); to?.slabs?.forEach(slab => { slab.openings = slab.openings.filter(item => item.id !== stair.openingId) }); return copy })}>Remove</button></div>
+        <div className="structure-row"><small>{stairPlacementValid(stair, project.buildings[0].levels, project.buildings[0].levels.find(item => item.id === stair.toLevelId)?.slabs || []) ? 'Clear route to upper floor' : 'Route needs placement'}</small><button onClick={() => repositionStair(stair)} disabled={level.locked || project.buildings[0].levels.find(item => item.id === stair.toLevelId)?.locked}>Auto position</button></div>
         {(['x', 'z'] as const).map(axis => <label key={axis}>Start {axis.toUpperCase()} · m<input type="number" step="0.1" key={`${stair.id}:${axis}:${stair.start[axis]}`}
           defaultValue={stair.start[axis]} onBlur={event => changeStair(stair.id, { start: { ...stair.start, [axis]: number(event.target.value, stair.start[axis]) } })} /></label>)}
         {(['direction', 'width', 'riserHeight', 'treadDepth', 'landingLength'] as const).map(field => <label key={field}>{field === 'direction' ? 'Direction · °' : `${field.replace(/[A-Z]/g, value => ` ${value.toLowerCase()}`)} · m`}

@@ -18,6 +18,17 @@ test('all roof forms produce finite surfaces over the building footprint', () =>
   }
 })
 
+test('cross roof sheets cover the footprint once without overlapping planes or gaps', () => {
+  for (const shape of ['cross-gable', 'cross-hip'] as RoofShape[]) {
+    const roof = { ...defaultRoof, shape, overhang: .4 }
+    const faces = roofLayout(bounds, roof).faces
+    const projectedArea = faces.reduce((sum, [a, b, c]) => sum + Math.abs(
+      (b[0] - a[0]) * (c[2] - a[2]) - (c[0] - a[0]) * (b[2] - a[2])) / 2, 0)
+    expect(faces.every(face => face.length === 3)).toBe(true)
+    expect(projectedArea).toBeCloseTo((12 + .8) * (8 + .8), 5)
+  }
+})
+
 test('shed roof has wall infill rather than floating above the house', () => {
   const layout = roofLayout(bounds, { ...defaultRoof, shape: 'shed', pitch: 12 })
   expect(layout.gables.length).toBeGreaterThanOrEqual(3)

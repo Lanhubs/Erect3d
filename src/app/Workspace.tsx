@@ -1,10 +1,9 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { activeLevel, type Calibration, type Project, type Selection } from '../domain/types'
-import { newSlab, translateWalls, wallEnvelope } from '../domain/levels'
+import { acceptInterpretation } from '../domain/acceptInterpretation'
 import { reusedGroundCalibration, setLevelCalibration } from '../domain/levelCalibration'
 import { calibrate } from '../geometry/math'
 import { initialAutoScale, setEstimatedSpan } from '../geometry/autoScale'
-import { assembleDraft } from '../geometry/reconstruct'
 import type { OpeningChoice } from '../geometry/openingCandidates'
 import { CalibrationPanel } from '../features/import/CalibrationPanel'
 import { useAnalysis } from '../features/import/useAnalysis'
@@ -36,9 +35,8 @@ export function Workspace({ project, back }: { project: Project; back: () => voi
   const setProject = useProject(s => s.setProject), editProject = useProject(s => s.editProject)
   const undo = useProject(s => s.undo), redo = useProject(s => s.redo)
   const dirty = useProject(s => s.dirty), markSaved = useProject(s => s.markSaved)
-  const version = useProject(s => s.version)
-  const activeLevelId = useProject(s => s.activeLevelId)
-  const analysis = useAnalysis()
+  const version = useProject(s => s.version), previewBase = useProject(s => s.previewBase)
+  const activeLevelId = useProject(s => s.activeLevelId), analysis = useAnalysis()
   const { source, url, error, pages, busy, importFile, selectPage } = usePlanSource(project, activeLevelId || project.buildings[0].levels[0].id, analysis.clear)
   const clearAnalysis = analysis.clear
   const [page, setPage] = useState(source?.page || 1), [showImport, setShowImport] = useState(!project.sources.length)
@@ -46,21 +44,22 @@ export function Workspace({ project, back }: { project: Project; back: () => voi
   const [roofShown, setRoofShown] = useState(true)
   const [isolateId, setIsolateId] = useState<string | null>(null), [underlayId, setUnderlayId] = useState<string | null>(null)
   const [walkRequest, setWalkRequest] = useState(0)
-  const [mode, setMode] = useState<WorkspaceMode>('edit'), [reviewView, setReviewView] = useState<ReviewView>({ source: true, walls: true, openings: true, opacity: .55 })
+  const [mode, setMode] = useState<WorkspaceMode>('edit'), [reviewView, setReviewView] = useState<ReviewView>({ source: true, walls: true, openings: true, spaces: true, details: true, opacity: .55 })
   const [selectedDetection, setSelectedDetection] = useState<string | null>(null)
   useWorkspaceZoom(mode === 'present' ? 'model' : view)
   const [inspectorOpen, setInspectorOpen] = useState(false)
-  const selectEntity = (next: Selection) => { select(next); if (next) setInspectorOpen(true) }
+  const selectEntity = (next: Selection) => { const owner = next && project.buildings[0].levels.find(item => [item.walls, item.doors, item.windows, item.passages, item.rooms, item.slabs, item.columns, item.stairs, item.ramps, item.seatingSections, item.details].some(items => items?.some(element => element.id === next.id)))
+    if (owner && owner.id !== activeLevelId) useProject.getState().setActiveLevel(owner.id); select(next); if (next) setInspectorOpen(true) }
   const level = activeLevel(project, activeLevelId)
   const calibration = level.calibration || (level === project.buildings[0].levels[0] ? project.calibration : undefined)
   const underlay = project.buildings[0].levels.find(item => item.id === underlayId)
   useEffect(() => { clearAnalysis() }, [source?.id, clearAnalysis])
   const sourceRect = sourceBounds(source, url, calibration, level.alignment)
   useEffect(() => {
-    if (!dirty) return
+    if (!dirty || previewBase) return
     const timer = setTimeout(() => saveProject(project).then(() => markSaved(version)).catch(console.error), 900)
     return () => clearTimeout(timer)
-  }, [project, dirty, markSaved, version])
+  }, [project, dirty, markSaved, version, previewBase])
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setTool('select')
@@ -76,22 +75,13 @@ export function Workspace({ project, back }: { project: Project; back: () => voi
     setShowImport(false); setManualScale(false); setMode('edit'); setView('plan')
     if (source && url) analysis.analyze(url, next, source)
   }
-  const save = async () => { await saveProject(project); markSaved(version) }
+  const save = async () => { useProject.getState().finishPreview(); const state = useProject.getState(); await saveProject(state.project!); markSaved(state.version) }
   const acceptCandidates = useCallback((replace: boolean) => {
-    const safeOpenings = analysis.openings.map(item => item.choice === 'unknown' ? { ...item, choice: 'wall' as const } : item)
-    const draft = translateWalls(assembleDraft(analysis.candidates, safeOpenings), level.alignment || { x: 0, z: 0 })
-    editProject(copy => {
-      const current = activeLevel(copy, useProject.getState().activeLevelId)
-      if (current.locked) return copy
-      if (replace) Object.assign(current, { ...draft, rooms: [] })
-      else { current.walls.push(...draft.walls); current.doors.push(...draft.doors); current.windows.push(...draft.windows)
-        current.passages?.push(...draft.passages) }
-      if (!current.slabs?.length) { const polygon = wallEnvelope(current); if (polygon.length) current.slabs = [newSlab(polygon, current.slabThickness)] }
-      return copy
-    })
+    editProject(copy => acceptInterpretation(copy, level.id, analysis.candidates, analysis.openings,
+      analysis.details.filter(detail => analysis.detailChoices[detail.id]), replace, analysis.spaceChoices))
     analysis.clear()
-    setShowImport(false); setView('model'); setTool('select')
-  }, [analysis, editProject, setView, setTool, level.alignment])
+    setShowImport(false); setRoofShown(false); setView('model'); setTool('select')
+  }, [analysis, editProject, setView, setTool, level.id])
   const analyzePlan = () => {
     if (!source || !url) return
     setShowImport(false); setMode('edit'); setView('plan')
@@ -152,8 +142,10 @@ export function Workspace({ project, back }: { project: Project; back: () => voi
     <div className="workspace-body"><div className="work-main">
       <LevelManager project={project} activeId={level.id} isolateId={isolateId} setIsolateId={setIsolateId}
         underlayId={underlayId} setUnderlayId={setUnderlayId} />
-      <StructurePanel project={project} level={level} select={selectEntity} />
-      <ArchitecturalDetailsPanel level={level} select={selectEntity} />
+      <div className="workspace-overview">
+        <StructurePanel project={project} level={level} select={selectEntity} />
+        <ArchitecturalDetailsPanel level={level} select={selectEntity} />
+      </div>
       <SourceStrip source={source} showImport={showImport} toggle={() => setShowImport(value => !value)}
         importFile={async chosen => { if (await importFile(chosen)) { setPage(1); setShowImport(false); setManualScale(false); setMode('edit'); setView('plan') } }} />
       <ReconstructionFlow source={source} calibrated={Boolean(calibration)} calibrationOpen={showImport} ready={Boolean(url && !busy)}
@@ -163,6 +155,10 @@ export function Workspace({ project, back }: { project: Project; back: () => voi
         build={acceptCandidates} discard={analysis.clear}
         view3D={() => chooseView('model')} />
       {analysis.status === 'completed' && analysis.candidates.length > 0 && <ReviewPanel openings={analysis.openings}
+        rooms={analysis.rooms} spaceChoices={analysis.spaceChoices} selectedSpace={analysis.selectedSpace} selectSpace={analysis.setSelectedSpace}
+        setSpaceChoice={(key, include) => analysis.setSpaceChoices(current => ({ ...current, [key]: include }))}
+        details={analysis.details} detailChoices={analysis.detailChoices} report={analysis.report}
+        setDetailChoice={(id, include) => analysis.setDetailChoices(current => ({ ...current, [id]: include }))}
         view={reviewView} setView={change => setReviewView(current => ({ ...current, ...change }))}
         selected={selectedDetection} removeWall={() => { analysis.setCandidates(items => items.filter(item => item.id !== selectedDetection)); setSelectedDetection(null) }}
         setChoice={setOpeningChoice} resolveUnknown={() => analysis.setOpeningChoices(current => ({ ...current,
@@ -183,8 +179,10 @@ export function Workspace({ project, back }: { project: Project; back: () => voi
           onApply={applySpan} onPoints={() => setManualScale(true)} onClose={() => setShowImport(false)} onReuse={reuseGroundScale} /> :
         <div className={`view-area ${view}`}>
           {view !== 'model' && <PlanEditor level={level} selection={selection} select={selectEntity}
-            unit={project.units} source={sourceRect} underlay={underlay} review={analysis.status === 'completed' && analysis.candidates.length > 0
+            unit={project.units} source={sourceRect} underlay={underlay} fence={level.id === project.buildings[0].levels[0].id ? project.buildings[0].siteFence : undefined} review={analysis.status === 'completed' && analysis.candidates.length > 0
               ? { candidates: analysis.candidates, openings: analysis.openings, view: reviewView, selected: selectedDetection,
+                rooms: analysis.rooms, spaceChoices: analysis.spaceChoices, selectedSpace: analysis.selectedSpace, selectSpace: analysis.setSelectedSpace,
+                details: analysis.details, detailChoices: analysis.detailChoices,
                 setSelected: setSelectedDetection, setCandidates: analysis.setCandidates } : undefined} />}
           {view !== 'plan' && <Suspense fallback={<div className="viewer-loading">Preparing 3D model…</div>}>
             <Viewer key={view} building={project.buildings[0]} activeLevelId={level.id} isolateId={isolateId}

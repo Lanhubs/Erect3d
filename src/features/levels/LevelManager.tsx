@@ -44,7 +44,7 @@ export function LevelManager({ project, activeId, isolateId, setIsolateId, under
   const change = (id: string, changes: Partial<Level>) => editProject(next => {
     const target = next.buildings[0].levels.find(level => level.id === id)!
     if (changes.alignment) translateLevel(target, { x: changes.alignment.x - (target.alignment?.x || 0),
-      z: changes.alignment.z - (target.alignment?.z || 0) })
+      z: changes.alignment.z - (target.alignment?.z || 0) }, next.buildings[0])
     Object.assign(target, changes)
     next.buildings[0].levels.sort((a, b) => a.elevation - b.elevation)
     return next

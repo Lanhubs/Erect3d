@@ -10,7 +10,6 @@ import { defaultRoof } from '../src/domain/types'
 import { roomArea } from '../src/geometry/math'
 import { roomShapes } from '../src/rendering/roomShape'
 import { findStairPlacement } from '../src/geometry/stairPlacement'
-import { connectAdjacentLevels, normalizeProject } from '../src/domain/levels'
 
 test('V1 data migrates to one level while preserving wall IDs and roof settings', () => {
   const original = fixtureProject(), level = original.buildings[0].levels[0]
@@ -162,7 +161,7 @@ test('adding a storey connects adjacent levels with a stair when a route fits', 
 })
 
 test('normalizing an existing stair restores a missing upper-floor opening', () => {
-  const project = stairBuilding(), [ground, upper] = project.buildings[0].levels
+  const project = stairBuilding(), [, upper] = project.buildings[0].levels
   upper.slabs![0].openings = []
   const normalized = normalizeProject(project), [normalizedGround, normalizedUpper] = normalized.buildings[0].levels
   expect(normalizedGround.stairs).toHaveLength(1)

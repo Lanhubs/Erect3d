@@ -2,13 +2,16 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent, RefObject } from 'react'
 import type { Point, Wall } from '../../domain/types'
 import type { OpeningCandidate } from '../../geometry/openingCandidates'
+import type { PlanDetail } from '../../domain/interpretationTypes'
+import { InterpretationLayer } from './InterpretationLayer'
 
-export type ReviewView = { source: boolean; walls: boolean; openings: boolean; opacity: number }
+export type ReviewView = { source: boolean; walls: boolean; openings: boolean; opacity: number; spaces?: boolean; details?: boolean }
 type Props = { svg: RefObject<SVGSVGElement | null>; candidates: Wall[]; setCandidates: (change: (walls: Wall[]) => Wall[]) => void;
-  openings: OpeningCandidate[]; view: ReviewView; selected: string | null; setSelected: (id: string | null) => void }
+  openings: OpeningCandidate[]; view: ReviewView; selected: string | null; setSelected: (id: string | null) => void;
+  rooms?: Point[][]; spaceChoices?: Record<string, boolean>; selectedSpace?: string | null; selectSpace?: (key: string) => void; details?: PlanDetail[]; detailChoices?: Record<string, boolean> }
 type Drag = { id: string; part: 'move' | 'start' | 'end'; anchor: Point; wall: Wall }
 
-export function ReviewLayer({ svg, candidates, setCandidates, openings, view, selected, setSelected }: Props) {
+export function ReviewLayer({ svg, candidates, setCandidates, openings, view, selected, setSelected, rooms, spaceChoices, selectedSpace, selectSpace, details, detailChoices }: Props) {
   const dragging = useRef<Drag | null>(null)
   const pending = useRef<Wall | null>(null)
   const [preview, setPreview] = useState<Wall | null>(null)
@@ -45,6 +48,8 @@ export function ReviewLayer({ svg, candidates, setCandidates, openings, view, se
     svg.current?.setPointerCapture(event.pointerId)
   }
   return <g className="review-layer">
+    <InterpretationLayer spaces={view.spaces ? rooms : []} spaceChoices={spaceChoices} selectedSpace={selectedSpace} selectSpace={selectSpace}
+      details={view.details ? details : []} choices={detailChoices} />
     {view.walls && candidates.map(original => {
       const wall = preview?.id === original.id ? preview : original
       return <g key={wall.id}>

@@ -2,6 +2,7 @@ import { uid, type Door, type Level, type Passage, type WindowUnit } from '../..
 import { validateOpening } from '../../geometry/openingValidation'
 import { toDisplay, toMetres, type Unit } from '../../geometry/units'
 import { useProject } from '../../state/project'
+import { VerandaControls } from './VerandaControls'
 
 function NumberField({ label, value, min = 0, unit, onChange }: {
   label: string; value: number; min?: number; unit: Unit; onChange: (value: number) => void
@@ -19,6 +20,7 @@ export function OpeningInspector({ level, door, windowUnit, passage, unit, updat
   const edit = useProject(state => state.edit), select = useProject(state => state.setSelection)
   return <>
     {door && <div className="fields">
+      <VerandaControls level={level} door={door} unit={unit} />
       <div className="readout"><span>Host wall</span><b>{door.wallId}</b></div>
       <label className="inspector-field"><span>Door design</span><select aria-label="Door design" value={door.style || 'flush'}
         onChange={event => update('doors', { style: event.target.value })}>

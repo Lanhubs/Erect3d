@@ -2,6 +2,7 @@ import { defaultRoof, uid, type Level, type Roof, type RoofSection } from '../..
 import { topLevel, wallEnvelope } from '../../domain/levels'
 import { splitRoofFootprint } from '../../geometry/roofSections'
 import { useProject } from '../../state/project'
+import { rebuildImportedRoof, setBuildingRoof } from '../../domain/roofDesign'
 
 const materialColors: Record<Roof['material'], string> = {
   concrete: '#b8bbb8', 'standing-seam': '#5e6970', corrugated: '#78858a', 'concrete-tile': '#686c72',
@@ -26,8 +27,7 @@ export function RoofControls({ level }: { level: Level }) {
   const roof = building?.roof || level.roof || defaultRoof
   const sections = building?.roofSections || []
   const update = (change: Partial<Roof>) => editProject(copy => {
-    const target = copy.buildings[0], next = { ...roof, ...change }
-    target.roof = next; topLevel(target).roof = next
+    setBuildingRoof(copy.buildings[0], change)
     return copy
   })
   const splitSection = (section?: RoofSection) => {
@@ -41,6 +41,8 @@ export function RoofControls({ level }: { level: Level }) {
       id: uid('roof-section'), name: `${section?.name || 'Main roof'} ${index ? 'B' : 'A'}`,
       levelId: targetLevel.id, footprint, topHeight: section?.topHeight || Math.max(2.7, ...targetLevel.walls.map(wall => wall.height)),
       framingSpacing: section?.framingSpacing,
+      followFootprint: section?.followFootprint,
+      voids: section?.voids,
       roof: { ...baseRoof, overhang: Math.min(.15, baseRoof.overhang) },
     }))
     editProject(copy => {
@@ -62,7 +64,7 @@ export function RoofControls({ level }: { level: Level }) {
   })
   return <>
     <div className="panel-title">ROOF DESIGN</div>
-    {!sections.length && <div className="roof-controls">
+    <div className="roof-controls">
       <label>Form
         <select aria-label="Roof form" value={roof.shape} onChange={event => {
           const shape = event.target.value as Roof['shape']
@@ -99,13 +101,20 @@ export function RoofControls({ level }: { level: Level }) {
       <label>Roof elevation · m<input aria-label="Roof elevation" type="number" min="-1" max="6" step=".1"
         value={roof.elevationOffset || 0} onChange={event => update({ elevationOffset: Number(event.target.value) })} /></label>
       <p>Use Hide roof in 3D to inspect rooms and walls.</p>
+      {sections.length > 0 && <p>These choices apply to the whole roof. Expand a section below for an individual design.</p>}
+      {level.autoRoof === false && <button type="button" className="inspector-action" onClick={() => editProject(copy => {
+        const target = copy.buildings[0], current = target.levels.find(item => item.id === level.id)!
+        target.roofSections = target.roofSections?.filter(section => section.levelId !== current.id)
+        rebuildImportedRoof(target, current); return copy
+      })}>Use one building roof</button>}
       <button type="button" className="inspector-action" disabled={!building || !topLevel(building).walls.length}
         onClick={() => splitSection()}>Split into roof sections</button>
-    </div>}
+    </div>
     {sections.length > 0 && <div className="roof-section-list">
       <div className="roof-section-toolbar"><strong>{sections.length} roof sections</strong>
         <button type="button" onClick={() => splitSection(sections[0])}>Split section</button></div>
-      {sections.map(section => <div className="roof-section-card" key={section.id}>
+      {sections.map(section => <details className="roof-section-card" key={section.id}>
+        <summary>{section.name} · {roofShapes.find(([value]) => value === section.roof.shape)?.[1] || section.roof.shape}</summary>
         <label className="inspector-field"><span>Section</span><input key={`${section.id}:${section.name}`} defaultValue={section.name}
           onBlur={event => updateSection(section.id, { name: event.target.value })} /></label>
         <label className="inspector-field"><span>Form</span><select value={section.roof.shape}
@@ -156,8 +165,8 @@ export function RoofControls({ level }: { level: Level }) {
           target.roofSections = target.roofSections?.filter(item => item.id !== section.id)
           return copy
         })}>Remove section</button>
-      </div>)}
-      <p>Roof sections render independently. The model returns to the single-roof setting when the last section is removed.</p>
+      </details>)}
+      <p>Roof sections render independently. {level.autoRoof === false ? 'Removing a section leaves its footprint uncovered.' : 'The model returns to the single-roof setting when the last section is removed.'}</p>
     </div>}
   </>
 }

@@ -4,6 +4,8 @@ import { defaultRoof, uid, type Building, type Level, type Point, type Project, 
 import { generateSiteFence } from '../geometry/site'
 import { splitRoofFootprint } from '../geometry/roofSections'
 import { stairOpening } from '../geometry/stairs'
+import { findStairPlacement, stairPlacementValid } from '../geometry/stairPlacement'
+import { containsPolygon } from '../geometry/polygons'
 
 export const p = (x: number, z: number): Point => ({ x, z })
 export const createWall = (start: Point, end: Point, height = 3.1, thickness = .22, kind: Wall['kind'] = 'exterior'): Wall => ({
@@ -63,13 +65,17 @@ export function attachSite(project: Project, front = 5) {
 }
 export function linkStair(from: Level, to: Level, start: Point, direction = 0, form: Stair['form'] = 'straight') {
   const openingId = uid('opening')
-  const stair: Stair = { id: uid('stair'), fromLevelId: from.id, toLevelId: to.id, start, direction, form,
+  const initial: Stair = { id: uid('stair'), fromLevelId: from.id, toLevelId: to.id, start, direction, form,
     width: 1.2, riserHeight: .17, treadDepth: .28, landingLength: 1.2, openingId }
-  from.stairs ||= []; from.stairs.push(stair)
-  const polygon = stairOpening(stair, [from, to])
+  const levels = [from, to]
   to.slabs ||= []
   if (!to.slabs.length) to.slabs.push(newSlab(wallEnvelope(to), to.slabThickness))
-  to.slabs[0].openings.push({ id: openingId, kind: 'stair', polygon })
+  const stair = stairPlacementValid(initial, levels, to.slabs) ? initial :
+    findStairPlacement(initial, levels, to.slabs, start)
+  if (!stair) throw new Error(`No valid ${form} stair fits between ${from.name} and ${to.name}`)
+  from.stairs ||= []; from.stairs.push(stair)
+  const polygon = stairOpening(stair, levels)
+  to.slabs.find(slab => containsPolygon(slab.polygon, polygon))!.openings.push({ id: openingId, kind: 'stair', polygon })
 }
 export function addRoofSections(building: Building, level: Level, materials: Roof['material'][] = ['standing-seam', 'concrete-tile']) {
   let pieces: Point[][] = [wallEnvelope(level)]

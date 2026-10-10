@@ -1,6 +1,5 @@
 .workspace{
-  height:100vh;
-  display:flex;
+  height:100vh;display:flex;
   flex-direction:column;
   min-height:620px;
   background:#edf0ec
@@ -131,15 +130,22 @@
   display:flex;
   flex-direction:column
 }
+.workspace-overview{
+  display:grid;
+  grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);
+  flex:none;
+}
+.workspace-overview>.structure-panel:first-child{border-right:1px solid var(--line,#d8dbd7)}
+.workspace-overview>.structure-panel:last-child .structure-body{left:auto;right:8px}
 .source-strip{
-  height:41px;
+  min-height:32px;
   flex:none;
   background:#e6e9e4;
   border-bottom:1px solid #cdd3ca;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:0 14px;
+  padding:3px 10px;
   gap:15px;
   font-size:11px;
   color:#4d5950
@@ -152,6 +158,7 @@
   overflow:hidden;
   text-overflow:ellipsis
 }
+.source-strip>span svg{flex:none}
 .source-strip>div{
   display:flex;
   align-items:center;
@@ -161,7 +168,7 @@
   border:1px solid #bfc8bc;
   background:#f8f9f6;
   color:#3e4e42;
-  padding:5px 10px;
+  padding:4px 8px;
   font-size:11px;
   white-space:nowrap
 }

@@ -3,6 +3,9 @@ import { containsPolygon } from '../geometry/polygons'
 import { findStairPlacement } from '../geometry/stairPlacement'
 import { stairOpening } from '../geometry/stairs'
 import { wallBoundsPoints } from '../geometry/math'
+import { connectStairGuide } from './stairGuides'
+import { repairImportedRoofs } from './roofDesign'
+import { repairGeneratedFence } from '../geometry/site'
 
 const moved = (point: Point, delta: Point): Point => ({ x: point.x + delta.x, z: point.z + delta.z })
 export function translateWalls<T extends { walls: Wall[] }>(draft: T, delta: Point): T {
@@ -16,13 +19,19 @@ export function translateWalls<T extends { walls: Wall[] }>(draft: T, delta: Poi
   })
   return draft
 }
-export function translateLevel(level: Level, delta: Point) {
+export function translateLevel(level: Level, delta: Point, building?: Building) {
   translateWalls(level, delta)
   level.rooms.forEach(room => { room.polygon = room.polygon.map(point => moved(point, delta)) })
+  level.stairGuides?.forEach(guide => { guide.polygon = guide.polygon.map(point => moved(point, delta)) })
   level.slabs?.forEach(slab => { slab.polygon = slab.polygon.map(point => moved(point, delta))
     slab.openings.forEach(opening => { opening.polygon = opening.polygon.map(point => moved(point, delta)) }) })
   level.columns?.forEach(column => { column.position = moved(column.position, delta) })
   level.stairs?.forEach(stair => { stair.start = moved(stair.start, delta) })
+  building?.roofSections?.filter(section => section.levelId === level.id).forEach(section => {
+    section.footprint = section.footprint.map(point => moved(point, delta))
+    section.voids = section.voids?.map(hole => hole.map(point => moved(point, delta)))
+  })
+  if (building) repairGeneratedFence(building)
 }
 
 export function wallEnvelope(level: Level): Point[] {
@@ -52,6 +61,10 @@ export function connectAdjacentLevels(project: Project) {
     const from = levels[index], to = levels[index + 1]
     if (from.locked || to.locked) continue
     const existing = from.stairs?.find(stair => stair.fromLevelId === from.id && stair.toLevelId === to.id)
+    if (!existing && from.stairGuides?.length) {
+      for (const guide of from.stairGuides) connectStairGuide(project, from.id, guide.id, to.id, 'straight', false)
+      continue
+    }
     const targetSlabs = to.slabs?.length ? to.slabs : [newSlab(wallEnvelope(to), to.slabThickness)]
     const initial: Stair = existing || { id: uid('stair'), fromLevelId: from.id, toLevelId: to.id,
       start: { x: 0, z: 0 }, direction: 0, form: 'straight', width: 1.1,
@@ -101,6 +114,7 @@ export function normalizeProject(input: Project): Project {
       if (!level.calibration && level === building.levels[0] && project.calibration) level.calibration = project.calibration
       level.alignment ||= { x: 0, z: 0 }
     }
+    repairImportedRoofs(building); repairGeneratedFence(building)
     connectAdjacentLevels({ ...project, buildings: [building] })
   }
   return project
@@ -116,12 +130,14 @@ export function duplicateLevel(source: Level, name: string, elevation: number): 
   const level = structuredClone(source)
   const wallIds = new Map(level.walls.map(wall => [wall.id, uid('wall')]))
   level.id = uid('level'); level.name = name; level.elevation = elevation
+  if (level.rooms.length) level.autoRoof = true
   level.sourceId = undefined; level.calibration = undefined; level.stairs = []; level.locked = false; level.visible = true
   level.walls.forEach(wall => { wall.id = wallIds.get(wall.id)! })
   level.doors.forEach(door => { door.id = uid('door'); door.wallId = wallIds.get(door.wallId) || door.wallId })
   level.windows.forEach(window => { window.id = uid('window'); window.wallId = wallIds.get(window.wallId) || window.wallId })
   level.passages?.forEach(passage => { passage.id = uid('passage'); passage.wallId = wallIds.get(passage.wallId) || passage.wallId })
   level.rooms.forEach(room => { room.id = uid('room') })
+  level.stairGuides?.forEach(guide => { guide.id = uid('detected') })
   level.slabs?.forEach(slab => { slab.id = uid('slab'); slab.openings = slab.openings.filter(opening => opening.kind !== 'stair')
     slab.openings.forEach(opening => { opening.id = uid('opening') }) })
   level.columns?.forEach(column => { column.id = uid('column') })

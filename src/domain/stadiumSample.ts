@@ -1,6 +1,7 @@
 import { newSlab } from './levels'
 import { defaultRoof, uid, type Level, type Point, type Project, type Stair } from './types'
 import { stairOpening } from '../geometry/stairs'
+import { findStairPlacement, stairPlacementValid } from '../geometry/stairPlacement'
 import { p, room, makeLevel, makeProject, createWall, seating, addStandardOpenings, attachSite, curvedWall, detail } from './sampleHelpers'
 
 export function stadiumSample(): Project {
@@ -80,11 +81,15 @@ export function stadiumSample(): Project {
       height: 2.8, hinge: 'left', style: 'double' })
   }
   for (const [start, slabIndex] of [[p(-66, -43), 3], [p(64, 36), 2]] as const) {
-    const stair: Stair = { id: uid('stair'), fromLevelId: ground.id, toLevelId: upper.id, start,
-      direction: Math.PI / 2, form: 'U', width: 1.4, riserHeight: .17, treadDepth: .28,
+    const initial: Stair = { id: uid('stair'), fromLevelId: ground.id, toLevelId: upper.id, start,
+      direction: 90, form: 'U', width: 1.4, riserHeight: .17, treadDepth: .28,
       landingLength: 1.4, openingId: uid('opening') }
+    const targetSlab = upper.slabs![slabIndex]
+    const stair = stairPlacementValid(initial, [ground, upper], [targetSlab]) ? initial :
+      findStairPlacement(initial, [ground, upper], [targetSlab], start)
+    if (!stair) throw new Error('The stadium stair must connect to its upper concourse')
     ground.stairs!.push(stair)
-    upper.slabs![slabIndex].openings.push({ id: stair.openingId!, kind: 'stair', polygon: stairOpening(stair, [ground, upper]) })
+    targetSlab.openings.push({ id: stair.openingId!, kind: 'stair', polygon: stairOpening(stair, [ground, upper]) })
   }
   for (const wall of ground.walls.slice(0, 4)) {
     const length = Math.hypot(wall.end.x - wall.start.x, wall.end.z - wall.start.z)

@@ -1,6 +1,6 @@
 import { newSlab } from './levels'
 import { defaultRoof, uid, type Level, type Point, type Project, type RoofSection, type Wall } from './types'
-import { p, room, makeLevel, makeProject, createWall, seating, addStandardOpenings, addInternalDoors, curvedWall, detail } from './sampleHelpers'
+import { p, room, makeLevel, makeProject, createWall, seating, addStandardOpenings, addInternalDoors, curvedWall, detail, linkStair } from './sampleHelpers'
 
 export function tableTennisSample(): Project {
   const outline = [p(0, 0), p(48, 0), p(48, 34), p(0, 34)]
@@ -80,11 +80,14 @@ export function tableTennisSample(): Project {
     doors: [], windows: [], passages: [], rooms: galleryPlans.map(item => ({ ...item, id: uid('room') })),
     slabThickness: .22, autoSlab: false, slabs: galleryPlans.map(item => newSlab(item.polygon, .22)),
     columns: [], stairs: [], ramps: [], seatingSections: [] }
+  const stairLobby = [p(1, 11), p(8, 11), p(8, 20), p(1, 20)]
+  mezzanine.slabs!.push({ ...newSlab(stairLobby, .22), autoFromWalls: false })
+  mezzanine.rooms.push({ ...room('West gallery stair lobby', stairLobby, 'concrete', 'circulation'), id: uid('room') })
+  mezzanine.passages!.push({ id: uid('passage'), wallId: mezzanine.walls[0].id,
+    offset: 5.5, width: 3.5, height: 2.4 })
   const project = makeProject('Indoor Table-Tennis Arena', 'Eastbank Indoor Arena', [ground, mezzanine],
     { ...defaultRoof, shape: 'gable', material: 'standing-seam', pitch: 12, overhang: .4 })
-  ground.stairs!.push({ id: uid('stair'), fromLevelId: ground.id, toLevelId: mezzanine.id,
-    start: p(4, 12), direction: Math.PI / 2, form: 'L', width: 1.2, riserHeight: .17,
-    treadDepth: .28, landingLength: 1.2 })
+  linkStair(ground, mezzanine, p(2, 13), 0, 'L')
   for (const x of [8, 24, 40]) for (const z of [5, 31]) ground.columns?.push({ id: uid('column'), position: p(x, z),
     shape: 'rectangular', width: .55, depth: .55, diameter: .55, height: 10.5, material: 'steel' })
   for (const x of [2, 14, 26, 38, 46]) ground.columns?.push({ id: uid('column'), position: p(x, -1.6),

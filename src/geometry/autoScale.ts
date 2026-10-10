@@ -11,7 +11,8 @@ export function initialAutoScale(width: number, height: number): Calibration {
     metresPerPixel, method: 'auto', basisPixels }
 }
 
-export function estimateAutoScale(walls: PixelWall[], width: number, height: number): Calibration {
+export function estimateAutoScale(walls: PixelWall[], width: number, height: number,
+  features: Array<{ x1: number; y1: number; x2: number; y2: number; kind: string }> = []): Calibration {
   if (!walls.length) return initialAutoScale(width, height)
   const xs = walls.flatMap(w => [w.x1, w.x2]), ys = walls.flatMap(w => [w.y1, w.y2])
   const basisPixels = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys), 1)
@@ -19,9 +20,14 @@ export function estimateAutoScale(walls: PixelWall[], width: number, height: num
   const representative = thicknesses[Math.floor(thicknesses.length * .7)]
   const bySpan = 12 / basisPixels
   const byWall = representative ? .18 / representative : bySpan
-  const metresPerPixel = Math.max(.002, Math.min(.25, Math.sqrt(bySpan * byWall)))
+  const radii = features.filter(feature => feature.kind === 'swing').map(feature => Math.hypot(feature.x2 - feature.x1, feature.y2 - feature.y1))
+    .filter(radius => radius >= 6 && radius < basisPixels * .12).sort((a, b) => a - b)
+  const medianRadius = radii[Math.floor(radii.length / 2)]
+  const supportedDoors = radii.filter(radius => radius > medianRadius * .75 && radius < medianRadius * 1.3)
+  const byDoor = supportedDoors.length >= 3 ? .9 / medianRadius : 0
+  const metresPerPixel = Math.max(.002, Math.min(.25, byDoor || Math.sqrt(bySpan * byWall)))
   return { a: { x: 0, z: 0 }, b: { x: basisPixels, z: 0 }, knownMetres: basisPixels * metresPerPixel,
-    metresPerPixel, method: 'auto', basisPixels }
+    metresPerPixel, method: 'auto', basisPixels, basis: byDoor ? 'door-symbols' : 'wall-thickness' }
 }
 
 export function setEstimatedSpan(calibration: Calibration, metres: number): Calibration {
