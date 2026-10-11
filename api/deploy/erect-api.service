@@ -1,0 +1,24 @@
+[Unit]
+Description=Erect3D Bun API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=erect3d
+Group=erect3d
+WorkingDirectory=/opt/erect3d/api
+EnvironmentFile=/opt/erect3d/api/.env.production
+ExecStart=/usr/local/bin/bun src/index.ts
+Restart=on-failure
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

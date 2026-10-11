@@ -1,0 +1,16 @@
+ALTER TABLE comments ADD COLUMN mentions text[] NOT NULL DEFAULT '{}';
+ALTER TABLE comments ALTER COLUMN actor_id DROP NOT NULL;
+ALTER TABLE comments ADD COLUMN share_id text REFERENCES shares(id);
+ALTER TABLE comments ADD COLUMN author_label text;
+ALTER TABLE comments ADD CONSTRAINT comments_author CHECK(actor_id IS NOT NULL OR share_id IS NOT NULL);
+ALTER TABLE approvals ALTER COLUMN actor_id DROP NOT NULL;
+ALTER TABLE approvals ADD COLUMN share_id text REFERENCES shares(id);
+ALTER TABLE approvals ADD COLUMN author_label text;
+ALTER TABLE approvals ADD CONSTRAINT approvals_author CHECK(actor_id IS NOT NULL OR share_id IS NOT NULL);
+CREATE TRIGGER immutable_approvals BEFORE UPDATE OR DELETE ON approvals FOR EACH ROW EXECUTE FUNCTION immutable_audit();
+CREATE TRIGGER immutable_versions BEFORE UPDATE OR DELETE ON versions FOR EACH ROW EXECUTE FUNCTION immutable_audit();
+CREATE INDEX shares_project ON shares(project_id,id);
+CREATE INDEX views_project ON saved_views(project_id,id);
+CREATE INDEX presentations_project ON presentations(project_id,id);
+CREATE INDEX approvals_project ON approvals(project_id,id);
+CREATE INDEX operations_actor ON operations(actor_id,created_at);

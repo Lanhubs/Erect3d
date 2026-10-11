@@ -1,0 +1,41 @@
+import { S3Client } from 'bun'
+import type { Config } from '../config/env'
+import { ApiError } from '../security/errors'
+export interface ObjectStore {
+  uploadUrl(key: string, mime: string): string
+  downloadUrl(key: string): string
+  read(key: string, maximum: number): Promise<Uint8Array>
+  stat(key: string): Promise<{ size: number }>
+  write(key: string, bytes: Uint8Array, mime: string): Promise<void>
+  delete(key: string): Promise<void>
+  probe(): Promise<void>
+}
+export class PrivateS3 implements ObjectStore {
+  private client: S3Client
+  constructor(config: Config) {
+    this.client = new S3Client({
+      endpoint: config.S3_ENDPOINT, bucket: config.S3_BUCKET,
+      region: config.S3_REGION, accessKeyId: config.S3_ACCESS_KEY_ID, secretAccessKey: config.S3_SECRET_ACCESS_KEY
+    })
+  }
+  uploadUrl(key: string, mime: string) { return this.client.presign(key, { method: 'PUT', expiresIn: 300, type: mime }) }
+  downloadUrl(key: string) { return this.client.presign(key, { method: 'GET', expiresIn: 120 }) }
+  async stat(key: string) { const result = await this.client.stat(key); return { size: result.size } }
+  async read(key: string, maximum: number) {
+    const bytes = new Uint8Array(await this.client.file(key).slice(0, maximum + 1).arrayBuffer())
+    if (bytes.length > maximum) throw new ApiError(413, 'ASSET_TOO_LARGE', 'Object exceeded its permitted size')
+    return bytes
+  }
+  async write(key: string, bytes: Uint8Array, mime: string) { await this.client.write(key, bytes, { type: mime }) }
+  async delete(key: string) { await this.client.delete(key) }
+  async probe() {
+    // A known private sentinel distinguishes a configured bucket from a reachable endpoint.
+    const key = '_erect3d/health'
+    await this.client.write(key, 'ready', { type: 'text/plain' })
+    await this.client.stat(key)
+  }
+}
+export function requireStore(store?: ObjectStore): ObjectStore {
+  if (!store) throw new ApiError(503, 'STORAGE_UNAVAILABLE', 'Private object storage has not been configured')
+  return store
+}

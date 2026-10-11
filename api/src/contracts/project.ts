@@ -1,0 +1,33 @@
+import { z } from 'zod'
+import type { Project } from '../../../client/src/domain/types'
+import { furnitureTypes } from '../../../client/src/furniture/types'
+import { calibration, color, id, name, point, positive, scalar, source } from './primitives'
+import { column, detail, door, passage, ramp, room, seating, slab, stair, stairGuide, wall, windowUnit } from './elements'
+import { fence, roof, roofSection } from './roof-site'
+export type { Project, Building, Level, Point } from '../../../client/src/domain/types'
+
+export const furniture = z.object({
+  id, type: z.enum(furnitureTypes), levelId: id, roomId: id.optional(), position: point,
+  rotation: scalar, width: positive, depth: positive, height: positive, assetId: id,
+  materialOverrides: z.object({ color: color.optional(), finish: z.enum(['fabric', 'timber', 'metal', 'ceramic']).optional() }).strict().optional(),
+  sourceDetectionId: id.optional(),
+}).strict()
+export const viewpoint = z.object({ id, name, levelId: id, point, foot: scalar, yaw: scalar, pitch: scalar }).strict()
+const many = <T extends z.ZodType>(schema: T) => z.array(schema).max(20_000)
+export const level = z.object({
+  id, name, elevation: scalar, floorToFloorHeight: positive.optional(), visible: z.boolean().optional(), locked: z.boolean().optional(),
+  walls: many(wall), doors: many(door), windows: many(windowUnit), passages: many(passage).optional(), rooms: many(room),
+  slabThickness: positive, slabs: many(slab).optional(), autoSlab: z.boolean().optional(), columns: many(column).optional(),
+  stairs: many(stair).optional(), ramps: many(ramp).optional(), seatingSections: many(seating).optional(),
+  details: many(detail).optional(), stairGuides: many(stairGuide).optional(), furniture: many(furniture).optional(),
+  sourceId: id.optional(), calibration: calibration.optional(), alignment: point.optional(), roof: roof.optional(), autoRoof: z.boolean().optional(),
+}).strict()
+export const building = z.object({
+  id, name, levels: z.array(level).min(1).max(1000), roof: roof.optional(), roofSections: many(roofSection).optional(),
+  siteFence: fence.optional(), walkViewpoints: many(viewpoint).optional(),
+}).strict()
+export const projectSchema: z.ZodType<Project> = z.object({
+  id, name, modified: z.number().finite().nonnegative(), buildings: z.array(building).min(1).max(1000),
+  sources: z.array(source).max(1000), calibration: calibration.optional(), units: z.enum(['m', 'cm', 'mm']),
+}).strict()
+export const documentSchemaVersion = 1
