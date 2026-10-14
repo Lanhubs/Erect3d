@@ -1,0 +1,33 @@
+$ tsc -b && vite build
+vite v8.3.0 building client environment for production...
+transforming...
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by "C:/Users/Dell/Desktop/projects/erect3d/client/node_modules/@techstark/opencv-js/dist/opencv.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "crypto" has been externalized for browser compatibility, imported by "C:/Users/Dell/Desktop/projects/erect3d/client/node_modules/@techstark/opencv-js/dist/opencv.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+✓ 254 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                       3.90 kB │ gzip:   1.47 kB
+dist/assets/worker-KF76owD4.js                       10.06 kB
+dist/assets/pdf.worker.min-Dswkl-cV.mjs           1,265.41 kB
+dist/assets/analyze-CpjRCGDl.js                  15,580.41 kB
+dist/assets/index-tkRY_5i4.css                       56.04 kB │ gzip:  12.27 kB
+dist/assets/AnimatedModelPreview-B_k5Kcnk.js          3.36 kB │ gzip:   1.15 kB
+dist/assets/ArchitecturalPreviews3D-DF9GAnZq.js       5.31 kB │ gzip:   1.63 kB
+dist/assets/ExplodedBuildingPreview-Cvse4Sog.js       5.53 kB │ gzip:   1.63 kB
+dist/assets/Viewer-C-gy-qZb.js                      124.00 kB │ gzip:  38.27 kB
+dist/assets/pdf-BQg5fKTU.js                         430.93 kB │ gzip: 129.03 kB
+dist/assets/index-DZb1ykrY.js                       509.10 kB │ gzip: 151.55 kB
+dist/assets/react-three-fiber.esm-ChuNIAxn.js       907.21 kB │ gzip: 240.20 kB
+
+✓ built in 7.40s
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[PLUGIN_TIMINGS] Plugin hooks ran for 6.2s of this 7.4s build (84%).
+2 hooks are listed without a time. Their calls overlapped, so the time inside one call includes work from other calls. To find their cost, profile the build with `node --cpu-prof`:
+  - vite:css transform (7 calls)
+  - vite:worker-import-meta-url transform (2 calls)
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+

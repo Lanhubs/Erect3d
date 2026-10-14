@@ -1,0 +1,33 @@
+14:06:47 [vite] (client) Re-optimizing dependencies because vite config has changed
+
+  VITE v8.3.0  ready in 1820 ms
+
+  ➜  Local:   http://127.0.0.1:5180/
+  ➜  press h + enter to show help
+14:06:48 [vite] (client) [optimizer] scanning dependencies...
+14:06:50 [vite] (client) [optimizer] bundling dependencies...
+14:15:14 [vite] (client) hmr update /src/rendering/Viewer.tsx
+14:15:19 [vite] (client) hmr update /src/rendering/GraphicsBenchmark.tsx
+14:18:39 [vite] (client) hmr update /src/cloud/CloudRoute.tsx, /src/cloud/CloudDashboard.tsx, /src/cloud/RecoverDrafts.tsx, /src/cloud/BackendEntry.tsx, /src/features/landing/LandingDemo.tsx, /src/cloud/CloudWorkspace.tsx, /src/app/Workspace.tsx, /src/features/plan/PlanEditor.tsx, /src/cloud/WorkspaceDock.tsx, /src/app/WorkspaceHeader.tsx, /src/features/inspector/Inspector.tsx, /src/features/plan/OpeningLayer.tsx, /src/features/levels/LevelManager.tsx, /src/features/plan/ElementHandles.tsx, /src/furniture/FurnitureLayer.tsx and 36 more
+14:18:39 [vite] (client) hmr update /src/cloud/CloudRoute.tsx, /src/cloud/CloudDashboard.tsx, /src/cloud/RecoverDrafts.tsx, /src/cloud/BackendEntry.tsx, /src/features/landing/LandingDemo.tsx, /src/cloud/CloudWorkspace.tsx, /src/app/Workspace.tsx, /src/features/plan/PlanEditor.tsx, /src/cloud/WorkspaceDock.tsx, /src/app/WorkspaceHeader.tsx, /src/features/inspector/Inspector.tsx, /src/features/plan/OpeningLayer.tsx, /src/features/levels/LevelManager.tsx, /src/features/plan/ElementHandles.tsx, /src/furniture/FurnitureLayer.tsx and 36 more
+14:18:48 [vite] (client) hmr update /src/features/inspector/ArchitectureControls.tsx, /src/rendering/GraphicsBenchmark.tsx
+14:18:52 [vite] (client) hmr update /src/rendering/SeatingMesh.tsx
+14:18:59 [vite] (client) hmr update /src/rendering/BuildingScene.tsx
+14:20:38 [vite] (client) hmr update /src/app/Workspace.tsx, /src/features/landing/LandingDemo.tsx, /src/cloud/CloudWorkspace.tsx, /src/features/plan/PlanEditor.tsx, /src/cloud/WorkspaceDock.tsx, /src/app/WorkspaceHeader.tsx, /src/features/inspector/Inspector.tsx, /src/features/plan/OpeningLayer.tsx, /src/features/levels/LevelManager.tsx, /src/features/plan/ElementHandles.tsx, /src/furniture/FurnitureLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/ElementGizmo.tsx, /src/rendering/SoftwareElementHandles.tsx and 27 more
+14:20:41 [vite] (client) hmr update /src/features/inspector/ArchitectureControls.tsx, /src/rendering/GraphicsBenchmark.tsx
+14:20:44 [vite] (client) hmr update /src/features/plan/PlanEditor.tsx, /src/features/plan/ElementHandles.tsx, /src/features/plan/FencePlanLayer.tsx, /src/furniture/FurnitureLayer.tsx, /src/rendering/BuildingScene.tsx
+14:20:47 [vite] (client) hmr update /src/rendering/SoftwarePreview.tsx
+14:21:38 [vite] (client) hmr update /src/features/plan/SeatingLayer.tsx
+14:21:40 [vite] (client) hmr update /src/features/inspector/Inspector.tsx
+14:24:29 [vite] (client) page reload src/geometry/arenaCanopyBuffers.ts
+14:25:54 [vite] (client) hmr update /src/rendering/EntityInstances.tsx
+14:25:54 [vite] (client) hmr invalidate /src/rendering/EntityInstances.tsx Could not Fast Refresh ("spatialBatches" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+14:25:54 [vite] (client) hmr update /src/rendering/ArchitectureFacade.tsx, /src/rendering/ColumnInstances.tsx, /src/rendering/SitePropInstances.tsx, /src/rendering/RailingInstances.tsx
+14:25:54 [vite] (client) hmr invalidate /src/rendering/ArchitectureFacade.tsx Could not Fast Refresh ("batchedFacadeIds" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+14:25:54 [vite] (client) hmr update /src/rendering/BuildingScene.tsx
+14:26:01 [vite] (client) hmr update /src/rendering/ArenaCanopy.tsx
+14:27:31 [vite] (client) hmr update /src/rendering/InspectionCamera.tsx
+14:27:34 [vite] (client) hmr update /src/rendering/BuildingScene.tsx
+14:27:38 [vite] (client) hmr update /src/rendering/BuildingRoofs.tsx
+14:27:41 [vite] (client) hmr update /src/rendering/Viewer.tsx
+14:28:05 [vite] (client) page reload src/geometry/arenaCanopyBuffers.ts

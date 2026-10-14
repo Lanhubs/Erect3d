@@ -1,0 +1,37 @@
+bun test v1.4.2 (744846f84)
+
+tests\cloudSync.test.ts:
+(pass) offline edits survive reload and replay the same frozen operation body [6.88ms]
+(pass) an accepted save with a lost response is retried idempotently before refreshing [4.85ms]
+(pass) edits arriving during a save are retained and sent at the next accepted revision [5.83ms]
+(pass) remote conflicts keep the full draft until selected changes are explicitly rebased [4.75ms]
+78 |   const context = setup(); context.remote = { ...context.remote, revision: 1,document:{...context.remote.document,name:'Collaborator name'} }
+79 |   await context.engine.stage({ ...context.engine.record.draft, name: 'Keep me' }); await context.engine.sync()
+80 |   context.remote = { ...context.remote, revision: 2 }
+81 |   await expect(context.engine.resolve([])).rejects.toThrow('changed again')
+82 |   expect(context.engine.record.draft.name).toBe('Keep me'); expect(context.engine.record.conflict?.revision).toBe(2)
+83 |   await context.engine.resolve([]); expect(context.engine.record.draft.name).toBe('Original')
+                                                                                  ^
+error: expect(received).toBe(expected)
+
+Expected: "Original"
+Received: "Collaborator name"
+
+      at <anonymous> (C:\Users\Dell\Desktop\projects\erect3d\client\tests\cloudSync.test.ts:83:78)
+(fail) another remote edit during conflict review requires reviewing the updated revision [5.41ms]
+(pass) offline edits automatically merge independent collaborator changes on reconnect [4.49ms]
+(pass) identical changes already accepted by a collaborator do not create conflicts [1.94ms]
+(pass) entity locks keep the frozen draft and never trigger a revision merge [1.73ms]
+(pass) a failed durable queue write never sends an unstored operation [0.55ms]
+(pass) viewer drafts cannot mutate, and remote restores recover through snapshots [0.56ms]
+(pass) remote snapshots are deferred during an active gesture [0.90ms]
+
+tests\offlineAccount.test.ts:
+(pass) offline identity stores only account identity, rejects invalid state and clears at sign-out [0.48ms]
+(pass) connection failures allow cached editing but permissions and credential failures never become offline access [0.19ms]
+(pass) a disconnected reverse proxy without JSON returns a classified connection failure [1.09ms]
+
+ 13 pass
+ 1 fail
+ 62 expect() calls
+Ran 14 tests across 2 files. [64.00ms]

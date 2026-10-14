@@ -1,0 +1,16 @@
+bun test v1.4.2 (744846f84)
+
+tests\arenaArchitecture.test.ts:
+(pass) arena concept preserves measured entities, persists through API/save and rebuilds without duplicates [1222.90ms]
+(pass) generated walls remain movable semantic entities and selected openings leave their batch for editing [674.57ms]
+(pass) full, partial and open canopy buffers have finite indexed surfaces, no degenerate triangles and expected coverage [761.72ms]
+(pass) resolution adapts within memory and quality bounds without oscillating near the frame target [0.56ms]
+
+tests\sampleDashboard.test.tsx:
+(pass) Dashboard presents categorized, previewable real-model samples with open and duplicate actions [4695.48ms]
+(pass) Dashboard never invents a template catalogue when the backend is unavailable [12.28ms]
+
+ 6 pass
+ 0 fail
+ 16561 expect() calls
+Ran 6 tests across 2 files. [8.05s]

@@ -1,0 +1,28 @@
+$ tsc -b && vite build
+vite v8.3.0 building client environment for production...
+transforming...
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by "C:/Users/Dell/Desktop/projects/erect3d/client/node_modules/@techstark/opencv-js/dist/opencv.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "crypto" has been externalized for browser compatibility, imported by "C:/Users/Dell/Desktop/projects/erect3d/client/node_modules/@techstark/opencv-js/dist/opencv.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+✓ 252 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/offline-worker.js                                1.86 kB
+dist/index.html                                       3.95 kB │ gzip:   1.49 kB
+dist/assets/worker-KF76owD4.js                       10.06 kB
+dist/assets/pdf.worker.min-Dswkl-cV.mjs           1,265.41 kB
+dist/assets/analyze-CpjRCGDl.js                  15,580.41 kB
+dist/assets/index-Df6Px8jB.css                       56.79 kB │ gzip:  12.39 kB
+dist/assets/AnimatedModelPreview-DN5NCTMf.js          3.36 kB │ gzip:   1.14 kB
+dist/assets/ArchitecturalPreviews3D-DnRtPnrt.js       5.31 kB │ gzip:   1.63 kB
+dist/assets/ExplodedBuildingPreview-B0eQEj-p.js       5.53 kB │ gzip:   1.63 kB
+dist/assets/Viewer-CV1hSJoc.js                      124.01 kB │ gzip:  38.22 kB
+dist/assets/pdf-COS1LUAT.js                         430.93 kB │ gzip: 129.03 kB
+dist/assets/index-JxpdEGcs.js                       553.99 kB │ gzip: 164.50 kB
+dist/assets/react-three-fiber.esm-Cr3_MulF.js       907.21 kB │ gzip: 240.19 kB
+
+✓ built in 2.28s
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.

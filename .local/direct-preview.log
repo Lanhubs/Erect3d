@@ -1,0 +1,167 @@
+$ vite preview --host "127.0.0.1" --port "5173" --strictPort
+  ➜  Local:   http://127.0.0.1:5173/
+12:25:40 PM [vite] ws proxy error:
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)
+12:25:41 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+12:25:43 PM [vite] http proxy error: /api/v1/projects/project_b2361fa4-18c5-4358-a7a8-129e4a6025a0
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+12:25:43 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+12:25:47 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+12:41:29 PM [vite] ws proxy error:
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)
+12:41:30 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+12:41:32 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+12:50:23 PM [vite] ws proxy error:
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)
+12:50:24 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+12:50:26 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+12:50:29 PM [vite] http proxy error: /api/v1/projects/project_b2361fa4-18c5-4358-a7a8-129e4a6025a0
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+12:50:30 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:03:53 PM [vite] ws proxy error:
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)
+5:03:53 PM [vite] ws proxy error:
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)
+5:03:54 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:03:55 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:03:57 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:03:58 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:04:01 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:04:03 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:04:05 PM [vite] http proxy error: /api/v1/projects/project_b2361fa4-18c5-4358-a7a8-129e4a6025a0
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:21:13 PM [vite] ws proxy error:
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)
+5:21:13 PM [vite] ws proxy error:
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)
+5:21:14 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:21:14 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:21:16 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:21:17 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:21:20 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:21:22 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:28:17 PM [vite] ws proxy error:
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)
+5:28:17 PM [vite] ws proxy error:
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)
+5:28:18 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:28:19 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:28:20 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:28:22 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:28:24 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:28:27 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:32:35 PM [vite] ws proxy error:
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)
+5:32:35 PM [vite] ws proxy error:
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)
+5:32:36 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:32:36 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:32:38 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:32:39 PM [vite] http proxy error: /api/v1/projects/project_b2361fa4-18c5-4358-a7a8-129e4a6025a0
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:32:39 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:32:42 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:38:38 PM [vite] ws proxy error:
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)
+5:38:38 PM [vite] ws proxy error:
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)
+5:38:39 PM [vite] http proxy error: /api/v1/projects/project_b2361fa4-18c5-4358-a7a8-129e4a6025a0
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:38:39 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:38:40 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:38:41 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:38:43 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:38:45 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+5:38:48 PM [vite] ws proxy error:
+Error: connect ECONNREFUSED 127.0.0.1:4001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)

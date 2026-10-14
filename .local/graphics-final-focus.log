@@ -1,0 +1,27 @@
+bun test v1.4.2 (744846f84)
+
+tests\arenaArchitecture.test.ts:
+(node:20840) [THREE_CJS_DEPRECATED] DeprecationWarning: `require("three")` is deprecated and will be removed.
+Replace `const THREE = require("three")` with `import * as THREE from "three"`.
+(Use `bun.exe --trace-warnings ...` to show where the warning was created)
+(pass) arena concept preserves measured entities, persists through API/save and rebuilds without duplicates [760.95ms]
+(pass) generated walls remain movable semantic entities and selected openings leave their batch for editing [478.68ms]
+(pass) full, partial and open canopy buffers have finite indexed surfaces, no degenerate triangles and expected coverage [671.17ms]
+(pass) resolution adapts within memory and quality bounds without oscillating near the frame target [0.42ms]
+
+tests\roof.test.ts:
+(pass) all roof forms produce finite surfaces over the building footprint [6.97ms]
+(pass) cross roof sheets cover the footprint once without overlapping planes or gaps [2.43ms]
+(pass) shed roof has wall infill rather than floating above the house [0.31ms]
+(pass) roof section splitting preserves a concave footprint on both sides [0.95ms]
+(pass) roof choices remain part of edits and undo history [6.29ms]
+(pass) legacy projects keep their single roof and normalized projects retain independent roof sections [1.52ms]
+
+tests\sampleDashboard.test.tsx:
+(pass) Dashboard presents categorized, previewable real-model samples with open and duplicate actions [1866.02ms]
+(pass) Dashboard never invents a template catalogue when the backend is unavailable [2.65ms]
+
+ 12 pass
+ 0 fail
+ 14984 expect() calls
+Ran 12 tests across 3 files. [4.70s]

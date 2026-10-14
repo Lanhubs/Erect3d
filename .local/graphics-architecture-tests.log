@@ -1,0 +1,33 @@
+bun test v1.4.2 (744846f84)
+
+tests\arenaArchitecture.test.ts:
+(node:4404) [THREE_CJS_DEPRECATED] DeprecationWarning: `require("three")` is deprecated and will be removed.
+Replace `const THREE = require("three")` with `import * as THREE from "three"`.
+(Use `bun.exe --trace-warnings ...` to show where the warning was created)
+(pass) arena concept preserves measured entities, persists through API/save and rebuilds without duplicates [585.03ms]
+(pass) generated walls remain movable semantic entities and selected openings leave their batch for editing [430.97ms]
+(pass) full, partial and open canopy buffers have finite indexed surfaces, no degenerate triangles and expected coverage [334.81ms]
+(pass) resolution adapts within memory and quality bounds without oscillating near the frame target [0.31ms]
+
+tests\elementEditing.test.ts:
+(pass) wall movement carries its opening, attached corners, slab and fitted roof without mutating the input [7.80ms]
+(pass) wall resizing rejects an endpoint that would strand its door [2.48ms]
+(pass) opening handles and arrow movement stay on the host and cannot overlap or leave it [2.05ms]
+(pass) floor and room vertices reject crossing outlines; slab moves carry their voids [2.24ms]
+(pass) columns support rotation, size and height while locked levels reject changes [0.83ms]
+(pass) stairs move their linked upper-floor opening and reject moves beyond the slab [3.70ms]
+(pass) drag previews make one undo step and Escape restores the full original project [7.53ms]
+(pass) keyboard fine movement and editing shortcuts preserve browser/workspace modifier shortcuts [1.31ms]
+
+tests\roof.test.ts:
+(pass) all roof forms produce finite surfaces over the building footprint [7.71ms]
+(pass) cross roof sheets cover the footprint once without overlapping planes or gaps [2.13ms]
+(pass) shed roof has wall infill rather than floating above the house [0.34ms]
+(pass) roof section splitting preserves a concave footprint on both sides [0.71ms]
+(pass) roof choices remain part of edits and undo history [4.48ms]
+(pass) legacy projects keep their single roof and normalized projects retain independent roof sections [1.19ms]
+
+ 18 pass
+ 0 fail
+ 17197 expect() calls
+Ran 18 tests across 3 files. [2.08s]

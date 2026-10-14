@@ -1,0 +1,589 @@
+bun test v1.4.2 (744846f84)
+
+tests\analysis-lifecycle.integration.test.ts:
+{"at":"2026-10-14T13:02:32.221Z","event":"http.request","requestId":"fa9c5c1e-449d-4394-9b9d-59f8bedf1e70","method":"POST","status":201,"elapsedMs":1169}
+{"at":"2026-10-14T13:02:32.553Z","event":"http.request","requestId":"23f810b6-7c30-4570-a5f4-8a1fda93ac7e","method":"POST","status":201,"elapsedMs":283}
+{"at":"2026-10-14T13:02:32.979Z","event":"http.request","requestId":"81794b72-090b-4b6a-a077-44b82ec99a49","method":"POST","status":202,"elapsedMs":370}
+{"at":"2026-10-14T13:02:33.274Z","event":"http.request","requestId":"f4505475-39e3-4d4a-8f60-919278cb3197","method":"POST","status":204,"elapsedMs":95}
+{"at":"2026-10-14T13:02:33.380Z","event":"http.error","requestId":"74d77ac7-a682-42f1-b5d2-69d9685eab87","code":"ANALYSIS_STATE"}
+{"at":"2026-10-14T13:02:33.381Z","event":"http.request","requestId":"74d77ac7-a682-42f1-b5d2-69d9685eab87","method":"POST","status":409,"elapsedMs":74}
+(pass) cancelling an in-flight provider prevents late result publication and acceptance [1169.71ms]
+{"at":"2026-10-14T13:02:33.457Z","event":"http.request","requestId":"1cf0caa0-b919-40ef-9e80-72df97641268","method":"POST","status":201,"elapsedMs":58}
+{"at":"2026-10-14T13:02:33.612Z","event":"http.request","requestId":"fb83bd5d-748e-46fc-b982-280f2fb3ff9e","method":"POST","status":202,"elapsedMs":136}
+(pass) completed passes survive a transient failure and retries do not spend quota repeating them [498.95ms]
+{"at":"2026-10-14T13:02:33.952Z","event":"http.request","requestId":"564c05c8-91f8-454b-8b51-1c1d542f5310","method":"POST","status":201,"elapsedMs":54}
+{"at":"2026-10-14T13:02:34.052Z","event":"http.request","requestId":"e23bc0c8-e09f-48e4-add4-9c7df63a58a2","method":"POST","status":202,"elapsedMs":89}
+(pass) invalid structured provider output is permanently rejected before document changes [212.98ms]
+{"at":"2026-10-14T13:02:34.129Z","event":"http.request","requestId":"4d48a793-4f8d-42d4-9341-d149580298f8","method":"POST","status":201,"elapsedMs":19}
+{"at":"2026-10-14T13:02:34.217Z","event":"http.request","requestId":"0a21007b-e2ce-48d6-b529-94908e79044a","method":"POST","status":202,"elapsedMs":83}
+(pass) a stale worker cannot fail an analysis reclaimed by another worker [130.87ms]
+{"at":"2026-10-14T13:02:34.268Z","event":"http.request","requestId":"dda1d541-d0cf-4a74-81de-aa0a25770a87","method":"POST","status":201,"elapsedMs":26}
+{"at":"2026-10-14T13:02:34.404Z","event":"http.request","requestId":"75207c35-0d85-4326-8cdd-e015c059fe1f","method":"POST","status":202,"elapsedMs":128}
+(pass) cancelled derived output is cleaned up and cannot overwrite a committed asset [210.42ms]
+
+tests\backend-reconstruction.integration.test.ts:
+{"at":"2026-10-14T13:02:35.284Z","event":"http.request","requestId":"c4ea6187-4959-45b9-9c88-6dc4b257fc6d","method":"POST","status":201,"elapsedMs":734}
+{"at":"2026-10-14T13:02:35.384Z","event":"http.request","requestId":"7cb2d494-625d-4dad-a8e9-b3af5b41efca","method":"POST","status":201,"elapsedMs":81}
+{"at":"2026-10-14T13:02:35.606Z","event":"http.request","requestId":"a22136ae-8cce-4fa1-b3f2-c10f7161272e","method":"POST","status":202,"elapsedMs":194}
+{"at":"2026-10-14T13:02:38.256Z","event":"http.request","requestId":"1a7ba49c-8ae0-4432-8898-8fa4b1ab6280","method":"GET","status":200,"elapsedMs":44}
+{"at":"2026-10-14T13:02:38.303Z","event":"http.request","requestId":"15f37998-5a40-45b2-b676-4c5adfb4b8bb","method":"POST","status":200,"elapsedMs":46}
+{"at":"2026-10-14T13:02:38.385Z","event":"http.request","requestId":"52aec99e-bab1-4a47-b660-5f1a74fabde9","method":"POST","status":200,"elapsedMs":82}
+{"at":"2026-10-14T13:02:38.466Z","event":"http.error","requestId":"50385d7f-044b-4601-93d0-d63f8734ed70","code":"REBUILD_APPROVAL_REQUIRED"}
+{"at":"2026-10-14T13:02:38.467Z","event":"http.request","requestId":"50385d7f-044b-4601-93d0-d63f8734ed70","method":"POST","status":422,"elapsedMs":57}
+{"at":"2026-10-14T13:02:38.656Z","event":"http.request","requestId":"51159091-676f-4ef0-b9e4-49c16a29e223","method":"POST","status":200,"elapsedMs":190}
+{"at":"2026-10-14T13:02:38.705Z","event":"http.request","requestId":"29458a70-dc8c-4b66-bd5c-ce51aaad57cb","method":"POST","status":200,"elapsedMs":24}
+(pass) backend ignores browser lines, repairs AI geometry, compiles a repeatable server preview, and replaces one floor with explicit approval [3421.11ms]
+{"at":"2026-10-14T13:02:38.745Z","event":"http.request","requestId":"f2769cda-f301-498b-8d89-c095befbdca2","method":"POST","status":201,"elapsedMs":18}
+{"at":"2026-10-14T13:02:38.852Z","event":"http.request","requestId":"131ff35a-1bf8-4e6d-9f9a-d9ab596c53f9","method":"PUT","status":204,"elapsedMs":92}
+{"at":"2026-10-14T13:02:38.943Z","event":"http.request","requestId":"71a67cb8-5935-4267-a261-906a3cc74042","method":"POST","status":202,"elapsedMs":91}
+{"at":"2026-10-14T13:02:40.797Z","event":"http.request","requestId":"e34a33ed-e089-4e9b-9486-23bad53b42b1","method":"POST","status":201,"elapsedMs":34}
+{"at":"2026-10-14T13:02:40.835Z","event":"http.request","requestId":"a37bfec8-9bf4-4b00-9fe5-d973e2c39c4c","method":"PUT","status":204,"elapsedMs":28}
+{"at":"2026-10-14T13:02:40.904Z","event":"http.request","requestId":"a37a26c3-f92e-4d00-b515-ce7a0db329ba","method":"POST","status":202,"elapsedMs":69}
+(pass) backend reads the linked original PDF with selected page context, and refuses a changed document before any provider call [3960.09ms]
+{"at":"2026-10-14T13:02:42.722Z","event":"http.request","requestId":"038cfb8d-058a-431e-8892-e069ee149a52","method":"POST","status":201,"elapsedMs":32}
+{"at":"2026-10-14T13:02:42.764Z","event":"http.request","requestId":"8ae09ae0-ba47-4007-bfef-04e6a7b94178","method":"POST","status":202,"elapsedMs":38}
+(pass) default direct reconstruction makes one provider request and publishes visible progress before a valid model [2445.68ms]
+{"at":"2026-10-14T13:02:45.170Z","event":"http.request","requestId":"42a9c8af-c0fb-4142-9559-62643a141fab","method":"POST","status":201,"elapsedMs":33}
+{"at":"2026-10-14T13:02:45.222Z","event":"http.request","requestId":"50639edb-c389-453e-9e14-7804965a0452","method":"POST","status":202,"elapsedMs":49}
+(pass) dense direct reconstruction compiles the four concurrent regional proposals under one analysis job [2026.90ms]
+{"at":"2026-10-14T13:02:47.235Z","event":"http.request","requestId":"c3bba4fb-f1a4-4f9c-a9b9-857d411b023b","method":"POST","status":201,"elapsedMs":41}
+{"at":"2026-10-14T13:02:47.342Z","event":"http.request","requestId":"3bdd168c-3197-4c41-b5e3-53d05413c5ca","method":"POST","status":202,"elapsedMs":102}
+{"at":"2026-10-14T13:02:47.482Z","event":"http.request","requestId":"7a4ed17d-6610-485c-a38f-12b38209861d","method":"POST","status":202,"elapsedMs":127}
+{"at":"2026-10-14T13:02:47.586Z","event":"http.request","requestId":"f0fcf62c-6b7a-4d36-bd71-b0561aa861c1","method":"POST","status":202,"elapsedMs":103}
+(pass) retry reuses completed reads only for the identical source, settings and model revision [449.28ms]
+
+tests\cloud-ui.integration.test.ts:
+{"at":"2026-10-14T13:02:48.838Z","event":"http.request","requestId":"f6e6bbff-2e95-4229-9d8b-d75dc19950b4","method":"POST","status":201,"elapsedMs":1132}
+{"at":"2026-10-14T13:02:49.344Z","event":"http.request","requestId":"46775765-b7bf-4d04-960b-6e35857b0bcb","method":"POST","status":201,"elapsedMs":505}
+{"at":"2026-10-14T13:02:49.810Z","event":"http.request","requestId":"49c122d1-b603-4810-8280-85300ba77f26","method":"POST","status":201,"elapsedMs":466}
+{"at":"2026-10-14T13:02:49.906Z","event":"http.request","requestId":"2fab608b-9fca-4e26-adde-fd7604a8537e","method":"POST","status":201,"elapsedMs":95}
+{"at":"2026-10-14T13:02:50.022Z","event":"http.request","requestId":"0f57ec63-0fdc-4a2b-a5d8-1cd295883a61","method":"PUT","status":204,"elapsedMs":117}
+{"at":"2026-10-14T13:02:50.111Z","event":"http.request","requestId":"9202ff24-de9c-47a7-b6f4-a4adaaa5c3c0","method":"GET","status":200,"elapsedMs":88}
+{"at":"2026-10-14T13:02:50.126Z","event":"http.request","requestId":"dcc18de1-7678-465a-867c-1acb9cd818c9","method":"GET","status":200,"elapsedMs":16}
+{"at":"2026-10-14T13:02:50.148Z","event":"http.request","requestId":"1594f7c2-26e7-4419-ade0-5710779b43c7","method":"GET","status":200,"elapsedMs":21}
+{"at":"2026-10-14T13:02:50.158Z","event":"http.error","requestId":"8429561e-ba4e-4e86-b881-59842365dbf0","code":"NOT_FOUND"}
+{"at":"2026-10-14T13:02:50.158Z","event":"http.request","requestId":"8429561e-ba4e-4e86-b881-59842365dbf0","method":"GET","status":404,"elapsedMs":9}
+(pass) snapshot advertises effective permissions and source links stay private [2461.92ms]
+{"at":"2026-10-14T13:02:50.563Z","event":"http.error","requestId":"63a3ca34-55c1-4ae2-99c6-b5b34c134096","code":"REGISTRATION_DISABLED"}
+{"at":"2026-10-14T13:02:50.563Z","event":"http.request","requestId":"63a3ca34-55c1-4ae2-99c6-b5b34c134096","method":"POST","status":403,"elapsedMs":401}
+(pass) deployment can close public registration while keeping authenticated API available [407.23ms]
+
+tests\compact-diff.test.ts:
+(pass) large reconstruction and its Undo are atomic bounded replacements with identical documents [101.20ms]
+(pass) ordinary edits stay granular and compound changes include overwritten entity lock identities [4.40ms]
+
+tests\compact-reconstruction.test.ts:
+(pass) one compact interpretation retains exact geometry, hosts, sport context and review provenance [86.69ms]
+(pass) simple direct reconstruction uses one pass and dense plans read four regions concurrently [0.24ms]
+
+tests\contracts.test.ts:
+(pass) all existing sample documents use the same API contract [2859.87ms]
+(pass) patches replay dependent wall edits, retain IDs, and reject prototype and identity paths [3.30ms]
+(pass) snapshot checksums survive PostgreSQL JSONB key reordering [0.29ms]
+(pass) foreign hosts, zero geometry, duplicate entities and wrong furniture levels fail validation [1.52ms]
+(pass) production environment cannot silently start with insecure TLS or wildcard origins [2.45ms]
+(pass) realtime only accepts bounded known operations and transient presence [5.75ms]
+(pass) AI proposals preserve review and uncertainty and optional furniture stays off [1.22ms]
+(pass) semantic comparisons detect polygon edits and slow WebSocket peers are bounded [2.72ms]
+
+tests\detail-regression.test.ts:
+(pass) an incomplete rewrite of the same source requires review while complete and unrelated models are unaffected [26.24ms]
+
+tests\direct-regions.test.ts:
+(pass) dense direct processing starts every region before any finishes and retains source coordinates exactly once [2.11ms]
+(pass) regional identities prevent name collisions and remap opening hosts without duplicating overlapping rooms [0.84ms]
+(pass) a failed region cancels its siblings and never returns a partial building as complete [2.69ms]
+
+tests\enhancement.integration.test.ts:
+{"at":"2026-10-14T13:02:55.310Z","event":"http.request","requestId":"cb05f6cb-5982-4e74-ace6-473e0e3ae7ba","method":"POST","status":201,"elapsedMs":869}
+{"at":"2026-10-14T13:02:55.395Z","event":"http.request","requestId":"cde7a717-c9f9-44df-8583-25057dca0b46","method":"POST","status":201,"elapsedMs":75}
+{"at":"2026-10-14T13:02:55.579Z","event":"http.request","requestId":"431eb958-b499-4ba3-9668-308b167060f6","method":"POST","status":202,"elapsedMs":155}
+{"at":"2026-10-14T13:02:56.119Z","event":"http.error","requestId":"f96af7b6-1e29-4af3-92a6-ce18170acafb","code":"CONFIRMED_FIELDS_PROTECTED"}
+{"at":"2026-10-14T13:02:56.120Z","event":"http.request","requestId":"f96af7b6-1e29-4af3-92a6-ce18170acafb","method":"POST","status":422,"elapsedMs":85}
+{"at":"2026-10-14T13:02:56.256Z","event":"http.request","requestId":"8195b4a3-eec4-447b-aa9c-b18ce509d748","method":"POST","status":200,"elapsedMs":99}
+{"at":"2026-10-14T13:02:56.341Z","event":"http.request","requestId":"665ed673-2b77-4238-8fdf-693be8b846e9","method":"POST","status":200,"elapsedMs":56}
+(pass) existing corrections need explicit confirmed-field approval, update one entity, preserve its roof and retry idempotently [1052.39ms]
+{"at":"2026-10-14T13:02:56.428Z","event":"http.request","requestId":"264e925b-f19f-401c-afa8-7d054d910931","method":"POST","status":201,"elapsedMs":58}
+{"at":"2026-10-14T13:02:56.577Z","event":"http.request","requestId":"a529f470-915e-4f89-acb5-f55bcb620532","method":"POST","status":202,"elapsedMs":128}
+{"at":"2026-10-14T13:02:56.774Z","event":"http.error","requestId":"df63bb46-de41-4200-bb16-732510e1e79c","code":"CONFIRMED_FIELDS_PROTECTED"}
+{"at":"2026-10-14T13:02:56.774Z","event":"http.request","requestId":"df63bb46-de41-4200-bb16-732510e1e79c","method":"POST","status":422,"elapsedMs":59}
+{"at":"2026-10-14T13:02:56.802Z","event":"http.error","requestId":"1edc474c-3950-46f7-b49f-200ba1213752","code":"INVALID_ACTION"}
+{"at":"2026-10-14T13:02:56.802Z","event":"http.request","requestId":"1edc474c-3950-46f7-b49f-200ba1213752","method":"POST","status":422,"elapsedMs":27}
+{"at":"2026-10-14T13:02:56.848Z","event":"http.request","requestId":"f798661c-0b93-446c-9041-fd1b884ede07","method":"POST","status":200,"elapsedMs":45}
+{"at":"2026-10-14T13:02:56.894Z","event":"http.request","requestId":"95ac00d4-fdd8-4af6-a996-d4abcdbe2ea5","method":"POST","status":200,"elapsedMs":46}
+(pass) reviewed removals protect confirmed elements, forbid action tampering and commit one idempotent canonical delete [535.86ms]
+{"at":"2026-10-14T13:02:57.003Z","event":"http.request","requestId":"9b11ccdd-ed46-48e6-88b7-fc3ff9fae767","method":"POST","status":201,"elapsedMs":35}
+{"at":"2026-10-14T13:02:57.090Z","event":"http.request","requestId":"91aa78eb-4cfa-4d59-8041-eabcd7c70b30","method":"POST","status":202,"elapsedMs":79}
+{"at":"2026-10-14T13:02:57.231Z","event":"http.request","requestId":"f9c446a2-b2cc-434f-8b81-191a2cdd317e","method":"POST","status":200,"elapsedMs":59}
+{"at":"2026-10-14T13:02:57.255Z","event":"http.error","requestId":"5d94040c-f23a-4d80-bcff-8938edb7ae40","code":"ENHANCEMENT_STALE"}
+{"at":"2026-10-14T13:02:57.255Z","event":"http.request","requestId":"5d94040c-f23a-4d80-bcff-8938edb7ae40","method":"POST","status":409,"elapsedMs":24}
+(pass) a changed removal target stays protected even if its latest revision and confirmed-field consent are supplied [378.41ms]
+{"at":"2026-10-14T13:02:57.345Z","event":"http.request","requestId":"df7cce1c-2e8e-4a62-8ef2-79d53eab2762","method":"POST","status":201,"elapsedMs":60}
+{"at":"2026-10-14T13:02:57.412Z","event":"http.request","requestId":"6871e4e1-c619-4200-b406-bb16cb5d477a","method":"POST","status":202,"elapsedMs":62}
+{"at":"2026-10-14T13:02:57.537Z","event":"http.request","requestId":"e7342817-4a0b-4cc8-ac6a-89b42729af27","method":"GET","status":200,"elapsedMs":15}
+{"at":"2026-10-14T13:02:57.548Z","event":"http.request","requestId":"b3a3454f-bb57-4054-855a-5114a909ac51","method":"GET","status":200,"elapsedMs":11}
+{"at":"2026-10-14T13:02:57.559Z","event":"http.request","requestId":"7db36ea0-1fb0-47b3-89dd-1db78cb84f2b","method":"GET","status":200,"elapsedMs":10}
+{"at":"2026-10-14T13:02:57.570Z","event":"http.request","requestId":"d88ac630-1a37-4f8b-b9b6-0f8f1ad6211d","method":"GET","status":200,"elapsedMs":11}
+{"at":"2026-10-14T13:02:57.579Z","event":"http.request","requestId":"5d3c46a8-07ad-43fd-8270-04631f99fe21","method":"GET","status":200,"elapsedMs":9}
+{"at":"2026-10-14T13:02:57.589Z","event":"http.request","requestId":"0f4b7cd8-e497-417d-9b66-6dd1a62a6a82","method":"GET","status":200,"elapsedMs":10}
+{"at":"2026-10-14T13:02:57.597Z","event":"http.request","requestId":"d8b12886-6364-496b-9bb2-6be63aae9353","method":"GET","status":200,"elapsedMs":7}
+{"at":"2026-10-14T13:02:57.604Z","event":"http.request","requestId":"44ee62a4-2993-4668-ae8c-8ad139853335","method":"GET","status":200,"elapsedMs":7}
+{"at":"2026-10-14T13:02:57.611Z","event":"http.request","requestId":"ce0c495c-3f11-4e3e-b8bf-c770fc9cf33b","method":"GET","status":200,"elapsedMs":7}
+{"at":"2026-10-14T13:02:57.621Z","event":"http.request","requestId":"66480c9e-b5e5-494f-a358-6eff49f5e43d","method":"GET","status":200,"elapsedMs":10}
+{"at":"2026-10-14T13:02:57.632Z","event":"http.request","requestId":"7ebab712-895c-4c22-a321-8d2c4aaa5f78","method":"GET","status":200,"elapsedMs":10}
+{"at":"2026-10-14T13:02:57.642Z","event":"http.request","requestId":"1e21c629-eb4e-4115-a290-44091bb64558","method":"GET","status":200,"elapsedMs":10}
+{"at":"2026-10-14T13:02:57.650Z","event":"http.request","requestId":"6bfc2c7a-3f58-4587-b26c-89fef2e7cabb","method":"GET","status":200,"elapsedMs":7}
+{"at":"2026-10-14T13:02:57.659Z","event":"http.request","requestId":"d922cc4a-35f4-47fa-85ca-1aced1566289","method":"GET","status":200,"elapsedMs":9}
+{"at":"2026-10-14T13:02:57.667Z","event":"http.request","requestId":"f4422ffc-27ee-49a7-8fe6-53ba7b037af2","method":"GET","status":200,"elapsedMs":8}
+{"at":"2026-10-14T13:02:57.678Z","event":"http.request","requestId":"5449303d-7d81-4371-b02d-a875a2011176","method":"GET","status":200,"elapsedMs":10}
+{"at":"2026-10-14T13:02:57.688Z","event":"http.request","requestId":"3e67d28c-5053-4d0f-a6c7-db2bc4936a58","method":"GET","status":200,"elapsedMs":10}
+{"at":"2026-10-14T13:02:57.697Z","event":"http.request","requestId":"1eeeb842-8a99-4c5b-9265-24f0aa3b6612","method":"GET","status":200,"elapsedMs":9}
+{"at":"2026-10-14T13:02:57.709Z","event":"http.request","requestId":"b61a0743-90c2-40f9-8fa2-77c0de6ee2ef","method":"GET","status":200,"elapsedMs":11}
+{"at":"2026-10-14T13:02:57.719Z","event":"http.request","requestId":"a53a86dc-4582-4f23-ad88-7cd50bb3db72","method":"GET","status":200,"elapsedMs":10}
+{"at":"2026-10-14T13:02:57.752Z","event":"http.request","requestId":"02bfd571-5636-4ca3-92a0-80f03bb54ec0","method":"POST","status":200,"elapsedMs":33}
+(pass) proposal polling and review do not consume the cloud-generation request allowance [474.81ms]
+{"at":"2026-10-14T13:02:57.789Z","event":"http.request","requestId":"a3a7e795-be69-4df1-9737-f3db777b4aaa","method":"POST","status":201,"elapsedMs":30}
+{"at":"2026-10-14T13:02:57.845Z","event":"http.request","requestId":"6e37f8da-bfd5-4cf5-ace6-6bbce15cf82c","method":"POST","status":202,"elapsedMs":52}
+{"at":"2026-10-14T13:02:57.945Z","event":"http.request","requestId":"1662e645-05f7-4af6-9732-9f77ee23d33c","method":"POST","status":200,"elapsedMs":29}
+{"at":"2026-10-14T13:02:57.963Z","event":"http.error","requestId":"fe436bac-74c8-46e5-b223-bbea67557cb8","code":"ENHANCEMENT_STALE"}
+{"at":"2026-10-14T13:02:57.963Z","event":"http.request","requestId":"fe436bac-74c8-46e5-b223-bbea67557cb8","method":"POST","status":409,"elapsedMs":19}
+(pass) manual changes since analysis cannot be overwritten even with consent and the latest revision [215.09ms]
+{"at":"2026-10-14T13:02:57.988Z","event":"http.request","requestId":"be1423a9-2ef3-4e68-bcc4-ee3acce5b7d5","method":"POST","status":201,"elapsedMs":15}
+{"at":"2026-10-14T13:02:58.056Z","event":"http.request","requestId":"f6ff20b2-3193-4948-957f-56de4adf3030","method":"POST","status":202,"elapsedMs":63}
+{"at":"2026-10-14T13:02:58.165Z","event":"http.error","requestId":"455c6a37-3ab3-45ed-9529-b8472281b7de","code":"INVALID_TARGET"}
+{"at":"2026-10-14T13:02:58.166Z","event":"http.request","requestId":"455c6a37-3ab3-45ed-9529-b8472281b7de","method":"POST","status":422,"elapsedMs":14}
+{"at":"2026-10-14T13:02:58.207Z","event":"http.request","requestId":"b77f46c7-38cf-40ff-b254-c74ec303c375","method":"POST","status":200,"elapsedMs":41}
+(pass) review cannot retarget a correction and design-only acceptance changes the chosen roof without adding geometry [243.88ms]
+
+tests\filesystem.integration.test.ts:
+{"at":"2026-10-14T13:02:58.666Z","event":"http.error","requestId":"4d29d258-e1f0-446b-ad1a-fcf2a85e5967","code":"ORIGIN_DENIED"}
+{"at":"2026-10-14T13:02:58.667Z","event":"http.request","requestId":"4d29d258-e1f0-446b-ad1a-fcf2a85e5967","method":"PUT","status":403,"elapsedMs":376}
+{"at":"2026-10-14T13:02:58.669Z","event":"http.error","requestId":"b51beae2-d3b0-4df1-b1fa-ee149d91c748","code":"ASSET_TYPE_MISMATCH"}
+{"at":"2026-10-14T13:02:58.669Z","event":"http.request","requestId":"b51beae2-d3b0-4df1-b1fa-ee149d91c748","method":"PUT","status":422,"elapsedMs":2}
+{"at":"2026-10-14T13:02:58.673Z","event":"http.error","requestId":"2d0febc9-6fde-4fb5-84a9-325fc6c1ea18","code":"ASSET_TICKET_INVALID"}
+{"at":"2026-10-14T13:02:58.673Z","event":"http.request","requestId":"2d0febc9-6fde-4fb5-84a9-325fc6c1ea18","method":"GET","status":403,"elapsedMs":4}
+{"at":"2026-10-14T13:02:58.684Z","event":"http.error","requestId":"669b4a55-d71d-4b5f-b424-ce1b57a46eed","code":"ASSET_NOT_FOUND"}
+{"at":"2026-10-14T13:02:58.684Z","event":"http.request","requestId":"669b4a55-d71d-4b5f-b424-ce1b57a46eed","method":"GET","status":404,"elapsedMs":8}
+(pass) private filesystem tickets enforce signatures, methods, expiry, allowed origins, MIME and safe object paths [411.69ms]
+{"at":"2026-10-14T13:02:59.329Z","event":"http.request","requestId":"a86ed099-0456-4502-a216-56fe1134f601","method":"POST","status":201,"elapsedMs":643}
+{"at":"2026-10-14T13:02:59.440Z","event":"http.request","requestId":"53a37a45-66bd-4a98-a52a-6e985c2e0c3e","method":"POST","status":201,"elapsedMs":110}
+{"at":"2026-10-14T13:02:59.585Z","event":"http.request","requestId":"d3829a53-62bf-460d-a77f-e189dbdfbe57","method":"POST","status":201,"elapsedMs":83}
+{"at":"2026-10-14T13:02:59.613Z","event":"http.request","requestId":"efdd2564-7d32-4b9e-90c5-9c219286166f","method":"PUT","status":204,"elapsedMs":28}
+{"at":"2026-10-14T13:02:59.763Z","event":"http.request","requestId":"cd55fddd-0a42-4f9b-9532-c5084c1844ac","method":"POST","status":200,"elapsedMs":150}
+{"at":"2026-10-14T13:02:59.821Z","event":"http.request","requestId":"1779bc22-06f9-4b59-a39c-cfa7f2fa6723","method":"PUT","status":204,"elapsedMs":10}
+{"at":"2026-10-14T13:02:59.875Z","event":"http.request","requestId":"3305dc02-2daf-4870-a1a1-eb830ace2509","method":"GET","status":200,"elapsedMs":53}
+{"at":"2026-10-14T13:02:59.879Z","event":"http.request","requestId":"b76b637f-7013-464e-a7cd-67de72f7e6c9","method":"GET","status":200,"elapsedMs":3}
+{"at":"2026-10-14T13:02:59.914Z","event":"http.request","requestId":"2090d228-f692-4e98-8dd5-94cd40fb1bd2","method":"PUT","status":204,"elapsedMs":29}
+(pass) client upload URLs accept large binary bodies, finalize to immutable compact objects and downloads preserve plan pixels [1230.52ms]
+
+tests\hybrid-acceptance.test.ts:
+(pass) reviewed passages, door semantics, circular columns and slab voids become normal entities without changing roofs [2.01ms]
+(pass) voids outside slabs and stair connections without a valid destination are rejected before publication [3.21ms]
+(pass) a thin swung door leaf is not accepted as the wall opening geometry [1.30ms]
+
+tests\hybrid-geometry.test.ts:
+(pass) duplicate host walls reconcile without losing their hosted doors; separate parallel walls survive [54.97ms]
+(pass) physically inconsistent candidates cannot keep high confidence [1.01ms]
+(pass) fine edges inside a thick wall body share its host while parallel walls with an air gap stay separate [0.93ms]
+(pass) calibration origin and level alignment match the existing editor coordinates [0.14ms]
+(pass) regional analysis supplies an actual bounded crop rather than resizing the entire image again [24.50ms]
+
+tests\jobs.integration.test.ts:
+{"at":"2026-10-14T13:03:01.209Z","event":"http.request","requestId":"96c988ae-ff8f-475a-9c4a-adc139c13f06","method":"POST","status":201,"elapsedMs":538}
+{"at":"2026-10-14T13:03:01.805Z","event":"http.request","requestId":"aed4d2dd-a641-4dc1-891b-b20e54132da5","method":"POST","status":201,"elapsedMs":595}
+{"at":"2026-10-14T13:03:01.877Z","event":"http.request","requestId":"80ba4d3b-771f-4251-9e79-efab14cab153","method":"POST","status":201,"elapsedMs":71}
+{"at":"2026-10-14T13:03:01.960Z","event":"http.request","requestId":"e8a9df45-075b-414d-8db4-7748df612486","method":"POST","status":201,"elapsedMs":76}
+{"at":"2026-10-14T13:03:02.063Z","event":"http.request","requestId":"cba6657f-93a7-4b5c-b9d6-f0b51593b8ad","method":"POST","status":200,"elapsedMs":85}
+{"at":"2026-10-14T13:03:02.239Z","event":"http.error","requestId":"6f6ef17f-1260-4de2-839c-305a6bbf981d","code":"NOT_FOUND"}
+{"at":"2026-10-14T13:03:02.239Z","event":"http.request","requestId":"6f6ef17f-1260-4de2-839c-305a6bbf981d","method":"GET","status":404,"elapsedMs":126}
+{"at":"2026-10-14T13:03:02.268Z","event":"http.request","requestId":"6246d431-167b-4ca6-8176-36566573a039","method":"POST","status":201,"elapsedMs":28}
+{"at":"2026-10-14T13:03:02.353Z","event":"http.error","requestId":"4a352d42-7090-4a5b-8950-676533d1222d","code":"MIME_MISMATCH"}
+{"at":"2026-10-14T13:03:02.354Z","event":"http.request","requestId":"4a352d42-7090-4a5b-8950-676533d1222d","method":"POST","status":422,"elapsedMs":65}
+(pass) private uploads verify actual bytes and size, isolate final objects, and deny foreign access [548.68ms]
+{"at":"2026-10-14T13:03:02.399Z","event":"http.request","requestId":"86d81b8c-72d5-4d42-927e-a88b96de32ec","method":"POST","status":201,"elapsedMs":34}
+{"at":"2026-10-14T13:03:02.471Z","event":"http.request","requestId":"0aae8e49-03d4-4c20-b9ef-aacb53cc3644","method":"POST","status":201,"elapsedMs":72}
+{"at":"2026-10-14T13:03:02.552Z","event":"http.request","requestId":"bfb6ee24-397b-404f-a886-2fe8b72060a5","method":"POST","status":200,"elapsedMs":68}
+{"at":"2026-10-14T13:03:02.728Z","event":"http.request","requestId":"7b0c06bd-70ae-4771-9e7f-e91d806e2c45","method":"POST","status":202,"elapsedMs":176}
+{"at":"2026-10-14T13:03:02.956Z","event":"job.completed","jobId":"job_fd0e033c-ed47-4049-b971-1d5a3ff6d6ad","requestId":"cba6657f-93a7-4b5c-b9d6-f0b51593b8ad","kind":"asset.normalize"}
+{"at":"2026-10-14T13:03:03.033Z","event":"job.completed","jobId":"job_0d929b42-f7bb-4ccb-b33d-4fd1ca3a4832","requestId":"bfb6ee24-397b-404f-a886-2fe8b72060a5","kind":"asset.normalize"}
+{"at":"2026-10-14T13:03:03.322Z","event":"job.completed","jobId":"job_43c0b686-c4ce-4100-ac4d-043822c17da9","requestId":"7b0c06bd-70ae-4771-9e7f-e91d806e2c45","kind":"plan.analyze"}
+{"at":"2026-10-14T13:03:03.340Z","event":"http.request","requestId":"1f3ba404-0bc8-4b58-9283-531ac0f94864","method":"GET","status":200,"elapsedMs":15}
+{"at":"2026-10-14T13:03:03.409Z","event":"http.request","requestId":"b5d04b93-13cd-497d-9000-305053b06aab","method":"POST","status":202,"elapsedMs":42}
+{"at":"2026-10-14T13:03:03.503Z","event":"http.request","requestId":"5e869154-a46d-4452-80ef-f7cb169573e3","method":"POST","status":200,"elapsedMs":94}
+{"at":"2026-10-14T13:03:03.547Z","event":"http.request","requestId":"eab321c4-a52c-46ea-92da-3f4633f80a59","method":"POST","status":200,"elapsedMs":21}
+{"at":"2026-10-14T13:03:03.566Z","event":"http.error","requestId":"f94b3dc0-9b17-4c84-94bf-9367255cc135","code":"NOT_FOUND"}
+{"at":"2026-10-14T13:03:03.566Z","event":"http.request","requestId":"f94b3dc0-9b17-4c84-94bf-9367255cc135","method":"GET","status":404,"elapsedMs":18}
+(pass) cloud analysis is cached, remains a proposal, and only accepted candidates create canonical geometry [1212.07ms]
+{"at":"2026-10-14T13:03:03.582Z","event":"http.request","requestId":"14b0d5ed-db03-4f96-b05b-ccfa17425fa9","method":"POST","status":201,"elapsedMs":15}
+(pass) SKIP LOCKED leases prevent duplicate completion and cancellation rejects late workers [31.75ms]
+{"at":"2026-10-14T13:03:03.631Z","event":"http.request","requestId":"e5b41910-fdc4-4846-9583-62fa91c29a19","method":"POST","status":201,"elapsedMs":32}
+(pass) permanent failures dead-letter immediately and transient failures retry with bounded backoff [47.65ms]
+
+tests\measurement-audit.test.ts:
+(pass) fine measurement decisions cannot remove or redraw established geometry [0.74ms]
+(pass) the native audit generation grammar restricts decisions to exact measured IDs and allows ambiguity [36.93ms]
+
+tests\optimization.integration.test.ts:
+(pass) floor-plan PNG optimization reduces stored bytes while preserving exact thin-line pixels and dimensions [1060.65ms]
+(pass) JPEG optimization keeps its compressed image data, exact decoded pixels and Exif orientation [154.73ms]
+(pass) specialized PNG bit depth and color profiles remain intact rather than being quantized [1952.33ms]
+(pass) already compressed files are never enlarged and missing PDF optimization is reported without damaging the original [1.50ms]
+{"at":"2026-10-14T13:03:07.971Z","event":"http.request","requestId":"53a96a5c-1033-4560-a945-e50164ede4aa","method":"POST","status":201,"elapsedMs":896}
+{"at":"2026-10-14T13:03:08.040Z","event":"http.request","requestId":"040ac32e-cf32-4191-804a-ab31491cc980","method":"POST","status":201,"elapsedMs":68}
+{"at":"2026-10-14T13:03:08.518Z","event":"http.request","requestId":"23fa153d-2aee-4bb5-b363-f7ebb3e74be6","method":"POST","status":201,"elapsedMs":454}
+{"at":"2026-10-14T13:03:08.621Z","event":"http.request","requestId":"38e0532e-9392-440a-8ac9-3b071b9b8312","method":"POST","status":201,"elapsedMs":99}
+{"at":"2026-10-14T13:03:08.913Z","event":"http.error","requestId":"e32f941f-caec-45b1-b189-a7fa1ea59cab","code":"UNAUTHENTICATED"}
+{"at":"2026-10-14T13:03:08.913Z","event":"http.request","requestId":"e32f941f-caec-45b1-b189-a7fa1ea59cab","method":"POST","status":401,"elapsedMs":6}
+{"at":"2026-10-14T13:03:08.959Z","event":"http.error","requestId":"4009a349-9227-4198-8c90-17849fb3d819","code":"MIME_MISMATCH"}
+{"at":"2026-10-14T13:03:08.959Z","event":"http.request","requestId":"4009a349-9227-4198-8c90-17849fb3d819","method":"POST","status":422,"elapsedMs":46}
+{"at":"2026-10-14T13:03:08.989Z","event":"http.request","requestId":"29e04c7b-e5a3-4a2d-8bd4-b0ec83a96ee6","method":"GET","status":200,"elapsedMs":30}
+(pass) optimized client ingestion writes only compact bytes, reports savings, and retries a binary upload idempotently [1916.29ms]
+(pass) R2 configuration uses auto region and signs private objects against the account API endpoint [15.76ms]
+{"at":"2026-10-14T13:03:09.418Z","event":"http.request","requestId":"c235f694-f178-49d0-907d-538f90f2e9e5","method":"POST","status":201,"elapsedMs":411}
+{"at":"2026-10-14T13:03:09.482Z","event":"http.request","requestId":"d156d33f-6ac4-4e2f-bc4f-6e1a9545047b","method":"POST","status":201,"elapsedMs":64}
+{"at":"2026-10-14T13:03:09.635Z","event":"http.request","requestId":"bce1a186-cfc0-429b-8aa3-aa0a61e9f200","method":"POST","status":201,"elapsedMs":111}
+{"at":"2026-10-14T13:03:10.111Z","event":"http.request","requestId":"ed9eb54e-a345-4e16-9021-badfb3a00d59","method":"POST","status":201,"elapsedMs":108}
+(pass) image normalization reuses upright plans, compresses derived rasters and clears recovered job failures [1742.00ms]
+
+tests\projects.integration.test.ts:
+{"at":"2026-10-14T13:03:11.742Z","event":"http.request","requestId":"a3521921-867f-462e-bb24-d2debfe9bf7d","method":"POST","status":201,"elapsedMs":911}
+{"at":"2026-10-14T13:03:12.273Z","event":"http.request","requestId":"a1939859-4bf1-4f68-bec5-b1db5ecfc5e4","method":"POST","status":201,"elapsedMs":530}
+{"at":"2026-10-14T13:03:12.334Z","event":"http.request","requestId":"1f84f7f1-dce6-42a2-82a4-cdb52c91f45c","method":"POST","status":201,"elapsedMs":59}
+{"at":"2026-10-14T13:03:12.396Z","event":"http.error","requestId":"ba90cfdc-10c1-42fb-8012-1a8e1f33b33e","code":"NOT_FOUND"}
+{"at":"2026-10-14T13:03:12.397Z","event":"http.request","requestId":"ba90cfdc-10c1-42fb-8012-1a8e1f33b33e","method":"GET","status":404,"elapsedMs":63}
+{"at":"2026-10-14T13:03:12.420Z","event":"http.request","requestId":"ca4def34-e070-4664-be40-53665d05baf4","method":"PUT","status":204,"elapsedMs":23}
+{"at":"2026-10-14T13:03:12.491Z","event":"http.request","requestId":"7c1e7a55-1247-4dd0-b116-80a9980767b2","method":"GET","status":200,"elapsedMs":71}
+{"at":"2026-10-14T13:03:12.509Z","event":"http.error","requestId":"2f481bdf-e0cd-4486-89fa-f66bd7a2e0d3","code":"FORBIDDEN"}
+{"at":"2026-10-14T13:03:12.509Z","event":"http.request","requestId":"2f481bdf-e0cd-4486-89fa-f66bd7a2e0d3","method":"POST","status":403,"elapsedMs":18}
+{"at":"2026-10-14T13:03:12.607Z","event":"http.request","requestId":"6c1e7e6b-b17d-4168-86f4-a535615cdcfe","method":"POST","status":200,"elapsedMs":98}
+{"at":"2026-10-14T13:03:12.684Z","event":"http.request","requestId":"8cf5bf49-5f38-4018-bfda-a137a2964dac","method":"POST","status":200,"elapsedMs":77}
+{"at":"2026-10-14T13:03:12.749Z","event":"http.error","requestId":"16cf00e3-449c-4ca3-8b90-58a9a4f4a762","code":"IDEMPOTENCY_CONFLICT"}
+{"at":"2026-10-14T13:03:12.750Z","event":"http.request","requestId":"16cf00e3-449c-4ca3-8b90-58a9a4f4a762","method":"POST","status":409,"elapsedMs":65}
+{"at":"2026-10-14T13:03:12.833Z","event":"http.request","requestId":"4cf603bb-3904-47a8-9504-0cb73857015a","method":"GET","status":200,"elapsedMs":83}
+(pass) create is idempotent, permissions block IDOR and role-limited edits [559.83ms]
+{"at":"2026-10-14T13:03:12.867Z","event":"http.request","requestId":"14a06663-f08b-432e-a71f-e89d63efbed4","method":"POST","status":201,"elapsedMs":33}
+(pass) concurrent writers cannot lose a revision; invalid transactions never advance state [220.47ms]
+{"at":"2026-10-14T13:03:13.071Z","event":"http.request","requestId":"a70f04bf-859f-425f-89b4-b03543c69d05","method":"POST","status":201,"elapsedMs":16}
+{"at":"2026-10-14T13:03:13.159Z","event":"http.request","requestId":"8f7fe3a6-b506-4312-a912-3f07b8fd1eec","method":"POST","status":201,"elapsedMs":88}
+{"at":"2026-10-14T13:03:13.199Z","event":"http.request","requestId":"a562d7d0-757b-47ef-bb1e-3055496fe5a0","method":"POST","status":200,"elapsedMs":39}
+{"at":"2026-10-14T13:03:13.250Z","event":"http.request","requestId":"9310eff2-08f8-4c9a-907d-d42550e28508","method":"POST","status":200,"elapsedMs":51}
+{"at":"2026-10-14T13:03:13.283Z","event":"http.request","requestId":"d894f6fc-b8ee-45db-b11e-782e9532fe0f","method":"GET","status":200,"elapsedMs":22}
+(pass) versions are immutable, restore adds history and semantic compare identifies entity changes [251.60ms]
+{"at":"2026-10-14T13:03:13.340Z","event":"http.request","requestId":"406569c3-4627-4b1b-a441-97b97e674bdc","method":"POST","status":201,"elapsedMs":34}
+{"at":"2026-10-14T13:03:13.389Z","event":"http.request","requestId":"d7b49cfb-a3de-4ab8-a9f1-19d05c5b732b","method":"DELETE","status":204,"elapsedMs":49}
+{"at":"2026-10-14T13:03:13.398Z","event":"http.error","requestId":"fc92b0eb-6bf7-4ed9-8341-4b9006e10b94","code":"NOT_FOUND"}
+{"at":"2026-10-14T13:03:13.398Z","event":"http.request","requestId":"fc92b0eb-6bf7-4ed9-8341-4b9006e10b94","method":"GET","status":404,"elapsedMs":9}
+{"at":"2026-10-14T13:03:13.410Z","event":"http.error","requestId":"b0596fa7-a3b5-43ae-b9ea-0e5aaee51fa1","code":"NOT_FOUND"}
+{"at":"2026-10-14T13:03:13.410Z","event":"http.request","requestId":"b0596fa7-a3b5-43ae-b9ea-0e5aaee51fa1","method":"POST","status":404,"elapsedMs":12}
+{"at":"2026-10-14T13:03:13.439Z","event":"http.request","requestId":"546ab076-80b1-4029-863b-1cf1ea9c3e97","method":"POST","status":200,"elapsedMs":29}
+{"at":"2026-10-14T13:03:13.486Z","event":"http.request","requestId":"184048e9-0882-46ef-9b41-3272576d62a0","method":"GET","status":200,"elapsedMs":46}
+(pass) soft deletion revokes access and recovery preserves immutable history [180.75ms]
+{"at":"2026-10-14T13:03:13.530Z","event":"http.request","requestId":"6353a3f8-f3ec-4815-b26f-be54a4b954e9","method":"POST","status":201,"elapsedMs":43}
+{"at":"2026-10-14T13:03:13.567Z","event":"http.error","requestId":"44ec71cc-2bad-4ab1-a89a-19fe118b2ec1","code":"LEVEL_LOCKED"}
+{"at":"2026-10-14T13:03:13.567Z","event":"http.request","requestId":"44ec71cc-2bad-4ab1-a89a-19fe118b2ec1","method":"POST","status":409,"elapsedMs":36}
+{"at":"2026-10-14T13:03:13.628Z","event":"http.request","requestId":"6e496e5c-b3da-4d3f-938b-5a6ea9da44b6","method":"POST","status":200,"elapsedMs":56}
+{"at":"2026-10-14T13:03:13.668Z","event":"http.request","requestId":"76fc01c5-a1de-41c0-b33d-e9983d00ff29","method":"POST","status":200,"elapsedMs":40}
+(pass) locked levels require a separate unlock before geometry edits [189.26ms]
+{"at":"2026-10-14T13:03:13.704Z","event":"http.request","requestId":"210477de-7780-46c2-a8a9-755fa494c274","method":"POST","status":201,"elapsedMs":28}
+{"at":"2026-10-14T13:03:13.731Z","event":"http.error","requestId":"3517678e-2002-4ad3-8f99-0ae3d3ef0fd1","code":"ENTITY_LOCKED"}
+{"at":"2026-10-14T13:03:13.731Z","event":"http.request","requestId":"3517678e-2002-4ad3-8f99-0ae3d3ef0fd1","method":"POST","status":409,"elapsedMs":23}
+(pass) replacing a whole floor cannot bypass a collaborator lock on its existing wall [60.49ms]
+
+tests\realtime.integration.test.ts:
+{"at":"2026-10-14T13:03:14.981Z","event":"http.request","requestId":"c7689fe6-e0b1-4e02-a725-bd1e06903691","method":"POST","status":201,"elapsedMs":1131}
+{"at":"2026-10-14T13:03:15.574Z","event":"http.request","requestId":"1352667e-0e5c-4eee-a8e2-5a533b2fb89e","method":"POST","status":201,"elapsedMs":593}
+{"at":"2026-10-14T13:03:15.904Z","event":"http.request","requestId":"eb43ef67-b466-4870-bf4c-4205698a0aad","method":"POST","status":201,"elapsedMs":75}
+{"at":"2026-10-14T13:03:16.042Z","event":"http.request","requestId":"c9d1658e-b078-4ee6-9344-93fc43c59b82","method":"GET","status":200,"elapsedMs":125}
+{"at":"2026-10-14T13:03:16.370Z","event":"http.request","requestId":"65dbbfd5-96f0-4391-9a8b-b608961741fd","method":"GET","status":200,"elapsedMs":445}
+(pass) native WebSockets broadcast accepted revisions across distinct API instances [758.38ms]
+{"at":"2026-10-14T13:03:16.610Z","event":"http.request","requestId":"ff17561c-9cd1-40d1-9f2f-79077d5453e0","method":"POST","status":201,"elapsedMs":26}
+{"at":"2026-10-14T13:03:16.666Z","event":"http.request","requestId":"38896c09-434d-41d0-9f78-fde6b46e4ae2","method":"PUT","status":204,"elapsedMs":55}
+{"at":"2026-10-14T13:03:16.690Z","event":"http.request","requestId":"f04b811b-7fed-401e-82af-b78d92778c34","method":"GET","status":200,"elapsedMs":23}
+(pass) unknown messages and viewer operations are rejected without changing the document [198.50ms]
+{"at":"2026-10-14T13:03:16.831Z","event":"http.request","requestId":"047fa9a0-8f94-4eea-9fb1-f9b3e3ea74f2","method":"POST","status":201,"elapsedMs":48}
+{"at":"2026-10-14T13:03:16.875Z","event":"http.error","requestId":"f4dd44b8-021b-4248-bc7f-559688405eb6","code":"NOT_FOUND"}
+{"at":"2026-10-14T13:03:16.875Z","event":"http.request","requestId":"f4dd44b8-021b-4248-bc7f-559688405eb6","method":"GET","status":404,"elapsedMs":44}
+{"at":"2026-10-14T13:03:16.881Z","event":"http.error","requestId":"15bdce15-8cf7-44dc-a013-513a99dedcc2","code":"ORIGIN_DENIED"}
+{"at":"2026-10-14T13:03:16.881Z","event":"http.request","requestId":"15bdce15-8cf7-44dc-a013-513a99dedcc2","method":"GET","status":403,"elapsedMs":6}
+(pass) WebSocket handshake refuses foreign membership and untrusted origin [99.27ms]
+
+tests\reconstruction-geometry.test.ts:
+(pass) source footprint rejects page-margin structures and crossed room polygons, while accepting a perimeter on the footprint [1.06ms]
+(pass) source-only stairs outside the envelope do not block walls; connected structures still enforce the footprint [1.21ms]
+(pass) fixture corner evidence validates the same bounding box used by the editable asset converter [1.49ms]
+(pass) server validation reports independent geometry errors together without altering or accepting the proposal [5.43ms]
+(pass) backend annotated scale applies only to a fresh automatic reconstruction and never replaces manual or enhancement scale [0.32ms]
+(pass) large source images supply four overlapping server crops; small plans avoid extra provider images [204.68ms]
+
+tests\reconstruction-roof.test.ts:
+(pass) disconnected detected rooms receive one envelope roof and retain the user roof choice [15.82ms]
+(pass) an arena without a roof selection gets a coherent provisional arena-vault roof, and manual roof sections remain intact [4.42ms]
+
+tests\redis.integration.test.ts:
+(skip) native Redis atomic limits are shared by separate clients and TTL is applied
+
+tests\requested-analysis.integration.test.ts:
+{"at":"2026-10-14T13:03:18.351Z","event":"http.request","requestId":"309ecbee-81e5-4c8b-85dc-d60c32bea760","method":"POST","status":201,"elapsedMs":1025}
+{"at":"2026-10-14T13:03:18.874Z","event":"http.request","requestId":"881253fe-4083-45a2-8920-ce5c5421279c","method":"POST","status":201,"elapsedMs":523}
+{"at":"2026-10-14T13:03:18.959Z","event":"http.request","requestId":"17adf89b-41ac-4837-8df7-22ce1d112823","method":"POST","status":201,"elapsedMs":74}
+{"at":"2026-10-14T13:03:19.140Z","event":"http.request","requestId":"bacb8fce-9698-485f-af32-29a9e4c3cb27","method":"POST","status":202,"elapsedMs":152}
+{"at":"2026-10-14T13:03:19.215Z","event":"http.error","requestId":"7974d59e-a82c-4d4a-92f0-7968474d5579","code":"NOT_FOUND"}
+{"at":"2026-10-14T13:03:19.215Z","event":"http.request","requestId":"7974d59e-a82c-4d4a-92f0-7968474d5579","method":"POST","status":404,"elapsedMs":75}
+{"at":"2026-10-14T13:03:19.318Z","event":"http.request","requestId":"3fb1844c-f9d6-4a7e-827f-5a00c8fa98db","method":"POST","status":202,"elapsedMs":102}
+{"at":"2026-10-14T13:03:19.404Z","event":"http.request","requestId":"d58e357f-09ad-4f1d-8d20-06d7add021a7","method":"GET","status":200,"elapsedMs":85}
+{"at":"2026-10-14T13:03:19.545Z","event":"http.request","requestId":"dfa7e3dd-7613-44f9-ba28-9b5ae9012384","method":"GET","status":200,"elapsedMs":90}
+{"at":"2026-10-14T13:03:19.669Z","event":"http.request","requestId":"b4c11bc2-b65d-4012-b63b-cece1e7bb068","method":"GET","status":200,"elapsedMs":73}
+{"at":"2026-10-14T13:03:19.730Z","event":"http.request","requestId":"7aacf396-3053-4b4f-9346-d550137b8a2f","method":"GET","status":200,"elapsedMs":10}
+{"at":"2026-10-14T13:03:19.794Z","event":"http.request","requestId":"a945ee42-2ec5-45cd-bfad-c8712e4f6e4d","method":"GET","status":200,"elapsedMs":12}
+{"at":"2026-10-14T13:03:19.871Z","event":"job.completed","jobId":"job_1ec636bd-1b71-4aa0-9011-47ad3d8d1840","requestId":"3fb1844c-f9d6-4a7e-827f-5a00c8fa98db","kind":"plan.analyze"}
+{"at":"2026-10-14T13:03:19.893Z","event":"http.request","requestId":"049e5262-f261-4e9a-aa44-43be9932a6d2","method":"GET","status":200,"elapsedMs":48}
+{"at":"2026-10-14T13:03:19.956Z","event":"http.request","requestId":"4df7f1bc-5a71-462c-a584-8f3a4485d595","method":"GET","status":200,"elapsedMs":11}
+{"at":"2026-10-14T13:03:19.975Z","event":"http.request","requestId":"7ef3817c-0c1a-405a-a517-f9d94b428da2","method":"GET","status":200,"elapsedMs":19}
+{"at":"2026-10-14T13:03:19.984Z","event":"http.error","requestId":"419d213a-1593-4b03-a07a-40d32165094f","code":"NOT_FOUND"}
+{"at":"2026-10-14T13:03:19.984Z","event":"http.request","requestId":"419d213a-1593-4b03-a07a-40d32165094f","method":"GET","status":404,"elapsedMs":8}
+(pass) authenticated click executes its exact analysis, preserves unrelated queued plans, and cannot be resumed by another account [1112.50ms]
+{"at":"2026-10-14T13:03:20.017Z","event":"http.request","requestId":"585cb749-fe33-4ac1-b61d-4d70df2e96cd","method":"POST","status":201,"elapsedMs":25}
+{"at":"2026-10-14T13:03:20.054Z","event":"http.request","requestId":"9b27258e-439a-4489-93b6-8c3fcdcf604f","method":"POST","status":202,"elapsedMs":34}
+{"at":"2026-10-14T13:03:20.065Z","event":"http.request","requestId":"cf6e3302-c786-4093-ab64-69aaa03fef21","method":"GET","status":200,"elapsedMs":10}
+{"at":"2026-10-14T13:03:20.151Z","event":"http.request","requestId":"74d2a154-fdde-46a1-91fd-7653b884b4ae","method":"GET","status":200,"elapsedMs":35}
+{"at":"2026-10-14T13:03:20.223Z","event":"http.request","requestId":"1f535b78-6965-40d6-9ba2-e26b788d57f5","method":"GET","status":200,"elapsedMs":17}
+{"at":"2026-10-14T13:03:20.271Z","event":"job.failed","jobId":"job_f338c3e5-4446-427a-bdbe-456ebf9acb19","requestId":"9b27258e-439a-4489-93b6-8c3fcdcf604f","code":"AI_NO_STRUCTURE","retryable":false}
+{"at":"2026-10-14T13:03:20.298Z","event":"http.request","requestId":"a1d3e45c-d6bb-4e7e-b609-96d1ceb5af59","method":"GET","status":200,"elapsedMs":23}
+(pass) empty backend interpretations fail clearly instead of publishing an empty successful result [312.13ms]
+{"at":"2026-10-14T13:03:20.327Z","event":"http.request","requestId":"b7ddf3d3-1a20-4a76-96e8-d889fffafd84","method":"POST","status":201,"elapsedMs":23}
+{"at":"2026-10-14T13:03:20.369Z","event":"http.request","requestId":"fec992f1-a4d2-4c8e-ae22-1e8ba1130395","method":"POST","status":202,"elapsedMs":38}
+{"at":"2026-10-14T13:03:20.443Z","event":"http.request","requestId":"d203a502-24e7-4999-a3f2-39a9286a368d","method":"GET","status":200,"elapsedMs":74}
+{"at":"2026-10-14T13:03:20.505Z","event":"http.request","requestId":"c783a1c1-8caa-46c3-8bb3-27270d19b001","method":"GET","status":200,"elapsedMs":11}
+{"at":"2026-10-14T13:03:20.572Z","event":"http.request","requestId":"2824ccaf-fe6b-4821-98e5-590add5ec63b","method":"GET","status":200,"elapsedMs":16}
+{"at":"2026-10-14T13:03:20.582Z","event":"job.completed","jobId":"job_a1a3ddc6-ec3e-4019-afa7-2db1ba99c5f7","requestId":"fec992f1-a4d2-4c8e-ae22-1e8ba1130395","kind":"plan.analyze"}
+{"at":"2026-10-14T13:03:20.633Z","event":"http.request","requestId":"612978fb-cef1-4737-a90b-13ce6cb8f077","method":"GET","status":200,"elapsedMs":10}
+(pass) compiler failures are fed back to AI and source-supported corrections produce a validated preview [334.65ms]
+{"at":"2026-10-14T13:03:20.656Z","event":"http.request","requestId":"7e4f70ae-1a7e-4245-8dcf-c49e7ff3b719","method":"POST","status":201,"elapsedMs":15}
+{"at":"2026-10-14T13:03:20.746Z","event":"http.request","requestId":"9e633946-f401-4071-b88b-880359ea2d9a","method":"POST","status":202,"elapsedMs":81}
+{"at":"2026-10-14T13:03:20.760Z","event":"http.request","requestId":"5f50c8aa-b95c-4e68-bc29-8bda21883f32","method":"POST","status":202,"elapsedMs":14}
+{"at":"2026-10-14T13:03:20.775Z","event":"http.request","requestId":"f5d5657c-2654-4d78-b0e1-4859d312bac4","method":"POST","status":202,"elapsedMs":16}
+{"at":"2026-10-14T13:03:20.808Z","event":"http.request","requestId":"4510766c-53e8-47f6-b929-2712aa81b8f2","method":"GET","status":200,"elapsedMs":32}
+{"at":"2026-10-14T13:03:20.912Z","event":"http.request","requestId":"62d26824-69ed-408d-b4fe-5e51c46ac05d","method":"GET","status":200,"elapsedMs":53}
+{"at":"2026-10-14T13:03:20.937Z","event":"job.completed","jobId":"job_35b3462c-dbd8-498c-b401-9901c3b49a5b","requestId":"9e633946-f401-4071-b88b-880359ea2d9a","kind":"plan.analyze"}
+{"at":"2026-10-14T13:03:20.975Z","event":"http.request","requestId":"5e61fa8a-5645-4784-916a-2af8f9d5fffb","method":"GET","status":200,"elapsedMs":12}
+(pass) resuming a stored pending request starts the same leased job and repeated resume does not duplicate provider passes [346.03ms]
+{"at":"2026-10-14T13:03:21.003Z","event":"http.request","requestId":"b7ef8d10-5110-4838-8e8a-86aa9606993f","method":"POST","status":201,"elapsedMs":17}
+{"at":"2026-10-14T13:03:21.045Z","event":"http.request","requestId":"89e95592-813d-4618-b02b-f2391f4ea98c","method":"POST","status":202,"elapsedMs":39}
+{"at":"2026-10-14T13:03:21.055Z","event":"http.request","requestId":"efdeaf95-957c-48b6-a80e-7a4cbbdc75f2","method":"GET","status":200,"elapsedMs":9}
+{"at":"2026-10-14T13:03:21.118Z","event":"http.request","requestId":"d3446fdc-1298-4d06-9e23-6f8f4b6196ca","method":"GET","status":200,"elapsedMs":12}
+{"at":"2026-10-14T13:03:21.185Z","event":"http.request","requestId":"0fc6c028-feda-4439-93e5-d8ede5ce468f","method":"GET","status":200,"elapsedMs":16}
+{"at":"2026-10-14T13:03:21.226Z","event":"job.completed","jobId":"job_8d9733be-e2f3-4819-8875-98bb96598dd0","requestId":"89e95592-813d-4618-b02b-f2391f4ea98c","kind":"plan.analyze"}
+{"at":"2026-10-14T13:03:21.249Z","event":"http.request","requestId":"ab4a6614-b604-4f73-8876-0ae894186318","method":"GET","status":200,"elapsedMs":11}
+(pass) an unavailable optional repair retains the completed interpretation and its blocking checks instead of losing the result [271.57ms]
+
+tests\response-schema.test.ts:
+(pass) provider generation schema keeps fixed coordinates and review markers but excludes unsupported and unnecessary grammar [18.96ms]
+(pass) safe provider failures distinguish credentials, unavailable models and rejected schemas without exposing upstream messages [0.31ms]
+
+tests\review-export.integration.test.ts:
+{"at":"2026-10-14T13:03:22.152Z","event":"http.request","requestId":"0faee56b-ad6b-4310-803d-b3edc888e9b1","method":"POST","status":201,"elapsedMs":773}
+{"at":"2026-10-14T13:03:22.685Z","event":"http.request","requestId":"fb81ab52-e8a6-42fc-b4aa-43d23936f7cf","method":"POST","status":201,"elapsedMs":532}
+{"at":"2026-10-14T13:03:22.766Z","event":"http.request","requestId":"6927a769-93af-43a6-b26c-bbfa7b556996","method":"POST","status":201,"elapsedMs":80}
+{"at":"2026-10-14T13:03:22.891Z","event":"http.request","requestId":"c6baed13-0603-4a7f-b532-edea3fe66aba","method":"POST","status":201,"elapsedMs":125}
+{"at":"2026-10-14T13:03:22.997Z","event":"http.request","requestId":"9c7c9406-e83d-42a8-9c52-a490f4a08b05","method":"POST","status":201,"elapsedMs":106}
+{"at":"2026-10-14T13:03:23.105Z","event":"http.request","requestId":"9c431832-e9f9-4e45-8e6e-e02030f7963b","method":"POST","status":201,"elapsedMs":107}
+{"at":"2026-10-14T13:03:23.174Z","event":"http.error","requestId":"f3a8886a-bfc6-4de8-9d34-8c2ee93557f7","code":"VIEW_IN_USE"}
+{"at":"2026-10-14T13:03:23.174Z","event":"http.request","requestId":"f3a8886a-bfc6-4de8-9d34-8c2ee93557f7","method":"DELETE","status":409,"elapsedMs":69}
+{"at":"2026-10-14T13:03:23.219Z","event":"http.error","requestId":"59afb67e-f473-4095-9482-eff28a106ff6","code":"NOT_FOUND"}
+{"at":"2026-10-14T13:03:23.219Z","event":"http.request","requestId":"59afb67e-f473-4095-9482-eff28a106ff6","method":"GET","status":404,"elapsedMs":45}
+{"at":"2026-10-14T13:03:23.241Z","event":"http.error","requestId":"ebe5c580-4473-4554-80c9-08ccfefa8866","code":"INVALID_VIEW"}
+{"at":"2026-10-14T13:03:23.241Z","event":"http.request","requestId":"ebe5c580-4473-4554-80c9-08ccfefa8866","method":"POST","status":422,"elapsedMs":21}
+(pass) saved presentations validate view ownership and keep referenced views intact [556.24ms]
+{"at":"2026-10-14T13:03:23.313Z","event":"http.request","requestId":"4e9ef76e-5af4-4633-bf46-ccac7ce97aee","method":"POST","status":201,"elapsedMs":70}
+{"at":"2026-10-14T13:03:23.407Z","event":"http.request","requestId":"c1291917-075e-44c9-a84d-51a495c5ae0e","method":"POST","status":202,"elapsedMs":94}
+{"at":"2026-10-14T13:03:23.438Z","event":"http.request","requestId":"f56e32a7-c4f7-4be9-b414-a6ef2d72d6ad","method":"POST","status":202,"elapsedMs":31}
+{"at":"2026-10-14T13:03:23.519Z","event":"http.request","requestId":"ed86a58a-a162-425a-838b-a807a772f763","method":"GET","status":200,"elapsedMs":15}
+{"at":"2026-10-14T13:03:23.527Z","event":"http.error","requestId":"92e92cb5-f8d2-474b-9ac2-332c1f81ca86","code":"NOT_FOUND"}
+{"at":"2026-10-14T13:03:23.527Z","event":"http.request","requestId":"92e92cb5-f8d2-474b-9ac2-332c1f81ca86","method":"GET","status":404,"elapsedMs":7}
+(pass) JSON exports use a pinned canonical revision, private output and idempotent queueing [299.32ms]
+{"at":"2026-10-14T13:03:23.561Z","event":"http.request","requestId":"50651109-eb59-41ab-8a02-b679a7060a89","method":"POST","status":201,"elapsedMs":19}
+{"at":"2026-10-14T13:03:23.608Z","event":"http.request","requestId":"e537084d-5dce-47ab-86b3-93f9d4060e37","method":"POST","status":201,"elapsedMs":47}
+{"at":"2026-10-14T13:03:23.655Z","event":"http.request","requestId":"cd2e0d9c-4a7a-4e9a-8210-8fff11d90295","method":"POST","status":201,"elapsedMs":46}
+{"at":"2026-10-14T13:03:23.698Z","event":"http.request","requestId":"1ca92026-5238-4d5c-8e7d-17e8af6af580","method":"PATCH","status":200,"elapsedMs":43}
+{"at":"2026-10-14T13:03:23.726Z","event":"http.request","requestId":"c14b7dfb-b759-48df-9655-312113c15a2f","method":"PATCH","status":200,"elapsedMs":29}
+(pass) comment issues retain priority and resolution history across reopen [186.25ms]
+
+tests\security.integration.test.ts:
+{"at":"2026-10-14T13:03:24.667Z","event":"http.request","requestId":"9b6b3d07-2378-4e82-bb12-9c495277d80d","method":"POST","status":201,"elapsedMs":857}
+{"at":"2026-10-14T13:03:24.702Z","event":"http.error","requestId":"9ff9fcd6-f251-45f2-92a6-dccea2f807af","code":"CSRF_FAILED"}
+{"at":"2026-10-14T13:03:24.702Z","event":"http.request","requestId":"9ff9fcd6-f251-45f2-92a6-dccea2f807af","method":"POST","status":403,"elapsedMs":19}
+{"at":"2026-10-14T13:03:24.703Z","event":"http.error","requestId":"ce58d62b-30f2-46b7-8236-e87f04047501","code":"ORIGIN_DENIED"}
+{"at":"2026-10-14T13:03:24.703Z","event":"http.request","requestId":"ce58d62b-30f2-46b7-8236-e87f04047501","method":"POST","status":403,"elapsedMs":1}
+{"at":"2026-10-14T13:03:24.705Z","event":"http.error","requestId":"41b7a8d8-a7e3-4422-b3a4-51c3ae48b6b5","code":"UNAUTHENTICATED"}
+{"at":"2026-10-14T13:03:24.706Z","event":"http.request","requestId":"41b7a8d8-a7e3-4422-b3a4-51c3ae48b6b5","method":"GET","status":401,"elapsedMs":2}
+(pass) session cookies are opaque and only hashes persist; CSRF and untrusted origins fail closed [38.28ms]
+{"at":"2026-10-14T13:03:25.182Z","event":"http.request","requestId":"a30c9ed4-e9f9-442c-bd54-ea1961bfc3e1","method":"POST","status":201,"elapsedMs":476}
+{"at":"2026-10-14T13:03:25.216Z","event":"http.error","requestId":"b318b644-092b-441d-bd7b-8449cc1db335","code":"UNAUTHENTICATED"}
+{"at":"2026-10-14T13:03:25.217Z","event":"http.request","requestId":"b318b644-092b-441d-bd7b-8449cc1db335","method":"GET","status":401,"elapsedMs":14}
+{"at":"2026-10-14T13:03:25.614Z","event":"http.request","requestId":"21dc1955-73f2-4399-9a58-2dcb11bffdab","method":"POST","status":201,"elapsedMs":397}
+{"at":"2026-10-14T13:03:25.647Z","event":"http.request","requestId":"e8f81e79-190e-4c72-ab33-e21e658f2a7b","method":"POST","status":204,"elapsedMs":33}
+{"at":"2026-10-14T13:03:25.677Z","event":"http.error","requestId":"23578118-2549-4a1f-9794-832b2bcbaacc","code":"UNAUTHENTICATED"}
+{"at":"2026-10-14T13:03:25.677Z","event":"http.request","requestId":"23578118-2549-4a1f-9794-832b2bcbaacc","method":"GET","status":401,"elapsedMs":30}
+(pass) expired and revoked sessions stop authorizing reads [971.30ms]
+{"at":"2026-10-14T13:03:25.715Z","event":"http.request","requestId":"5317b657-25eb-42cd-970e-c9f7f9b07a21","method":"POST","status":201,"elapsedMs":37}
+{"at":"2026-10-14T13:03:25.800Z","event":"http.request","requestId":"05417df6-53a5-408a-aef9-4b4eaa4b53b5","method":"POST","status":201,"elapsedMs":85}
+{"at":"2026-10-14T13:03:25.861Z","event":"http.request","requestId":"746bbcac-3c3e-410f-bbb4-42cea7f24ba6","method":"GET","status":200,"elapsedMs":61}
+{"at":"2026-10-14T13:03:25.878Z","event":"http.error","requestId":"18e02b54-920e-4916-a7b1-bb6379be29cd","code":"SHARE_SCOPE"}
+{"at":"2026-10-14T13:03:25.878Z","event":"http.request","requestId":"18e02b54-920e-4916-a7b1-bb6379be29cd","method":"POST","status":403,"elapsedMs":16}
+{"at":"2026-10-14T13:03:25.946Z","event":"http.request","requestId":"e5a64b1b-fec7-4ab7-9aa7-1e1a3b43eb81","method":"DELETE","status":204,"elapsedMs":67}
+{"at":"2026-10-14T13:03:25.980Z","event":"http.error","requestId":"48c901a2-4707-4364-9c58-8fbd24671bd4","code":"SHARE_UNAVAILABLE"}
+{"at":"2026-10-14T13:03:25.981Z","event":"http.request","requestId":"48c901a2-4707-4364-9c58-8fbd24671bd4","method":"GET","status":404,"elapsedMs":35}
+(pass) public links are scoped, reveal no sources and are immediately revocable [303.61ms]
+{"at":"2026-10-14T13:03:26.030Z","event":"http.request","requestId":"921aaffa-7854-4775-a057-00ffbe0ed361","method":"POST","status":201,"elapsedMs":49}
+{"at":"2026-10-14T13:03:26.085Z","event":"http.request","requestId":"6ea477f9-3713-46cd-9f7e-1fd0bfb493f8","method":"POST","status":201,"elapsedMs":55}
+{"at":"2026-10-14T13:03:26.144Z","event":"http.error","requestId":"30a45e27-67b3-4d86-b534-4f5478e1cc7b","code":"INVALID_ANCHOR"}
+{"at":"2026-10-14T13:03:26.145Z","event":"http.request","requestId":"30a45e27-67b3-4d86-b534-4f5478e1cc7b","method":"POST","status":422,"elapsedMs":59}
+{"at":"2026-10-14T13:03:26.198Z","event":"http.request","requestId":"e727f12a-08ed-48fb-8a9b-8486c7312cf9","method":"POST","status":201,"elapsedMs":53}
+{"at":"2026-10-14T13:03:26.265Z","event":"http.request","requestId":"8c19b155-a392-411d-bb8f-6901d4dfd0cb","method":"POST","status":201,"elapsedMs":67}
+{"at":"2026-10-14T13:03:26.303Z","event":"http.error","requestId":"d1ec86d4-f855-4e9d-a770-e67104c7387c","code":"INVALID_TRANSITION"}
+{"at":"2026-10-14T13:03:26.304Z","event":"http.request","requestId":"d1ec86d4-f855-4e9d-a770-e67104c7387c","method":"PATCH","status":409,"elapsedMs":38}
+{"at":"2026-10-14T13:03:26.365Z","event":"http.request","requestId":"b1f38fbc-e5e4-48c3-ac76-7f357878316f","method":"POST","status":201,"elapsedMs":61}
+{"at":"2026-10-14T13:03:26.395Z","event":"http.error","requestId":"c2083fd3-26d2-41cb-a53a-0331a5c08905","code":"INVALID_TARGET"}
+{"at":"2026-10-14T13:03:26.395Z","event":"http.request","requestId":"c2083fd3-26d2-41cb-a53a-0331a5c08905","method":"POST","status":422,"elapsedMs":30}
+(pass) comments, issue assignment and approvals cannot reference another project [414.74ms]
+{"at":"2026-10-14T13:03:26.439Z","event":"http.request","requestId":"562130e4-5060-4e85-8b55-7ad6b75345cd","method":"POST","status":201,"elapsedMs":43}
+{"at":"2026-10-14T13:03:26.457Z","event":"http.error","requestId":"5f47f22e-4d5c-48cc-82f4-b465be17e905","code":"VALIDATION_ERROR"}
+{"at":"2026-10-14T13:03:26.458Z","event":"http.request","requestId":"5f47f22e-4d5c-48cc-82f4-b465be17e905","method":"POST","status":422,"elapsedMs":9}
+(pass) audit events cannot be edited and server errors never expose SQL or credentials [62.23ms]
+{"at":"2026-10-14T13:03:26.483Z","event":"http.request","requestId":"6f3d2bb1-914f-40f6-a707-320b7e240e75","method":"POST","status":201,"elapsedMs":24}
+{"at":"2026-10-14T13:03:26.528Z","event":"http.request","requestId":"15c959ae-e5b1-451d-a598-9031ea9d1398","method":"POST","status":201,"elapsedMs":45}
+{"at":"2026-10-14T13:03:26.596Z","event":"http.request","requestId":"f75bfa8a-46ea-4f15-8ecb-9c40ad78213a","method":"POST","status":200,"elapsedMs":67}
+{"at":"2026-10-14T13:03:26.660Z","event":"http.request","requestId":"8df0ea67-d6e4-4c73-914b-8d8d7aab6de7","method":"POST","status":201,"elapsedMs":64}
+{"at":"2026-10-14T13:03:26.676Z","event":"http.error","requestId":"d0da4807-c5d4-4299-b729-a00ccaf4abfa","code":"REVISION_CONFLICT"}
+{"at":"2026-10-14T13:03:26.676Z","event":"http.request","requestId":"d0da4807-c5d4-4299-b729-a00ccaf4abfa","method":"POST","status":409,"elapsedMs":16}
+{"at":"2026-10-14T13:03:26.703Z","event":"http.request","requestId":"428e9df0-cdac-4a4a-9066-3d9137e2f656","method":"POST","status":201,"elapsedMs":27}
+{"at":"2026-10-14T13:03:26.733Z","event":"http.request","requestId":"c3b34a61-52bf-4e63-a918-85af5a20255b","method":"POST","status":201,"elapsedMs":29}
+{"at":"2026-10-14T13:03:26.765Z","event":"http.request","requestId":"e4150fe4-17b7-4248-91d1-52d37798683a","method":"POST","status":201,"elapsedMs":32}
+(pass) approval history records the reviewed revision and guest author without impersonation [320.64ms]
+{"at":"2026-10-14T13:03:26.842Z","event":"http.request","requestId":"000b545c-b42a-4b83-b2ed-31e84a23ae00","method":"GET","status":200,"elapsedMs":63}
+(pass) OpenAPI derives request contracts and recursive references from the active routes [64.82ms]
+
+tests\source-fidelity.test.ts:
+(pass) large transparent PNGs and JPEGs reach analysis with identical original bytes and resolution [128.31ms]
+(pass) detail crops keep native pixels and complex low resolution sheets receive all four regions [95.18ms]
+(pass) detail crops retain 16-bit channels rather than quantizing them to 8-bit [25.99ms]
+(pass) ZIP round trips original metadata and bytes, rejects tampering and oversized decoded sources [9.52ms]
+(pass) archive download tickets expire and cannot be forged or redirect to staging or traversal paths [1.14ms]
+(pass) native OpenCV measurements are deterministic and unclassified court evidence is not automatically erected [3135.42ms]
+(pass) native fine measurements retain single-pixel partitions for classification rather than erasing or auto-erecting them [704.72ms]
+
+tests\source-geometry.test.ts:
+(pass) an estimated envelope fits nearby source-supported walls and cannot expand into blank margins or distant page marks [54.26ms]
+(pass) opening hosts are repaired within pixel tolerance without converting swung leaves or open routes into fabricated walls [0.93ms]
+(pass) an open vomitory never creates a gap across the endpoint of a diagonal wall [0.80ms]
+(pass) a nearby structural column fits the envelope only when its edges have original pixel support [31.62ms]
+(pass) open circulation remains a source guide, unsupported fixtures remain reviewable, and quality notes do not hide scale warnings [1.14ms]
+
+tests\storage-smoke.test.ts:
+(pass) R2 smoke verifies optimized image transfers, exact origin CORS and deletion of its own test object [179.69ms]
+(pass) a public response, server failure or wrong CORS cannot pass privacy checks and cleanup still occurs [384.61ms]
+(pass) an upload with a lost response still cleans up its possible test object [55.30ms]
+
+tests\teams.integration.test.ts:
+{"at":"2026-10-14T13:03:33.011Z","event":"http.request","requestId":"cad74de5-2af8-423e-bdb4-046c44fa5959","method":"POST","status":201,"elapsedMs":997}
+{"at":"2026-10-14T13:03:33.457Z","event":"http.request","requestId":"2143c62a-5b82-49fb-9e50-74c86e95891f","method":"POST","status":201,"elapsedMs":446}
+{"at":"2026-10-14T13:03:33.900Z","event":"http.request","requestId":"25f0e03d-ae66-4db8-9763-9743d636700a","method":"POST","status":201,"elapsedMs":443}
+{"at":"2026-10-14T13:03:34.001Z","event":"http.request","requestId":"2095b566-3778-4a8e-8537-720cb4e145ee","method":"POST","status":201,"elapsedMs":100}
+{"at":"2026-10-14T13:03:34.096Z","event":"http.request","requestId":"f8311d01-0adb-41bf-b040-58b02ceeddd1","method":"POST","status":201,"elapsedMs":85}
+{"at":"2026-10-14T13:03:34.137Z","event":"http.request","requestId":"65b91853-86b3-4280-95b7-5bbf1f51a9e6","method":"POST","status":201,"elapsedMs":41}
+{"at":"2026-10-14T13:03:34.199Z","event":"http.error","requestId":"fb162629-4f38-42c2-a930-a34932df6355","code":"NOT_FOUND"}
+{"at":"2026-10-14T13:03:34.199Z","event":"http.request","requestId":"fb162629-4f38-42c2-a930-a34932df6355","method":"POST","status":404,"elapsedMs":52}
+{"at":"2026-10-14T13:03:34.265Z","event":"http.request","requestId":"995d7468-3c8b-47f8-b281-602631a416d9","method":"POST","status":200,"elapsedMs":66}
+{"at":"2026-10-14T13:03:34.346Z","event":"http.request","requestId":"15d5ffb7-8a7a-4fcd-a143-235c53fd8375","method":"POST","status":201,"elapsedMs":81}
+{"at":"2026-10-14T13:03:34.395Z","event":"http.error","requestId":"5c0abf19-84d2-4fe7-a9ea-2422f5de13a4","code":"NOT_FOUND"}
+{"at":"2026-10-14T13:03:34.396Z","event":"http.request","requestId":"5c0abf19-84d2-4fe7-a9ea-2422f5de13a4","method":"GET","status":404,"elapsedMs":49}
+{"at":"2026-10-14T13:03:34.410Z","event":"http.error","requestId":"be6a670f-95bb-48b5-8da5-53493b7f9f0b","code":"FORBIDDEN"}
+{"at":"2026-10-14T13:03:34.410Z","event":"http.request","requestId":"be6a670f-95bb-48b5-8da5-53493b7f9f0b","method":"DELETE","status":403,"elapsedMs":14}
+{"at":"2026-10-14T13:03:34.455Z","event":"http.error","requestId":"9e6d81a3-d344-4ee7-af4a-38444dc3c5a7","code":"OWNER_TRANSFER_REQUIRED"}
+{"at":"2026-10-14T13:03:34.455Z","event":"http.request","requestId":"9e6d81a3-d344-4ee7-af4a-38444dc3c5a7","method":"DELETE","status":409,"elapsedMs":45}
+{"at":"2026-10-14T13:03:34.502Z","event":"http.request","requestId":"26ac5b72-28d2-4064-8d11-d231ab79e319","method":"POST","status":204,"elapsedMs":47}
+{"at":"2026-10-14T13:03:34.544Z","event":"http.error","requestId":"4bdde1ae-353e-45b5-a38c-53f27e5bbb12","code":"FORBIDDEN"}
+{"at":"2026-10-14T13:03:34.544Z","event":"http.request","requestId":"4bdde1ae-353e-45b5-a38c-53f27e5bbb12","method":"PATCH","status":403,"elapsedMs":43}
+(pass) invitations enforce recipient identity, idempotency and role boundaries without persisting raw tokens [644.57ms]
+{"at":"2026-10-14T13:03:34.585Z","event":"http.request","requestId":"c84d5cb7-60a9-4bb4-a9c7-c147c70e41e8","method":"POST","status":201,"elapsedMs":39}
+{"at":"2026-10-14T13:03:34.625Z","event":"http.request","requestId":"ef2a7e96-8557-41c3-9766-3781347d4ea8","method":"PUT","status":204,"elapsedMs":40}
+{"at":"2026-10-14T13:03:34.684Z","event":"http.request","requestId":"b43f5eb0-339c-4c50-bcd1-82c33d231eba","method":"POST","status":201,"elapsedMs":59}
+{"at":"2026-10-14T13:03:34.703Z","event":"http.request","requestId":"eab390bd-ecbb-46eb-9e51-5b42c05d196a","method":"GET","status":200,"elapsedMs":18}
+{"at":"2026-10-14T13:03:34.730Z","event":"http.request","requestId":"a56eb18a-c0f3-4a06-b90c-30940796ac92","method":"DELETE","status":204,"elapsedMs":26}
+{"at":"2026-10-14T13:03:34.772Z","event":"http.request","requestId":"671ead1c-d282-4965-80af-5fcfdbe98ed2","method":"GET","status":200,"elapsedMs":42}
+(pass) project component libraries stop being visible after membership removal [227.13ms]
+{"at":"2026-10-14T13:03:34.799Z","event":"http.request","requestId":"c26eb354-04d9-4718-8dd3-bfebb3d5df31","method":"POST","status":201,"elapsedMs":26}
+{"at":"2026-10-14T13:03:34.833Z","event":"http.request","requestId":"4fba91f8-bd33-496b-bb72-17ececdd6df5","method":"POST","status":201,"elapsedMs":32}
+{"at":"2026-10-14T13:03:34.858Z","event":"http.request","requestId":"7422b34a-5ce7-49f8-b5d3-9b329dc744f1","method":"POST","status":200,"elapsedMs":24}
+{"at":"2026-10-14T13:03:34.893Z","event":"http.request","requestId":"fe4b9561-7cfb-4a2d-beff-8af8250a22b3","method":"POST","status":201,"elapsedMs":35}
+{"at":"2026-10-14T13:03:34.916Z","event":"http.request","requestId":"ff442ce3-2d78-4284-9adf-282e54c128b9","method":"PATCH","status":204,"elapsedMs":22}
+{"at":"2026-10-14T13:03:34.938Z","event":"http.error","requestId":"b1bcd668-4100-4f30-958b-7a80168f2958","code":"FORBIDDEN"}
+{"at":"2026-10-14T13:03:34.938Z","event":"http.request","requestId":"b1bcd668-4100-4f30-958b-7a80168f2958","method":"PATCH","status":403,"elapsedMs":22}
+{"at":"2026-10-14T13:03:34.970Z","event":"http.request","requestId":"3f9e1b3e-0dfd-4d5d-be3e-7b603af782bb","method":"DELETE","status":204,"elapsedMs":31}
+{"at":"2026-10-14T13:03:34.986Z","event":"http.error","requestId":"c0d1b8ae-c927-48d1-aca9-87c4ae644fb6","code":"NOT_FOUND"}
+{"at":"2026-10-14T13:03:34.986Z","event":"http.request","requestId":"c0d1b8ae-c927-48d1-aca9-87c4ae644fb6","method":"GET","status":404,"elapsedMs":16}
+{"at":"2026-10-14T13:03:35.001Z","event":"http.request","requestId":"b18aa6a2-a505-48c7-89e7-88e40bb28968","method":"GET","status":200,"elapsedMs":15}
+(pass) team ownership governs team projects and removed creators lose all access [229.68ms]
+
+tests\templates.integration.test.ts:
+{"at":"2026-10-14T13:03:36.724Z","event":"http.request","requestId":"70afd311-37ce-4861-be57-608d0f3f0c3f","method":"POST","status":201,"elapsedMs":1675}
+{"at":"2026-10-14T13:03:37.139Z","event":"http.request","requestId":"b1524f22-62a9-4200-bb75-82246d0469c6","method":"POST","status":201,"elapsedMs":415}
+{"at":"2026-10-14T13:03:37.145Z","event":"http.error","requestId":"40ad8113-6f11-47b2-9b2e-ab4ad5909f35","code":"UNAUTHENTICATED"}
+{"at":"2026-10-14T13:03:37.146Z","event":"http.request","requestId":"40ad8113-6f11-47b2-9b2e-ab4ad5909f35","method":"GET","status":401,"elapsedMs":6}
+{"at":"2026-10-14T13:03:37.179Z","event":"http.request","requestId":"58279b54-7cd1-4011-bb6c-7421a7932093","method":"GET","status":200,"elapsedMs":33}
+{"at":"2026-10-14T13:03:37.256Z","event":"http.request","requestId":"65f2e0ed-060a-4b8d-9501-20a9b336752d","method":"POST","status":201,"elapsedMs":71}
+{"at":"2026-10-14T13:03:37.329Z","event":"http.request","requestId":"d2ae4c1a-a522-4366-8bcd-e6c2567d0b1e","method":"GET","status":200,"elapsedMs":72}
+{"at":"2026-10-14T13:03:37.343Z","event":"http.error","requestId":"658164c9-5926-4748-ac89-736c3b45b78c","code":"NOT_FOUND"}
+{"at":"2026-10-14T13:03:37.343Z","event":"http.request","requestId":"658164c9-5926-4748-ac89-736c3b45b78c","method":"GET","status":404,"elapsedMs":11}
+{"at":"2026-10-14T13:03:37.381Z","event":"http.request","requestId":"eee194cd-f8a4-4f18-8565-85c32453d9f0","method":"POST","status":201,"elapsedMs":37}
+{"at":"2026-10-14T13:03:37.445Z","event":"http.request","requestId":"83a9fa08-e8e4-4a76-bc3b-263d771d81f3","method":"GET","status":200,"elapsedMs":64}
+{"at":"2026-10-14T13:03:37.456Z","event":"http.error","requestId":"69ed8cad-d9b0-4419-9d06-a6177cdeb95b","code":"NOT_FOUND"}
+{"at":"2026-10-14T13:03:37.456Z","event":"http.request","requestId":"69ed8cad-d9b0-4419-9d06-a6177cdeb95b","method":"GET","status":404,"elapsedMs":9}
+{"at":"2026-10-14T13:03:37.488Z","event":"http.request","requestId":"fff4a1c6-f625-4837-8a3c-3028e77bc76b","method":"POST","status":201,"elapsedMs":31}
+{"at":"2026-10-14T13:03:37.564Z","event":"http.request","requestId":"512faf6b-3244-4b20-b419-526a1e19deed","method":"GET","status":200,"elapsedMs":76}
+{"at":"2026-10-14T13:03:37.574Z","event":"http.error","requestId":"e6d2451a-7fbc-4ad0-bc01-a5825437a4ef","code":"NOT_FOUND"}
+{"at":"2026-10-14T13:03:37.575Z","event":"http.request","requestId":"e6d2451a-7fbc-4ad0-bc01-a5825437a4ef","method":"GET","status":404,"elapsedMs":8}
+{"at":"2026-10-14T13:03:37.617Z","event":"http.request","requestId":"e1b693e9-4376-4fb3-b13b-8777c6b554b4","method":"POST","status":201,"elapsedMs":42}
+{"at":"2026-10-14T13:03:37.696Z","event":"http.request","requestId":"eae80e6c-8ad7-44dd-859a-6e4c402de6b5","method":"GET","status":200,"elapsedMs":79}
+{"at":"2026-10-14T13:03:37.710Z","event":"http.error","requestId":"f7ad52d0-0a1e-4511-a8b3-61ce4aebf9ce","code":"NOT_FOUND"}
+{"at":"2026-10-14T13:03:37.710Z","event":"http.request","requestId":"f7ad52d0-0a1e-4511-a8b3-61ce4aebf9ce","method":"GET","status":404,"elapsedMs":10}
+{"at":"2026-10-14T13:03:37.742Z","event":"http.request","requestId":"389ae5a9-3c0e-4210-b6bc-2c7f199542c6","method":"POST","status":201,"elapsedMs":32}
+{"at":"2026-10-14T13:03:37.822Z","event":"http.request","requestId":"5bab3650-8f1f-4ce9-93c3-6fdf0bef8c88","method":"GET","status":200,"elapsedMs":80}
+{"at":"2026-10-14T13:03:37.834Z","event":"http.error","requestId":"828469b6-5d79-4a6e-b972-2dbe806425b7","code":"NOT_FOUND"}
+{"at":"2026-10-14T13:03:37.834Z","event":"http.request","requestId":"828469b6-5d79-4a6e-b972-2dbe806425b7","method":"GET","status":404,"elapsedMs":10}
+{"at":"2026-10-14T13:03:37.878Z","event":"http.request","requestId":"4105401f-cbe6-4396-99c4-3a6ed5c04717","method":"POST","status":201,"elapsedMs":44}
+{"at":"2026-10-14T13:03:37.955Z","event":"http.request","requestId":"82ac1a7d-debb-4ea9-b2f3-3ca1bbc56b22","method":"GET","status":200,"elapsedMs":77}
+{"at":"2026-10-14T13:03:37.968Z","event":"http.error","requestId":"12be3a2c-6f8a-4d0e-8a7c-072d6c2387b9","code":"NOT_FOUND"}
+{"at":"2026-10-14T13:03:37.968Z","event":"http.request","requestId":"12be3a2c-6f8a-4d0e-8a7c-072d6c2387b9","method":"GET","status":404,"elapsedMs":10}
+{"at":"2026-10-14T13:03:38.007Z","event":"http.request","requestId":"ae657a51-c2c4-49ce-a29c-7b7b91e045d8","method":"POST","status":201,"elapsedMs":39}
+{"at":"2026-10-14T13:03:38.092Z","event":"http.request","requestId":"b404186b-06d9-4b2b-ac08-dbefa7d22e29","method":"GET","status":200,"elapsedMs":84}
+{"at":"2026-10-14T13:03:38.103Z","event":"http.error","requestId":"ae3d9b86-8c81-400d-9a3b-34ae8df911c8","code":"NOT_FOUND"}
+{"at":"2026-10-14T13:03:38.103Z","event":"http.request","requestId":"ae3d9b86-8c81-400d-9a3b-34ae8df911c8","method":"GET","status":404,"elapsedMs":9}
+{"at":"2026-10-14T13:03:38.158Z","event":"http.request","requestId":"e94df3e7-fc13-4f61-8fd2-b470a5536863","method":"POST","status":201,"elapsedMs":55}
+{"at":"2026-10-14T13:03:38.239Z","event":"http.request","requestId":"58cd37d0-1726-4bdb-a59a-68bed742f276","method":"GET","status":200,"elapsedMs":80}
+{"at":"2026-10-14T13:03:38.254Z","event":"http.error","requestId":"ae788036-11f7-4c1b-b59a-f3b142992fcc","code":"NOT_FOUND"}
+{"at":"2026-10-14T13:03:38.255Z","event":"http.request","requestId":"ae788036-11f7-4c1b-b59a-f3b142992fcc","method":"GET","status":404,"elapsedMs":10}
+{"at":"2026-10-14T13:03:38.289Z","event":"http.request","requestId":"12968fd2-e2ce-40d1-ad74-527acbb42ff7","method":"POST","status":201,"elapsedMs":34}
+{"at":"2026-10-14T13:03:38.353Z","event":"http.request","requestId":"c63587fe-80fd-4e1c-a516-ad686732e461","method":"GET","status":200,"elapsedMs":64}
+{"at":"2026-10-14T13:03:38.366Z","event":"http.error","requestId":"bd623782-3f2e-4e99-a552-21e2b10f443a","code":"NOT_FOUND"}
+{"at":"2026-10-14T13:03:38.366Z","event":"http.request","requestId":"bd623782-3f2e-4e99-a552-21e2b10f443a","method":"GET","status":404,"elapsedMs":9}
+(pass) backend owns the complete template catalogue; every sample instantiates a valid editable project [1227.31ms]
+{"at":"2026-10-14T13:03:38.394Z","event":"http.request","requestId":"14a39a66-c374-4e21-a75b-deb66fee63fd","method":"POST","status":201,"elapsedMs":28}
+{"at":"2026-10-14T13:03:38.404Z","event":"http.request","requestId":"be562cd2-75d0-4f12-9159-a081a016b35d","method":"POST","status":201,"elapsedMs":10}
+{"at":"2026-10-14T13:03:38.422Z","event":"http.request","requestId":"43e9de2e-f41d-497d-ad88-f3ac5c941671","method":"POST","status":201,"elapsedMs":18}
+{"at":"2026-10-14T13:03:38.431Z","event":"http.error","requestId":"790d0e0a-f26c-40cd-a748-5e53f29c9502","code":"IDEMPOTENCY_CONFLICT"}
+{"at":"2026-10-14T13:03:38.431Z","event":"http.request","requestId":"790d0e0a-f26c-40cd-a748-5e53f29c9502","method":"POST","status":409,"elapsedMs":8}
+{"at":"2026-10-14T13:03:38.439Z","event":"http.error","requestId":"abb27866-7b3b-4341-b228-2dd075d5a20a","code":"VALIDATION_ERROR"}
+{"at":"2026-10-14T13:03:38.439Z","event":"http.request","requestId":"abb27866-7b3b-4341-b228-2dd075d5a20a","method":"POST","status":422,"elapsedMs":8}
+{"at":"2026-10-14T13:03:38.446Z","event":"http.error","requestId":"7bf98e11-7f85-41a1-a346-d78bdea7eefb","code":"NOT_FOUND"}
+{"at":"2026-10-14T13:03:38.446Z","event":"http.request","requestId":"7bf98e11-7f85-41a1-a346-d78bdea7eefb","method":"POST","status":404,"elapsedMs":7}
+(pass) template creation retries are idempotent, copies are separate and clients cannot replace template geometry [80.33ms]
+
+1 tests skipped:
+(skip) native Redis atomic limits are shared by separate clients and TTL is applied
+
+ 111 pass
+ 1 skip
+ 0 fail
+ 745 expect() calls
+Ran 112 tests across 29 files. [73.42s]

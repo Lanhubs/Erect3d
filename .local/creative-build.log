@@ -1,0 +1,2 @@
+$ tsc -b && vite build
+src/rendering/ArchitectureFacade.tsx(36,122): error TS1005: '}' expected.

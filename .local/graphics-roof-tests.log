@@ -1,0 +1,31 @@
+bun test v1.4.2 (744846f84)
+
+tests\arenaArchitecture.test.ts:
+(node:9108) [THREE_CJS_DEPRECATED] DeprecationWarning: `require("three")` is deprecated and will be removed.
+Replace `const THREE = require("three")` with `import * as THREE from "three"`.
+(Use `bun.exe --trace-warnings ...` to show where the warning was created)
+(pass) arena concept preserves measured entities, persists through API/save and rebuilds without duplicates [1754.29ms]
+(pass) generated walls remain movable semantic entities and selected openings leave their batch for editing [1185.67ms]
+(pass) full, partial and open canopy buffers have finite indexed surfaces, no degenerate triangles and expected coverage [669.56ms]
+(pass) resolution adapts within memory and quality bounds without oscillating near the frame target [0.45ms]
+
+tests\roof.test.ts:
+(pass) all roof forms produce finite surfaces over the building footprint [12.47ms]
+(pass) cross roof sheets cover the footprint once without overlapping planes or gaps [2.94ms]
+(pass) shed roof has wall infill rather than floating above the house [0.87ms]
+(pass) roof section splitting preserves a concave footprint on both sides [1.38ms]
+(pass) roof choices remain part of edits and undo history [15.20ms]
+(pass) legacy projects keep their single roof and normalized projects retain independent roof sections [7.31ms]
+
+tests\verandaRoof.test.tsx:
+(pass) imported plans do not render a generated roof over stale footprints before walls are erected; manual canopy roofs remain [0.82ms]
+(pass) upper-floor door veranda is outside its room, level with the threshold, and guarded on three exposed edges [51.07ms]
+(pass) verandas persist, duplicate independently and follow floor alignment [249.63ms]
+(pass) slab and roof quantities include a veranda without creating an extra room [12.40ms]
+(pass) all roof styles close at concave wall and courtyard boundaries along the actual surface [142.91ms]
+(pass) new storeys receive a roof and covered lower roof portions disappear while exposed wings remain [9.94ms]
+
+ 16 pass
+ 0 fail
+ 17991 expect() calls
+Ran 16 tests across 3 files. [5.21s]

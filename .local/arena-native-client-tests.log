@@ -1,0 +1,244 @@
+bun test v1.4.2 (744846f84)
+
+tests\analysisStatus.test.ts:
+(pass) reconstruction progress reports useful stages and explains a queue that is not being processed [4.68ms]
+(pass) empty output and provider failures are readable and cannot look like a completed model [0.47ms]
+
+tests\autoScale.test.ts:
+(pass) a new image gets a usable provisional scale without point selection [2.23ms]
+(pass) detected wall span and stroke width refine the automatic estimate [3.35ms]
+
+tests\cloudPermissions.test.ts:
+(pass) read-only projects block every store edit path but still allow level and camera navigation [13.64ms]
+(pass) an accepted remote proposal can be undone as one ordinary editor action [5.20ms]
+
+tests\cloudSession.test.ts:
+(pass) two tabs serialize rotating session tokens and mutations without credential persistence [20.25ms]
+(pass) a shared cookie switched to another account blocks the frozen mutation [6.98ms]
+(pass) binary uploads retain the original bytes, MIME and idempotency key while using the shared CSRF session lock [4.46ms]
+
+tests\cloudSync.test.ts:
+(pass) offline edits survive reload and replay the same frozen operation body [25.35ms]
+(pass) an accepted save with a lost response is retried idempotently before refreshing [8.27ms]
+(pass) edits arriving during a save are retained and sent at the next accepted revision [12.37ms]
+(pass) remote conflicts keep the full draft until selected changes are explicitly rebased [12.57ms]
+(pass) another remote edit during conflict review requires reviewing the updated revision [11.90ms]
+(pass) offline edits automatically merge independent collaborator changes on reconnect [21.21ms]
+(pass) identical changes already accepted by a collaborator do not create conflicts [7.96ms]
+(pass) entity locks keep the frozen draft and never trigger a revision merge [9.63ms]
+(pass) a failed durable queue write never sends an unstored operation [2.62ms]
+(pass) viewer drafts cannot mutate, and remote restores recover through snapshots [2.63ms]
+(pass) remote snapshots are deferred during an active gesture [3.86ms]
+
+tests\complexPlan.test.ts:
+(pass) the complete complex-plan pipeline preserves its rooms and empty courtyard [153.17ms]
+(pass) manual calibration is preserved and automatic scale does not need picked points [19.38ms]
+(pass) the actual upgraded worker still excludes the simple source plan margin [1012.19ms]
+(pass) a concave roof retains a courtyard cutout across every supported roof form [131.62ms]
+
+tests\editWall.test.ts:
+(pass) numeric length and angle update wall geometry from its start point [1.04ms]
+(pass) splitting preserves opening world positions and host references [2.95ms]
+(pass) splitting a curved wall preserves its arc and opening world position [1.93ms]
+(pass) a closed walk door blocks passage and an open door clears it [4.84ms]
+
+tests\elementEditing.test.ts:
+(pass) wall movement carries its opening, attached corners, slab and fitted roof without mutating the input [19.54ms]
+(pass) wall resizing rejects an endpoint that would strand its door [3.54ms]
+(pass) opening handles and arrow movement stay on the host and cannot overlap or leave it [9.10ms]
+(pass) floor and room vertices reject crossing outlines; slab moves carry their voids [21.44ms]
+(pass) columns support rotation, size and height while locked levels reject changes [2.34ms]
+(pass) stairs move their linked upper-floor opening and reject moves beyond the slab [46.44ms]
+(pass) drag previews make one undo step and Escape restores the full original project [20.89ms]
+(pass) keyboard fine movement and editing shortcuts preserve browser/workspace modifier shortcuts [1.62ms]
+
+tests\enhancement.test.ts:
+(pass) existing walls and doors round-trip through original-image coordinates without changing model IDs or geometry [9.92ms]
+(pass) corrections update one hosted door while preserving its veranda and finish, and a preview cannot mutate the original [15.89ms]
+(pass) unchanged detections are discarded and new openings keep an existing host after alias reconciliation [4.63ms]
+(pass) manual changes confirm properties without mutating previous history; legacy existing properties stay protected [3.45ms]
+(pass) roof alternatives only affect explicit design selection and preserve one roof over the architectural footprint [12.62ms]
+(pass) evidence with an obsolete calibration origin cannot be reused just because its pixel scale matches [0.44ms]
+(pass) rejected existing false geometry becomes an explicit removal, while unknown measurement IDs cannot delete model entities [5.17ms]
+(pass) removal preview cannot orphan hosted openings, mutate the original or silently remove additional elements [9.69ms]
+
+tests\furniture.test.tsx:
+(pass) separate furniture pass finds pillow evidence and leaves unfamiliar rectangles for review [105.73ms]
+(pass) only reviewed acceptance creates semantic entities and repeated later analysis does not duplicate them [19.54ms]
+(pass) accepted furniture survives save/load, floor alignment, duplication, and shared editing without changing structure [30.45ms]
+(pass) room-aware checks warn rather than moving problematic furniture [4.36ms]
+(pass) furniture edits and previews preserve architectural cache references and independent undo history [22.12ms]
+(pass) every library category has reusable bounded geometry and an editable inspector [102.41ms]
+
+tests\furnitureReview.test.tsx:
+(pass) furniture interpretation defaults off and review exposes accepted, rejected and uncertain source overlays [39.34ms]
+(pass) an isolated thin symbol box cannot gain wall status merely from its own connected corners [8.05ms]
+
+tests\furnitureSymbols.test.ts:
+(pass) sofa seat dividers are distinguished from a bed pillow band [4.06ms]
+(pass) dining table classification requires surrounding chairs rather than a bare rectangle [5.39ms]
+(pass) nested burner symbols classify a cooker, while an unlabeled appliance box stays unknown [9.49ms]
+
+tests\geometry.test.ts:
+(pass) architectural units and openings > keeps wall geometry in metres [1.05ms]
+(pass) architectural units and openings > curved walls remain one semantic wall with arc-length offsets [3.18ms]
+(pass) architectural units and openings > calibrates image pixels to world coordinates [0.74ms]
+(pass) architectural units and openings > computes room area and perimeter [0.77ms]
+(pass) architectural units and openings > snaps a nearby endpoint without moving distant points [0.48ms]
+(pass) architectural units and openings > aligns new wall endpoints horizontally and vertically [0.56ms]
+(pass) architectural units and openings > finds perpendicular snaps and wall intersections [0.57ms]
+(pass) architectural units and openings > converts display units without changing model metres [0.59ms]
+(pass) architectural units and openings > ramps interpolate elevation only across their walkable width [0.51ms]
+(pass) architectural units and openings > segments a door gap and leaves it walkable [1.62ms]
+(pass) architectural units and openings > spawns walkthrough near an entrance without intersecting a wall [4.33ms]
+(pass) architectural units and openings > treats the site fence as ground-floor-only perimeter blocking [5.29ms]
+
+tests\imageSize.test.ts:
+(pass) large source plans > reads PNG dimensions without expanding the image [4.01ms]
+(pass) large source plans > allows a long image while bounding the total pixel count [2.86ms]
+(pass) large source plans > allows a small plan to be calibrated and traced [0.37ms]
+
+tests\interpretationDetails.test.ts:
+(pass) regular stair treads with rails are preserved while isolated repeated marks are rejected [14.72ms]
+(pass) overlapping measurements become one thick wall while physically separate walls stay separate [0.63ms]
+(pass) door arcs work for perpendicular leaves, double doors and rotated hosts [2.62ms]
+(pass) connecting a stair stays inside its measured guide and creates a matching upper opening [5.78ms]
+(pass) perpendicular thin door leaves classify without arcs while detached strokes remain unresolved [0.67ms]
+(pass) glazing requires distinct spanning strokes rather than duplicate traces or dimension lines [0.85ms]
+
+tests\landingPage.test.tsx:
+(pass) landing page > explains the 2D-to-3D architectural workflow [100.50ms]
+
+tests\localEvidence.test.ts:
+(pass) OpenCV evidence uses original-image coordinates even with a nonzero calibration origin [5.07ms]
+
+tests\modelViewAction.test.ts:
+(node:3196) [THREE_CJS_DEPRECATED] DeprecationWarning: `require("three")` is deprecated and will be removed.
+Replace `const THREE = require("three")` with `import * as THREE from "three"`.
+(Use `bun.exe --trace-warnings ...` to show where the warning was created)
+(pass) 3D button builds detected geometry after analysis instead of opening an empty viewer [0.45ms]
+
+tests\offlineAccount.test.ts:
+(pass) offline identity stores only account identity, rejects invalid state and clears at sign-out [2.96ms]
+(pass) connection failures allow cached editing but permissions and credential failures never become offline access [0.80ms]
+(pass) a disconnected reverse proxy without JSON returns a classified connection failure [1.90ms]
+
+tests\openingValidation.test.ts:
+(pass) hosted openings stay within the wall and do not overlap [1.20ms]
+
+tests\planFixture.test.ts:
+(pass) uploaded plan leaves its white margin as site space and detects drawn door leaves [467.29ms]
+(pass) transparent white-looking margins cannot become structural geometry [69.40ms]
+(pass) the supplied floor plan still excludes its top margin when that margin is transparent [483.08ms]
+
+tests\quantities.test.ts:
+(pass) analysis quantities come from model rooms, walls, openings, and roof geometry [4.54ms]
+
+tests\reconstruct.test.ts:
+(pass) thin window lines and a jamb anchored diagonal classify gaps before construction [0.67ms]
+(pass) unexplained exterior gaps remain Needs Review, never automatic entrances [0.33ms]
+(pass) user reclassification creates a hosted open passage or closes the gap [0.40ms]
+(pass) large gaps and separate parallel walls are not joined [0.23ms]
+
+tests\roof.test.ts:
+(pass) all roof forms produce finite surfaces over the building footprint [8.42ms]
+(pass) cross roof sheets cover the footprint once without overlapping planes or gaps [7.23ms]
+(pass) shed roof has wall infill rather than floating above the house [0.98ms]
+(pass) roof section splitting preserves a concave footprint on both sides [1.45ms]
+(pass) roof choices remain part of edits and undo history [3.14ms]
+(pass) legacy projects keep their single roof and normalized projects retain independent roof sections [2.42ms]
+
+tests\roofDesign.test.tsx:
+(pass) adjacent rooms, split edges and nested fixture boxes share one roof outline [1.80ms]
+(pass) a continuous courtyard roof has one design and retains its true uncovered opening [28.39ms]
+(pass) existing generated room roofs repair on load and whole-roof controls stay available [16.93ms]
+(pass) disconnected wings stay separate while their selected roof style applies to both [2.16ms]
+(pass) two courtyard cutouts touching at a point remain separate valid openings [9.25ms]
+(pass) roof ridges stop at courtyard openings instead of floating across them [1.74ms]
+(pass) level alignment moves its roof and cutouts while an automatic fence follows the full building [7.82ms]
+
+tests\sampleDashboard.test.tsx:
+(pass) Dashboard presents categorized, previewable real-model samples with open and duplicate actions [4393.27ms]
+(pass) Dashboard never invents a template catalogue when the backend is unavailable [5.46ms]
+
+tests\sampleLibrary.test.ts:
+(pass) sample library preserves its architecture projects and adds a furnished walkthrough home [3956.40ms]
+
+tests\site.test.ts:
+(pass) automatic site uses ground footprint coordinates and configurable setbacks [5.00ms]
+(pass) editing a boundary point updates segments but preserves gate ownership [2.09ms]
+(pass) adding a boundary point bisects the longest segment [0.70ms]
+(pass) a fence surrounds all imported room slabs and walls beyond the first slab [1.99ms]
+(pass) legacy fences around just the first slab repair on load while edited boundaries stay manual [1.64ms]
+(pass) adding a boundary point keeps a gate on the same physical stretch of fence [1.91ms]
+
+tests\snapping.test.ts:
+(pass) grid snapping quantizes free points but endpoint and midpoint anchors take priority [0.53ms]
+(pass) angle and fixed length constrain a new wall endpoint in model metres [0.20ms]
+
+tests\spaceReview.test.tsx:
+(pass) excluded spaces stay attached to geometry when another enclosure disappears [1.40ms]
+(pass) excluding a space removes only its floor and roof, including on aligned levels [8.94ms]
+(pass) excluding every enclosure cannot restore an implicit rectangular floor or roof [17.60ms]
+
+tests\stairs.test.ts:
+(pass) turning flights meet their landing at both edges [7.52ms]
+(pass) every sample stair has a clear route and matching upper slab opening [24.90ms]
+(pass) a stair cannot be moved through a wall or away from the upper slab [1.82ms]
+
+tests\thinFeatures.test.ts:
+(pass) thin diagonal door leaf survives separately from structural wall mask [6.99ms]
+(pass) thick structural lines do not leak into the thin feature pass [4.46ms]
+
+tests\v2.test.ts:
+(pass) V1 data migrates to one level while preserving wall IDs and roof settings [2.14ms]
+(pass) duplicated floors have independent identities and maintain hosted openings [2.78ms]
+(pass) multi-level quantities count floors and only the top roof [16.82ms]
+(pass) atrium void removes actual floor area [5.66ms]
+(pass) stair links levels and its opening is contained in upper slab [2.78ms]
+(pass) adding a level and editing its slab are undoable as whole-project changes [125.36ms]
+(pass) level alignment moves editable geometry and imported draft walls together [2.89ms]
+(pass) editing the top roof also updates the building roof used by 3D [98.95ms]
+(pass) an upper-floor import is not assigned to Ground during migration [95.66ms]
+(pass) straight, L and U stairs climb the same real floor rise [3.32ms]
+(pass) atrium opening cuts the room finish surface above it [4.71ms]
+(pass) manual walls create an editable slab that follows later wall extents [1.26ms]
+(pass) stair opening cuts floor finish across adjacent rooms [11.05ms]
+(pass) new stairs find a clear route and fit an opening inside the upper slab [82.24ms]
+(pass) adding a storey connects adjacent levels with a stair when a route fits [86.04ms]
+(pass) normalizing an existing stair restores a missing upper-floor opening [2.29ms]
+(pass) duplicating a floor leaves orphaned stair openings behind [1.61ms]
+
+tests\verandaRoof.test.tsx:
+(pass) imported plans do not render a generated roof over stale footprints before walls are erected; manual canopy roofs remain [1.94ms]
+(pass) upper-floor door veranda is outside its room, level with the threshold, and guarded on three exposed edges [8.30ms]
+(pass) verandas persist, duplicate independently and follow floor alignment [33.12ms]
+(pass) slab and roof quantities include a veranda without creating an extra room [3.86ms]
+(pass) all roof styles close at concave wall and courtyard boundaries along the actual surface [114.96ms]
+(pass) new storeys receive a roof and covered lower roof portions disappear while exposed wings remain [4.36ms]
+
+tests\walkInput.test.ts:
+(pass) pointer capture, mouse look, WASD, interaction, release, blur, and cleanup use transient input only [9.23ms]
+
+tests\walkthrough.test.ts:
+(pass) walk speed, acceleration, deceleration, and diagonal normalization are frame-rate independent [35.72ms]
+(pass) walls and closed doors block, open doorways pass, and low lintels block the player volume [25.05ms]
+(pass) columns, rotated major furniture, and enabled fences collide without render triangle queries [3.17ms]
+(pass) straight, L and U stairs climb and descend continuously through their actual upper opening [135.53ms]
+(pass) an intact upper slab blocks a stair route while real floors prevent falling through [24.92ms]
+(pass) ramps ground continuously and slab voids permit a controlled gravity descent [19.05ms]
+(pass) spatial partitioning only returns nearby obstacles on large models [24.79ms]
+(pass) the furnished two-storey sample has clear furniture placements and a naturally climbable stair hall [34.34ms]
+
+tests\wallScan.test.ts:
+(pass) small native rasters retain single-pixel structural walls without requiring image enlargement [2.10ms]
+(pass) one thick dark wall becomes one centered wall with its measured thickness [2.70ms]
+(pass) separate parallel dark walls remain separate [1.43ms]
+(pass) dense roof hatching does not become a block of wall candidates [2.05ms]
+(pass) solid exterior edge next to hatching remains a wall [1.74ms]
+(pass) a stray page border above a building does not enlarge its structural footprint [2.91ms]
+
+ 161 pass
+ 0 fail
+ 1860 expect() calls
+Ran 161 tests across 37 files. [35.58s]
