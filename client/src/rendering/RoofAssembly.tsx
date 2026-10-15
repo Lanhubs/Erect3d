@@ -1,58 +1,13 @@
-import { useEffect, useMemo } from 'react'
-import { BufferGeometry, DoubleSide, Float32BufferAttribute, Quaternion, Vector3 } from 'three'
+import { useMemo } from 'react'
+import { Quaternion, Vector3 } from 'three'
 import type { Point, Roof } from '../domain/types'
 import { clipRoofLayout } from '../geometry/roofFootprint'
 import { roofOverhang } from '../geometry/roofOverhang'
 import { roofLayout, type RoofBounds, type Vertex } from '../geometry/roof'
-import { roofTexture } from './roofTextures'
+import {Surface} from './RoofPanelSurface'
 import { CrossRoofSurface } from './CrossRoofSurface'
 import { roofClosurePanels } from '../geometry/roofClosure'
 import { clipRoofEdges } from '../geometry/roofEdges'
-
-function Surface({ vertices, roof, gable = false }: { vertices: Vertex[]; roof: Roof; gable?: boolean }) {
-  const rotateTexture = useMemo(() => {
-    const edges = vertices.map((point, index) => {
-      const next = vertices[(index + 1) % vertices.length]
-      return { dx: next[0] - point[0], dz: next[2] - point[2], dy: Math.abs(next[1] - point[1]) }
-    }).filter(edge => edge.dy < .02)
-    const longest = edges.sort((a, b) => Math.hypot(b.dx, b.dz) - Math.hypot(a.dx, a.dz))[0]
-    return longest ? Math.abs(longest.dz) > Math.abs(longest.dx) : false
-  }, [vertices])
-  const geometry = useMemo(() => {
-    const positions = vertices.flat(), uv = vertices.flatMap(([x, , z]) => rotateTexture ? [z / 2, x / 2] : [x / 2, z / 2])
-    const shape = new BufferGeometry()
-    shape.setAttribute('position', new Float32BufferAttribute(positions, 3))
-    shape.setAttribute('uv', new Float32BufferAttribute(uv, 2))
-    shape.setIndex(vertices.length === 3 ? [0, 1, 2] : [0, 1, 2, 0, 2, 3])
-    shape.computeVertexNormals()
-    return shape
-  }, [vertices, rotateTexture])
-  const sides = useMemo(() => {
-    const positions: number[] = []
-    for (let index = 0; index < vertices.length; index++) {
-      const a = vertices[index], b = vertices[(index + 1) % vertices.length]
-      const belowA: Vertex = [a[0], a[1] - .09, a[2]], belowB: Vertex = [b[0], b[1] - .09, b[2]]
-      positions.push(...a, ...b, ...belowB, ...a, ...belowB, ...belowA)
-    }
-    const shape = new BufferGeometry()
-    shape.setAttribute('position', new Float32BufferAttribute(positions, 3))
-    shape.computeVertexNormals()
-    return shape
-  }, [vertices])
-  useEffect(() => () => geometry.dispose(), [geometry])
-  useEffect(() => () => sides.dispose(), [sides])
-  return <group><mesh geometry={geometry} castShadow receiveShadow>
-    {gable ? <meshStandardMaterial color="#d5d2c8" roughness={.92} side={DoubleSide} /> : roof.material === 'glass'
-      ? <meshPhysicalMaterial color={roof.color} metalness={.08} roughness={.12} transmission={.4}
-        transparent opacity={.68} side={DoubleSide} depthWrite={false} /> :
-      <meshStandardMaterial map={roofTexture(roof.material)} color={roof.color}
-        metalness={['standing-seam', 'long-span-metal', 'corrugated', 'stone-coated-metal'].includes(roof.material) ? .28 : .03}
-        roughness={roof.material === 'membrane' ? .78 : roof.material === 'standing-seam' ? .4
-          : roof.material === 'corrugated' || roof.material === 'long-span-metal' ? .56 : .84} side={DoubleSide} />}
-  </mesh>{!gable && <mesh geometry={sides} castShadow receiveShadow>
-    <meshStandardMaterial color={roof.color} metalness={.18} roughness={.65} side={DoubleSide} />
-  </mesh>}</group>
-}
 
 function Fascia({ a, b, depth, color }: { a: Vertex; b: Vertex; depth: number; color: string }) {
   const direction = new Vector3(b[0] - a[0], b[1] - a[1], b[2] - a[2])
@@ -109,6 +64,76 @@ function RoofFraming({ bounds, roof, spacing, footprint, voids }: { bounds: Roof
   </group>)}</group>
 }
 
+function ArenaVaultDetails({ bounds, roof }: { bounds: RoofBounds; roof: Roof }) {
+  if (roof.shape !== 'arena-vault') return null
+  const { minX, maxX, minZ, maxZ, top } = bounds
+  const x0 = minX - roof.overhang, x1 = maxX + roof.overhang
+  const z0 = minZ - roof.overhang, z1 = maxZ + roof.overhang
+  const alongX = roof.ridgeDirection === 'x' || (roof.ridgeDirection !== 'z' && x1 - x0 >= z1 - z0)
+  const span = alongX ? z1 - z0 : x1 - x0, len = alongX ? x1 - x0 : z1 - z0, half = span / 2
+  const pitch = Math.tan(roof.pitch * Math.PI / 180)
+  const rise = Math.max(1.2, Math.min(half * Math.max(.2, pitch * 1.15), 18))
+  const eave = top + (roof.elevationOffset || 0) + .12
+  const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2
+  const skylightLen = len * .58, skylightHalfSpan = half * .42, skylightGap = .35
+  const peakY = eave + rise
+  const banks = [-1, 1]
+  const trussCount = Math.max(4, Math.min(10, Math.floor(len / 6)))
+  const trussPositions = Array.from({ length: trussCount }, (_, i) => -len / 2 + (len / (trussCount + 1)) * (i + 1))
+
+  return <group name="arena-vault-details">
+    {banks.map(side => {
+      const offset = (skylightHalfSpan / 2 + skylightGap / 2) * side
+      const posX = alongX ? cx : cx + offset, posZ = alongX ? cz + offset : cz
+      const width = alongX ? skylightLen : skylightHalfSpan, depth = alongX ? skylightHalfSpan : skylightLen
+      const y = peakY - .04
+      return <group key={`skylight-${side}`} position={[posX, y, posZ]}>
+        <mesh position={[0, .04, 0]} castShadow>
+          <boxGeometry args={[width, .06, depth]} />
+          <meshPhysicalMaterial color="#a8d5e5" metalness={.1} roughness={.08} transmission={.78} transparent opacity={.85} reflectivity={.9} />
+        </mesh>
+        {Array.from({ length: 7 }, (_, i) => {
+          const frac = -1 + (2 / 6) * i
+          const gx = alongX ? frac * (width / 2) : 0, gz = alongX ? 0 : frac * (depth / 2)
+          return <mesh key={`mullion-v-${i}`} position={[gx, .07, gz]} castShadow>
+            <boxGeometry args={[alongX ? .08 : width, .07, alongX ? depth : .08]} />
+            <meshStandardMaterial color="#3a444a" metalness={.7} roughness={.35} />
+          </mesh>
+        })}
+        {Array.from({ length: 4 }, (_, i) => {
+          const frac = -1 + (2 / 3) * i
+          const gx = alongX ? 0 : frac * (width / 2), gz = alongX ? frac * (depth / 2) : 0
+          return <mesh key={`mullion-h-${i}`} position={[gx, .075, gz]} castShadow>
+            <boxGeometry args={[alongX ? width : .08, .07, alongX ? .08 : depth]} />
+            <meshStandardMaterial color="#3a444a" metalness={.7} roughness={.35} />
+          </mesh>
+        })}
+      </group>
+    })}
+    <mesh position={[cx, peakY + .06, cz]} castShadow>
+      <boxGeometry args={[alongX ? len * .7 : .4, .18, alongX ? .4 : len * .7]} />
+      <meshStandardMaterial color="#475258" metalness={.65} roughness={.4} />
+    </mesh>
+    {trussPositions.map((pos, idx) => {
+      const trussX = alongX ? cx + pos : cx, trussZ = alongX ? cz : cz + pos, segs = 8
+      return <group key={`truss-${idx}`} position={[trussX, 0, trussZ]}>
+        {Array.from({ length: segs }, (_, s) => {
+          const n0 = -1 + (2 / segs) * s, n1 = -1 + (2 / segs) * (s + 1)
+          const y0 = eave + rise * (1 - n0 * n0) - .35, y1 = eave + rise * (1 - n1 * n1) - .35
+          const s0 = n0 * half, s1 = n1 * half
+          const midS = (s0 + s1) / 2, midY = (y0 + y1) / 2
+          const segLen = Math.hypot(s1 - s0, y1 - y0), angle = Math.atan2(y1 - y0, s1 - s0)
+          return <mesh key={`seg-${s}`} position={[alongX ? 0 : midS, midY, alongX ? midS : 0]}
+            rotation={[0, alongX ? 0 : -Math.PI / 2, alongX ? angle : angle]} castShadow>
+            <boxGeometry args={[alongX ? .18 : segLen, .18, alongX ? segLen : .18]} />
+            <meshStandardMaterial color="#404c52" metalness={.6} roughness={.45} />
+          </mesh>
+        })}
+      </group>
+    })}
+  </group>
+}
+
 export function RoofAssembly({ bounds, roof, framingSpacing = 0, footprint, voids = [], infill = true }: { bounds: RoofBounds; roof: Roof; framingSpacing?: number; footprint?: Point[]; voids?: Point[][]; infill?: boolean }) {
   const boundary = useMemo(() => footprint ? roofOverhang(footprint, roof.overhang) : undefined, [footprint, roof.overhang])
   const layout = useMemo(() => {
@@ -127,6 +152,7 @@ export function RoofAssembly({ bounds, roof, framingSpacing = 0, footprint, void
     {layout.eaves.map(([a, b], i) => <Fascia key={`fascia-${i}`} a={a} b={b}
       depth={roof.fasciaDepth ?? .18} color={roof.material === 'clay-tile' ? '#765e50' : '#59666a'} />)}
     {layout.ridge.map(([a, b], i) => <Edge key={`ridge-${i}`} a={a} b={b} radius={.035} color={roof.color} />)}
+    <ArenaVaultDetails bounds={bounds} roof={roof} />
     {(roof.shape === 'hidden' || roof.shape === 'terrace') && boundary ? [boundary, ...voids].flatMap((ring, ringIndex) => ring.map((a, index) => {
       const b = ring[(index + 1) % ring.length], dx = b.x - a.x, dz = b.z - a.z
       return <mesh key={`parapet-${ringIndex}-${index}`} position={[(a.x + b.x) / 2, bounds.top + .4, (a.z + b.z) / 2]} rotation={[0, -Math.atan2(dz, dx), 0]} castShadow>

@@ -12,6 +12,7 @@ import { ApiError, requireValue } from '../../security/errors'
 import { newId } from '../../security/tokens'
 import { validateAsset, bytesHash } from './validation'
 import { enqueue } from '../../jobs/queue'
+import { optimizeAsset } from './optimize'
 
 export function assetRoutes(db: Database, config: Config, store?: ObjectStore) {
   const routes = new Hono<ApiEnv>()
@@ -46,21 +47,22 @@ export function assetRoutes(db: Database, config: Config, store?: ObjectStore) {
     if (stat.size !== Number(asset.size) || stat.size > config.MAX_UPLOAD_BYTES) throw new ApiError(422, 'SIZE_MISMATCH', 'Uploaded size differs from the authorized size')
     const bytes = await storage.read(asset.object_key, Number(asset.size))
     if (bytes.length !== Number(asset.size)) throw new ApiError(422, 'SIZE_MISMATCH', 'Upload is incomplete')
-    const metadata = await validateAsset(bytes, asset.mime, asset.kind), sha256 = bytesHash(bytes)
-    // Copy validated bytes to a fresh private key; the signed upload cannot overwrite it.
-    const finalKey = `private/${projectId}/${assetId}/${crypto.randomUUID()}`
-    await storage.write(finalKey, bytes, asset.mime)
+    const metadata = await validateAsset(bytes, asset.mime, asset.kind)
+    const { bytes:content,...optimization } = await optimizeAsset(bytes,asset.mime,config), sha256 = bytesHash(bytes)
+    // Keep compact validated bytes at a fresh private key; the signed upload cannot overwrite it.
+    const finalKey = `private/${projectId}/${assetId}/${crypto.randomUUID()}${optimization.method==='lossless-zip'?'.zip':''}`
+    await storage.write(finalKey, content, optimization.method==='lossless-zip'?'application/zip':asset.mime)
     try {
       await db.begin(async tx => {
         await authorize(tx, actor, projectId, 'edit')
         const [current] = await tx`SELECT state FROM assets WHERE id=${assetId} FOR UPDATE`
         if (current.state !== 'pending') throw new ApiError(409, 'ASSET_STATE', 'Asset was finalized concurrently')
-        await tx`UPDATE assets SET state='ready',object_key=${finalKey},sha256=${sha256},metadata=${metadata}::jsonb WHERE id=${assetId}`
+        await tx`UPDATE assets SET state='ready',object_key=${finalKey},sha256=${sha256},size=${content.length},metadata=${{ ...metadata,optimization }}::jsonb WHERE id=${assetId}`
         await enqueue(tx, actor, projectId, 'asset.purge', { key: asset.object_key }, context.get('requestId'), 600)
         if (asset.mime.startsWith('image/')) await enqueue(tx, actor, projectId, 'asset.normalize', { assetId }, context.get('requestId'))
       })
     } catch (error) { await storage.delete(finalKey); throw error }
-    return context.json({ assetId, state: 'ready', sha256, metadata })
+    return context.json({ assetId, state: 'ready', sha256, metadata,optimization })
   })
   routes.get('/:projectId/assets', async context => {
     const projectId = param(context, 'projectId')

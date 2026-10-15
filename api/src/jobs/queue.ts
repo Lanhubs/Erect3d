@@ -1,6 +1,7 @@
 import type { Database } from '../db/connection'
 import type { Actor } from '../modules/auth/session'
 import { newId } from '../security/tokens'
+import {emit} from '../modules/audit/service'
 export type Job = { id: string; project_id: string; actor_id: string; kind: string;
   payload: unknown; request_id: string; attempts: number; max_attempts: number; lease_owner: string }
 export async function enqueue(db: Database, actor: Actor, projectId: string, kind: string,
@@ -10,10 +11,10 @@ export async function enqueue(db: Database, actor: Actor, projectId: string, kin
     VALUES (${id},${projectId},${actor.id},${kind},${payload}::jsonb,${requestId},now()+${delaySeconds}*interval '1 second')`
   return id
 }
-export async function claim(db: Database, workerId: string, leaseSeconds: number): Promise<Job | undefined> {
+export async function claim(db: Database, workerId: string, leaseSeconds: number, requestedId?: string): Promise<Job | undefined> {
   const [row] = await db`WITH next_job AS (
     SELECT id FROM jobs WHERE (status='queued' AND available_at<=now() OR status='running' AND lease_expires_at<now())
-    AND attempts<max_attempts ORDER BY available_at,id FOR UPDATE SKIP LOCKED LIMIT 1
+    AND attempts<max_attempts AND (${requestedId || null}::text IS NULL OR id=${requestedId || null}) ORDER BY available_at,id FOR UPDATE SKIP LOCKED LIMIT 1
   ) UPDATE jobs j SET status='running',attempts=attempts+1,lease_owner=${workerId},
     lease_expires_at=now()+${leaseSeconds}*interval '1 second',started_at=COALESCE(started_at,now())
     FROM next_job WHERE j.id=next_job.id RETURNING j.*`
@@ -25,7 +26,7 @@ export async function renew(db: Database, job: Job, seconds: number) {
   return rows.length > 0
 }
 export async function complete(db: Database, job: Job, result: unknown) {
-  const rows = await db`UPDATE jobs SET status='completed',result=${result}::jsonb,completed_at=now(),lease_expires_at=NULL
+  const rows = await db`UPDATE jobs SET status='completed',result=${result}::jsonb,failure_code=NULL,completed_at=now(),lease_expires_at=NULL
     WHERE id=${job.id} AND status='running' AND lease_owner=${job.lease_owner} AND lease_expires_at>now() RETURNING id`
   return rows.length > 0
 }
@@ -36,9 +37,11 @@ export async function fail(db: Database, job: Job, code: string, retry: boolean)
     completed_at=CASE WHEN ${status}='failed' THEN now() ELSE NULL END,lease_expires_at=NULL,lease_owner=NULL
     WHERE id=${job.id} AND status='running' AND lease_owner=${job.lease_owner} AND lease_expires_at>now() RETURNING id`
   if (changed.length && status === 'failed') await db`UPDATE analyses SET status='failed' WHERE id=${job.id} AND status='pending'`
+  if(changed.length && job.kind==='plan.analyze')await emit(db,job.project_id,status==='failed'?'analysis.failed':'analysis.retrying',
+    {analysisId:job.id,status:status==='failed'?'failed':'pending',job_status:status,failure_code:code})
 }
-export async function recoverExhausted(db: Database) {
+export async function recoverExhausted(db: Database,requestedId?:string) {
   await db`UPDATE jobs SET status='failed',failure_code='LEASE_EXHAUSTED',completed_at=now()
-    WHERE status='running' AND lease_expires_at<now() AND attempts>=max_attempts`
-  await db`UPDATE analyses a SET status='failed' FROM jobs j WHERE a.id=j.id AND j.status='failed' AND a.status='pending'`
+    WHERE status='running' AND lease_expires_at<now() AND attempts>=max_attempts AND (${requestedId || null}::text IS NULL OR id=${requestedId || null})`
+  await db`UPDATE analyses a SET status='failed' FROM jobs j WHERE a.id=j.id AND j.status='failed' AND a.status='pending' AND (${requestedId || null}::text IS NULL OR j.id=${requestedId || null})`
 }

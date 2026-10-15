@@ -34,9 +34,9 @@ export function softwareDetails(level: Level, levels: Level[], roofShown: boolea
   for (const section of level.seatingSections || []) {
     const dx = section.end.x - section.start.x, dz = section.end.z - section.start.z, length = Math.hypot(dx, dz) || 1
     const center = { x: (section.start.x + section.end.x) / 2, z: (section.start.z + section.end.z) / 2 }
-    const sign = (-dz * (section.outward.x - center.x) + dx * (section.outward.z - center.z)) >= 0 ? 1 : -1
-    for (let row = 0; row < section.rows; row++) box(`${section.id}:${row}`, { x: center.x - dz / length * sign * (row + .5) * section.rowDepth,
-      z: center.z + dx / length * sign * (row + .5) * section.rowDepth }, length, section.rowDepth,
+    const outwardLength=Math.hypot(section.outward.x,section.outward.z)||1
+    for (let row = 0; row < section.rows; row++) box(`${section.id}:${row}`, { x: center.x +section.outward.x/outwardLength * (row + .5) * section.rowDepth,
+      z: center.z +section.outward.z/outwardLength * (row + .5) * section.rowDepth }, length+row*(section.rowWidthGrowth||0), section.rowDepth,
       section.baseElevation, (row + 1) * section.rowRise, Math.atan2(dz, dx), section.seatColor, { kind: 'seating', id: section.id })
   }
   for (const door of level.doors) {

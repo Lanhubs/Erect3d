@@ -44,7 +44,7 @@ export function WorkspaceHeader({ projectName, dirty, back, undo, redo, save, to
         <b>{projectName}</b>
       </div>
       <div className="app-actions">
-        <span className="save-state">{dirty ? 'Saving draft…' : cloudPersistence() ? 'Draft stored on device' : 'Saved locally'}</span>
+        <span className="save-state">{dirty ? 'Saving edits…' : cloudPersistence() ? 'Offline copy saved' : 'Draft saved'}</span>
         <button disabled={readOnly} title="Undo" aria-label="Undo" onClick={undo}><FiRotateCcw /></button>
         <button disabled={readOnly} title="Redo" aria-label="Redo" onClick={redo}><FiRotateCw /></button>
         <button disabled={readOnly} title="Save" aria-label="Save" onClick={save}><FiSave /><span>Save</span></button>

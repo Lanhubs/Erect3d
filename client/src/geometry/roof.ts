@@ -21,6 +21,43 @@ export function roofLayout(bounds: RoofBounds, roof: Roof): RoofLayout {
     const face = [p(x0, eave, z0), p(x1, eave, z0), p(x1, eave, z1), p(x0, eave, z1)]
     return { faces: [face], gables: [], eaves: [[face[0], face[1]], [face[1], face[2]], [face[2], face[3]], [face[3], face[0]]], ridge: [] }
   }
+  if (roof.shape === 'arena-vault') {
+    const alongX = roof.ridgeDirection === 'x' || (roof.ridgeDirection !== 'z' && x1 - x0 >= z1 - z0)
+    const span = alongX ? z1 - z0 : x1 - x0, half = span / 2
+    const rise = Math.max(1.2, Math.min(half * Math.max(.2, pitch * 1.15), 18))
+    const steps = 12
+    const faces: RoofFace[] = []
+    const arcPoints: Array<{ y: number; s: number }> = []
+    for (let i = 0; i <= steps; i++) {
+      const norm = -1 + 2 * (i / steps)
+      const y = eave + rise * (1 - norm * norm)
+      const s = (alongX ? mz : mx) + norm * half
+      arcPoints.push({ y, s })
+    }
+    for (let i = 0; i < steps; i++) {
+      const a = arcPoints[i], b = arcPoints[i + 1]
+      faces.push(alongX
+        ? [p(x0, a.y, a.s), p(x1, a.y, a.s), p(x1, b.y, b.s), p(x0, b.y, b.s)]
+        : [p(a.s, a.y, z0), p(b.s, b.y, z0), p(b.s, b.y, z1), p(a.s, a.y, z1)])
+    }
+    const peak = eave + rise
+    const ridge: [Vertex, Vertex][] = alongX
+      ? [[p(x0, peak, mz), p(x1, peak, mz)]]
+      : [[p(mx, peak, z0), p(mx, peak, z1)]]
+    const eaves: [Vertex, Vertex][] = alongX
+      ? [[p(x0, eave, z0), p(x1, eave, z0)], [p(x1, eave, z1), p(x0, eave, z1)]]
+      : [[p(x0, eave, z0), p(x0, eave, z1)], [p(x1, eave, z1), p(x1, eave, z0)]]
+    const gables: RoofFace[] = alongX
+      ? [
+          [p(minX, top, minZ), ...arcPoints.map(pt => p(minX, pt.y, pt.s)), p(minX, top, maxZ)],
+          [p(maxX, top, maxZ), ...[...arcPoints].reverse().map(pt => p(maxX, pt.y, pt.s)), p(maxX, top, minZ)],
+        ]
+      : [
+          [p(minX, top, minZ), ...arcPoints.map(pt => p(pt.s, pt.y, minZ)), p(maxX, top, minZ)],
+          [p(maxX, top, maxZ), ...[...arcPoints].reverse().map(pt => p(pt.s, pt.y, maxZ)), p(minX, top, maxZ)],
+        ]
+    return { faces, gables, eaves, ridge }
+  }
   if (roof.shape === 'shed') {
     const alongX = roof.ridgeDirection === 'z' || (roof.ridgeDirection !== 'x' && x1 - x0 <= z1 - z0)
     const rise = Math.min((alongX ? x1 - x0 : z1 - z0) * pitch, 3.8)

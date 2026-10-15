@@ -15,10 +15,14 @@ export async function normalizeImage(db: Database, store: ObjectStore | undefine
   requireValue(asset)
   const bytes = await storage.read(asset.object_key,209715200)
   const image = sharp(bytes,{ limitInputPixels:100_000_000 }).rotate()
-  const raster = await image.clone().resize({ width:3200,height:3200,fit:'inside',withoutEnlargement:true }).png().toBuffer()
+  const metadata = await image.metadata()
+  const reuse = (metadata.orientation || 1) === 1
+  const raster = reuse ? undefined : await image.clone()
+    .png({ compressionLevel:9,adaptiveFiltering:true,palette:false }).toBuffer()
   const thumbnail = await image.clone().resize({ width:640,height:640,fit:'inside',withoutEnlargement:true }).webp().toBuffer()
-  const result: Record<string,string> = {}
+  const result: Record<string,string> = reuse ? { raster:asset.id } : {}
   for (const [kind,content,mime] of [['raster',raster,'image/png'],['thumbnail',thumbnail,'image/webp']] as const) {
+    if (!content) continue
     const id = `asset_${digest(`${job.id}:${kind}`).slice(0,32)}`
     const metadata = await sharp(content).metadata()
     await writeDerivedAsset(db,storage,job,id,{

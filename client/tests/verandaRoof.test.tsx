@@ -14,6 +14,16 @@ import { VerandaControls } from '../src/features/inspector/VerandaControls'
 import { transformElement } from '../src/domain/elementEditing'
 
 const rect = (x: number, z: number, w: number, d: number): Point[] => [{ x, z }, { x: x + w, z }, { x: x + w, z: z + d }, { x, z: z + d }]
+
+test('imported plans do not render a generated roof over stale footprints before walls are erected; manual canopy roofs remain',()=>{
+  const building=fixtureProject().buildings[0],level=building.levels[0]
+  level.sourceId='new-source';level.walls=[];level.columns=[]
+  level.rooms=[{id:'stale-room',name:'Old room',material:'tile',polygon:rect(0,0,8,8)}]
+  rebuildImportedRoof(building,level)
+  expect(effectiveRoofSections(building)).toHaveLength(0)
+  building.roofSections!.push({id:'canopy',name:'Manual canopy',levelId:level.id,footprint:rect(0,0,2,2),automatic:false,roof:defaultRoof})
+  expect(effectiveRoofSections(building).map(item=>item.id)).toEqual(['canopy'])
+})
 test('upper-floor door veranda is outside its room, level with the threshold, and guarded on three exposed edges', () => {
   const project = fixtureProject(), level = project.buildings[0].levels[0]
   level.elevation = 3

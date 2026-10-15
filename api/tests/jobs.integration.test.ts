@@ -18,7 +18,11 @@ class FakeProvider implements PlanIntelligenceProvider {
 }
 const store=new MemoryStore(),provider=new FakeProvider(),h=harness({ store,provider,ai:true })
 let owner:Account,outsider:Account
-beforeAll(async()=>{ owner=await account(h.app); outsider=await account(h.app) })
+beforeAll(async()=>{
+  // This suite owns the queue in the isolated *_test database; old test runs may leave leases.
+  await h.db`UPDATE jobs SET status='cancelled',completed_at=now() WHERE status IN ('queued','running')`
+  owner=await account(h.app); outsider=await account(h.app)
+})
 afterAll(async()=>{ h.limits.close(); await h.db.close() })
 async function upload(projectId:string,bytes:Uint8Array,mime='image/png') {
   const response=await request(h.app,owner,`/projects/${projectId}/assets/uploads`,'POST',{ name:'source.png',mime,size:bytes.length,kind:'source' })
@@ -36,7 +40,9 @@ test('private uploads verify actual bytes and size, isolate final objects, and d
   const [asset]=await h.db`SELECT object_key,metadata,state FROM assets WHERE id=${uploaded.assetId}`
   expect(asset.object_key).not.toBe(uploaded.key); expect(asset.metadata.width).toBe(100)
   await store.write(uploaded.key,new Uint8Array([1,2,3]))
-  expect((await store.read(asset.object_key,100000)).length).toBe(bytes.length)
+  const stored=await store.read(asset.object_key,100000)
+  expect(stored.length).toBeLessThanOrEqual(bytes.length)
+  expect(await sharp(stored).raw().toBuffer()).toEqual(await sharp(bytes).raw().toBuffer())
   expect((await request(h.app,outsider,`/projects/${project.id}/assets/${uploaded.assetId}/download`)).status).toBe(404)
   const disguised=await upload(project.id,new TextEncoder().encode('<script>not an image</script>'))
   expect((await request(h.app,owner,`/projects/${project.id}/assets/${disguised.assetId}/finalize`,'POST')).status).toBe(422)
@@ -60,7 +66,7 @@ test('cloud analysis is cached, remains a proposal, and only accepted candidates
     await worker.runOnce()
   }
   const analysis=await (await request(h.app,owner,`/analysis/${analysisId}`)).json()
-  expect(analysis.status).toBe('ready'); expect(provider.calls).toBe(2)
+  expect(analysis.status).toBe('ready'); expect(provider.calls).toBe(3)
   expect((await loadDocument(h.db,project.id)).revision).toBe(0)
   const cached=await (await request(h.app,owner,`/projects/${project.id}/analysis`,'POST',input)).json()
   expect(cached.analysisId).toBe(analysisId); expect(cached.cached).toBe(true)

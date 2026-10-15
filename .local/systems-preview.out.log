@@ -1,0 +1,7 @@
+
+  VITE v8.3.0  ready in 856 ms
+
+  ➜  Local:   http://127.0.0.1:5180/
+  ➜  press h + enter to show help
+19:53:16 [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx
+19:53:16 [vite] (client) hmr update /src/cloud/CloudWorkspace.tsx, /src/features/landing/LandingDemo.tsx, /src/app/Workspace.tsx, /src/cloud/WorkspaceDock.tsx, /src/features/plan/PlanEditor.tsx, /src/features/inspector/Inspector.tsx, /src/app/WorkspaceHeader.tsx, /src/features/levels/LevelManager.tsx, /src/features/structure/ArchitecturalDetailsPanel.tsx, /src/features/structure/StructurePanel.tsx, /src/furniture/FurniturePanel.tsx, /src/cloud/SourcePanel.tsx, /src/cloud/CollaborationPanel.tsx, /src/features/plan/SystemsLayer.tsx and 31 more

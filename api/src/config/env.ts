@@ -14,8 +14,11 @@ const schema = z.object({
   SESSION_IDLE_SECONDS: z.coerce.number().int().positive().default(86400),
   SESSION_ABSOLUTE_SECONDS: z.coerce.number().int().positive().default(2592000),
   REDIS_URL: optionalText, RATE_LIMIT_BACKEND: z.enum(['postgres', 'redis']).default('postgres'),
-  S3_ENDPOINT: optionalText, S3_BUCKET: optionalText, S3_REGION: z.string().default('us-east-1'),
-  S3_ACCESS_KEY_ID: optionalText, S3_SECRET_ACCESS_KEY: optionalText,
+  R2_ENDPOINT: optionalText, R2_BUCKET: optionalText, R2_REGION: z.literal('auto').default('auto'),
+  R2_ACCESS_KEY_ID: optionalText, R2_SECRET_ACCESS_KEY: optionalText,
+  STORAGE_BACKEND: z.enum(['r2', 'filesystem']).default('r2'), STORAGE_ROOT: optionalText,
+  STORAGE_SIGNING_KEY: optionalText,
+  PDF_OPTIMIZER_PATH: optionalText, ASSET_OPTIMIZE_TIMEOUT_MS: z.coerce.number().int().min(1000).max(120000).default(30000),
   GEMINI_API_KEY: optionalText, GEMINI_MODEL_PLAN: z.string().default('gemini-3.8-flash'),
   GEMINI_MODEL_FAST: z.string().default('gemini-3.5-flash-lite'), GEMINI_MODEL_COMPLEX: z.string().default('gemini-3.8-flash'),
   AI_DAILY_LIMIT: z.coerce.number().int().min(1).max(10000).default(25),
@@ -41,11 +44,11 @@ const schema = z.object({
   if (env.TRUSTED_PROXY_IPS.split(',').filter(Boolean).some(value => !isIP(value.trim()))) {
     context.addIssue({ code:'custom',path:['TRUSTED_PROXY_IPS'],message:'Use exact proxy IP addresses' })
   }
-  if (env.S3_ENDPOINT) {
+  if (env.R2_ENDPOINT) {
     try {
-      const endpoint = new URL(env.S3_ENDPOINT)
-      if (!['http:','https:'].includes(endpoint.protocol) || env.NODE_ENV==='production' && endpoint.protocol!=='https:') throw new Error()
-    } catch { context.addIssue({ code:'custom',path:['S3_ENDPOINT'],message:'Use a storage HTTP URL; production requires HTTPS' }) }
+      const endpoint = new URL(env.R2_ENDPOINT)
+      if (endpoint.protocol !== 'https:' || !endpoint.hostname.endsWith('.r2.cloudflarestorage.com') || !['','/'].includes(endpoint.pathname) || endpoint.search || endpoint.hash || endpoint.username || endpoint.password) throw new Error()
+    } catch { context.addIssue({ code:'custom',path:['R2_ENDPOINT'],message:'Use the private Cloudflare R2 HTTPS API endpoint, without bucket paths' }) }
   }
   const origins = env.ALLOWED_ORIGINS.split(',').map(value => value.trim())
   if (origins.some(value => { try { return new URL(value).origin !== value } catch { return true } })) {
@@ -54,14 +57,17 @@ const schema = z.object({
   if (env.NODE_ENV === 'production') {
     if (env.DATABASE_TLS !== 'verify-full') context.addIssue({ code: 'custom', path: ['DATABASE_TLS'], message: 'Production requires verified database TLS' })
     if (origins.some(value => !value.startsWith('https://'))) context.addIssue({ code: 'custom', path: ['ALLOWED_ORIGINS'], message: 'Production origins require HTTPS' })
-    if (!env.S3_BUCKET) context.addIssue({ code:'custom',path:['S3_BUCKET'],message:'Production requires private object storage' })
+    if (env.STORAGE_BACKEND === 'r2' && !env.R2_BUCKET) context.addIssue({ code:'custom',path:['R2_BUCKET'],message:'Production requires private R2 storage' })
   }
   if (env.RATE_LIMIT_BACKEND === 'redis' && !env.REDIS_URL) {
     context.addIssue({ code: 'custom', path: ['REDIS_URL'], message: 'Redis rate limits require REDIS_URL' })
   }
-  const storage = [env.S3_ENDPOINT, env.S3_BUCKET, env.S3_ACCESS_KEY_ID, env.S3_SECRET_ACCESS_KEY]
+  const storage = [env.R2_ENDPOINT, env.R2_BUCKET, env.R2_ACCESS_KEY_ID, env.R2_SECRET_ACCESS_KEY]
+  if (env.STORAGE_BACKEND === 'filesystem' && (!env.STORAGE_ROOT || !env.STORAGE_SIGNING_KEY || env.STORAGE_SIGNING_KEY.length < 32)) {
+    context.addIssue({ code:'custom',path:['STORAGE_ROOT'],message:'Private filesystem storage requires a root and signing key of at least 32 characters' })
+  }
   if (storage.some(Boolean) && !storage.every(Boolean)) {
-    context.addIssue({ code: 'custom', path: ['S3_BUCKET'], message: 'Supply all private S3 settings together' })
+    context.addIssue({ code: 'custom', path: ['R2_BUCKET'], message: 'Supply all private R2 settings together' })
   }
 })
 export type Config = z.infer<typeof schema>

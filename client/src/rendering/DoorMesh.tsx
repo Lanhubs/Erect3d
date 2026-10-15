@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useFrame,useThree } from '@react-three/fiber'
 import type { Group } from 'three'
 import type { Door, Selection, Wall } from '../domain/types'
 import { atWall, wallTangentAngle } from '../geometry/math'
@@ -8,11 +8,13 @@ function Leaf({ door, width, hinge, pivot, selected, open }: {
   door: Door; width: number; hinge: 'left' | 'right'; pivot: number; selected: boolean; open: boolean
 }) {
   const ref = useRef<Group>(null)
+  const invalidate=useThree(state=>state.invalidate)
   const sign = (hinge === 'left' ? 1 : -1) * (door.swing === 'out' ? -1 : 1)
   useFrame((_, delta) => {
     if (!ref.current) return
     const target = open ? sign * Math.PI * .48 : 0
     ref.current.rotation.y += (target - ref.current.rotation.y) * Math.min(1, delta * 9)
+    if(Math.abs(target-ref.current.rotation.y)>.001)invalidate()
   })
   const center = hinge === 'left' ? width / 2 : -width / 2
   const metal = door.material === 'metal'

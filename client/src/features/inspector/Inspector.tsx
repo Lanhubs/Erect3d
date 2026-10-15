@@ -1,3 +1,4 @@
+import {SystemsInspector} from './SystemsInspector'
 import { useState } from 'react'
 import type { Building, Level, Selection, WallCurve } from '../../domain/types'
 import { roomArea, roomPerimeter, wallLength } from '../../geometry/math'
@@ -14,6 +15,7 @@ import { SiteControls } from './SiteControls'
 import { wallWithCurve } from '../../geometry/math'
 import { FurnitureInspector } from '../../furniture/FurnitureInspector'
 import { NumberField } from './NumberField'
+import {ArchitectureControls} from './ArchitectureControls'
 
 const materials = Object.keys(materialColor)
 const wallMaterials = materials.filter(item => !['marble', 'carpet', 'polished-concrete'].includes(item))
@@ -24,6 +26,7 @@ export function Inspector({ building, level, selection, unit, open, onClose }: {
   const shell = `inspector${open ? ' mobile-open' : ''}`
   const mobileHead = <div className="inspector-mobile-head"><strong>{selection ? `${selection.kind} properties` : 'Properties'}</strong><button type="button" onClick={onClose} aria-label="Close properties">×</button></div>
   if (selection?.kind === 'furniture') return <FurnitureInspector level={level} selection={selection} open={open} onClose={onClose} />
+  if(selection?.kind==='architecture')return <aside className={shell}>{mobileHead}<SystemsInspector building={building} level={level} selection={selection}/></aside>
   if (!selection || selection.kind === 'fence') return <aside className={shell}>
     {mobileHead}
     <SiteControls building={building} />
@@ -35,6 +38,8 @@ export function Inspector({ building, level, selection, unit, open, onClose }: {
       <span>Windows</span><b>{level.windows.length}</b>
       <span>Rooms</span><b>{level.rooms.length}</b></div>
     <RoofControls level={level} />
+    <ArchitectureControls building={building} level={level}/>
+    <SystemsInspector building={building} level={level} selection={selection}/>
   </aside>
   if (selection.kind === 'slab' || selection.kind === 'column' || selection.kind === 'stair')
     return <StructureInspector building={building} level={level} selection={selection} unit={unit} open={open} onClose={onClose} />
@@ -163,6 +168,8 @@ export function Inspector({ building, level, selection, unit, open, onClose }: {
       {(['rowDepth','rowRise'] as const).map(field => <NumberField key={field} label={field === 'rowDepth' ? 'Row depth' : 'Rise per row'}
         unit={unit} value={seating[field]} min={.05} onChange={value => edit(model => ({ ...model,
           seatingSections: model.seatingSections.map(item => item.id === seating.id ? { ...item, [field]: Math.max(.05, value) } : item) }))} />)}
+      <NumberField label="Fan width growth / row" unit={unit} value={seating.rowWidthGrowth || 0} min={0}
+        onChange={value=>edit(model=>({...model,seatingSections:model.seatingSections.map(item=>item.id===seating.id?{...item,rowWidthGrowth:Math.max(0,Math.min(5,value))}:item)}))}/>
       <label className="inspector-field"><span>Base elevation · m</span><input type="number" step="0.1" value={seating.baseElevation}
         onChange={event => edit(model => ({ ...model, seatingSections: model.seatingSections.map(item => item.id === seating.id
           ? { ...item, baseElevation: Number(event.target.value) } : item) }))} /></label>

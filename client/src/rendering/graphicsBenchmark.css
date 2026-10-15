@@ -1,0 +1,6 @@
+.graphics-benchmark{height:100dvh;display:flex;flex-direction:column;background:#f4f5f0}
+.graphics-benchmark>header{padding:8px 12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.graphics-benchmark h1{font-size:14px;margin:0}.graphics-benchmark label{display:flex;gap:6px;align-items:center}
+.graphics-benchmark p{margin:0;font-size:11px;width:100%}.graphics-benchmark>.viewer{flex:1;min-height:0}
+.graphics-diagnostics{position:absolute;z-index:9;left:12px;bottom:34px;background:#fffffff0;padding:8px;max-width:310px;font-size:11px;border:1px solid #abb7aa}
+.graphics-diagnostics output{white-space:pre;display:block}.graphics-diagnostics p{max-width:280px}

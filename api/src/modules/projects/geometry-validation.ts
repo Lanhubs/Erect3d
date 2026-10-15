@@ -1,3 +1,4 @@
+import {validateSystems} from '../../../../client/src/domain/systemValidation'
 import type { Project } from '../../contracts/project'
 import { ApiError } from '../../security/errors'
 import { wallLength } from '../../../../client/src/geometry/math'
@@ -16,6 +17,8 @@ export function validateGeometry(project: Project) {
   unique(project)
   const sources = new Set(project.sources.map(item => item.id))
   for (const building of project.buildings) {
+    const systemIssues=validateSystems(building)
+    if(systemIssues.length)throw new ApiError(422,'INVALID_ARCHITECTURE',systemIssues.join(' · '))
     const levels = new Set(building.levels.map(item => item.id))
     for (const section of building.roofSections || []) {
       if (!levels.has(section.levelId)) throw new ApiError(422, 'INVALID_REFERENCE', 'Roof section level is missing')

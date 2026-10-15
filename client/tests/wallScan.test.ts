@@ -11,6 +11,12 @@ function image(bands: Array<[number, number]>) {
 function horizontal(dark: Uint8Array) {
   return scanWalls(dark, width, height).filter(line => line.y1 === line.y2 && line.x2 - line.x1 >= 90)
 }
+test('small native rasters retain single-pixel structural walls without requiring image enlargement',()=>{
+  const width=205,height=180,mask=new Uint8Array(width*height)
+  for(let x=20;x<=185;x++){mask[20*width+x]=1;mask[160*width+x]=1}
+  for(let y=20;y<=160;y++){mask[y*width+20]=1;mask[y*width+185]=1}
+  expect(scanWalls(mask,width,height,true).length).toBeGreaterThanOrEqual(4)
+})
 
 test('one thick dark wall becomes one centered wall with its measured thickness', () => {
   const detected = scanWalls(image([[50, 65]]), width, height)

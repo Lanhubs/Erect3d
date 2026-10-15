@@ -1,0 +1,40 @@
+@'
+from pathlib import Path
+src=Path('api/src/modules/plan-analysis/conversion.ts').read_text()
+src=src.replace("import type { Level, Project, Point } from '../../contracts/project'", "import type { Level, Project, Point } from '../domain/types'")
+src=src.replace("from '../../contracts/analysis'", "from '../../../api/src/contracts/analysis'")
+src=src.replace("from '../../../../client/src/domain/types'", "from '../domain/types'")
+src=src.replace("from '../../../../client/src/furniture/types'", "from '../furniture/types'")
+src=src.replace("import { digest } from '../../security/tokens'\n", '')
+src=src.replace("import { ApiError } from '../../security/errors'", "import { ProposalError as ApiError } from './errors'")
+src=src.replace("from '../../../../client/src/geometry/math'", "from '../geometry/math'")
+src=src.replace("from '../../../../client/src/geometry/roomTopology'", "from '../geometry/roomTopology'")
+src=src.replace("from '../../../../client/src/domain/levels'", "from '../domain/levels'")
+src=src.replace('export function convertCandidates(', 'export function convertProposal(')
+src=src.replace('dimensions: { width: number; height: number }) {', 'dimensions: { width: number; height: number }, makeId?: (candidateId: string, suffix: string) => string) {')
+src=src.replace("  const entityId = (candidateId: string, suffix = '') => `ai_${digest(`${analysisId}:${candidateId}:${suffix}`).slice(0,32)}`", "  const previewIds = new Map<string, string>()\n  const entityId = (candidateId: string, suffix = '') => {\n    if (makeId) return makeId(candidateId, suffix)\n    const key = `${candidateId}:${suffix}`\n    if (!previewIds.has(key)) previewIds.set(key, `preview_${previewIds.size}`)\n    return previewIds.get(key)!\n  }")
+Path('client/src/intelligence/convertProposal.ts').write_text(src)
+circulation=Path('api/src/modules/plan-analysis/circulation.ts').read_text()
+circulation=circulation.replace("from '../../contracts/analysis'", "from '../../../api/src/contracts/analysis'").replace("from '../../contracts/project'", "from '../domain/types'")
+circulation=circulation.replace("from '../../../../client/src/geometry/polygons'", "from '../geometry/polygons'").replace("from '../../../../client/src/domain/stairGuides'", "from '../domain/stairGuides'")
+circulation=circulation.replace("import { ApiError } from '../../security/errors'", "import { ProposalError as ApiError } from './errors'")
+Path('client/src/intelligence/circulation.ts').write_text(circulation)
+Path('api/src/modules/plan-analysis/circulation.ts').write_text("export { acceptCirculation } from '../../../../client/src/intelligence/circulation'\n")
+Path('api/src/modules/plan-analysis/conversion.ts').write_text('''import type { Candidate, AnalysisInput } from '../../contracts/analysis'
+import type { Project } from '../../contracts/project'
+import { digest } from '../../security/tokens'
+import { ApiError } from '../../security/errors'
+import { convertProposal } from '../../../../client/src/intelligence/convertProposal'
+import { ProposalError } from '../../../../client/src/intelligence/errors'
+export { imageToWorld } from '../../../../client/src/intelligence/convertProposal'
+export function convertCandidates(project: Project, input: AnalysisInput, analysisId: string,
+  candidates: Candidate[], dimensions: { width: number; height: number }) {
+  try { return convertProposal(project, input, analysisId, candidates, dimensions,
+    (id, suffix) => `ai_${digest(`${analysisId}:${id}:${suffix}`).slice(0,32)}`) }
+  catch (error) {
+    if (error instanceof ProposalError) throw new ApiError(error.status, error.code, error.message)
+    throw error
+  }
+}
+''')
+'@ | python -

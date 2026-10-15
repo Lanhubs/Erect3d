@@ -45,6 +45,7 @@ export const seating = z.object({
   id, name, start: point, end: point, outward: point, rows: z.number().int().positive().max(1000),
   seatsPerRow: z.number().int().positive().max(1000), rowDepth: positive, rowRise: positive,
   baseElevation: scalar, seatColor: color, aisle: z.boolean().optional(),
+  rowWidthGrowth:z.number().finite().min(0).max(5).optional(),
 }).strict()
 export const detail = z.object({
   id, name, kind: z.enum(['railing', 'screen', 'fin', 'canopy', 'parapet', 'pergola', 'arch']),

@@ -1,0 +1,21 @@
+bun test v1.4.2 (744846f84)
+
+tests\arenaArchitecture.test.ts:
+(node:19892) [THREE_CJS_DEPRECATED] DeprecationWarning: `require("three")` is deprecated and will be removed.
+Replace `const THREE = require("three")` with `import * as THREE from "three"`.
+(Use `bun.exe --trace-warnings ...` to show where the warning was created)
+(pass) arena concept preserves measured entities, persists through API/save and rebuilds without duplicates [541.26ms]
+(pass) generated walls remain movable semantic entities and selected openings leave their batch for editing [79.29ms]
+(pass) full, partial and open canopy buffers have finite indexed surfaces, no degenerate triangles and expected coverage [243.56ms]
+(pass) resolution adapts within memory and quality bounds without oscillating near the frame target [0.86ms]
+
+tests\buildingSystems.test.ts:
+(pass) a 32-storey building persists one editable template and bounded instanced packages [44.31ms]
+(pass) detaching one floor preserves links, reassigns identities and leaves the input and remaining floors unchanged [7.35ms]
+(pass) curtain walls retain semantic curves and compile finite geometry without rectangularizing the source [3.01ms]
+(pass) invalid topology is rejected before emission and a courtyard is a real indexed geometric hole [15.29ms]
+
+ 8 pass
+ 0 fail
+ 30089 expect() calls
+Ran 8 tests across 2 files. [1.59s]

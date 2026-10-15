@@ -32,3 +32,16 @@ test('a shared cookie switched to another account blocks the frozen mutation', a
   await expect(api.request('/projects/p/operations', 'POST', {})).rejects.toThrow('account changed')
   expect(applied).toBe(0); expect(expired).toBe(true)
 })
+test('binary uploads retain the original bytes, MIME and idempotency key while using the shared CSRF session lock',async()=>{
+  const blob=new Blob([new Uint8Array([137,80,78,71])],{ type:'image/png' });let uploaded=false
+  const api=new SessionApi('https://erect.test',{
+    lock:async (_name,action)=>action(),actor:()=> 'same-user',expired:()=>{ throw new Error('Unexpected expiry') },
+    fetcher:(async (url,init)=>{
+      if (String(url).endsWith('/auth/session')) return Response.json({ user:{ id:'same-user' },csrfToken:'csrf' })
+      const headers=new Headers(init?.headers)
+      expect(headers.get('Content-Type')).toBe('image/png');expect(headers.get('X-CSRF-Token')).toBe('csrf');expect(headers.get('Idempotency-Key')).toBe('upload-key')
+      expect(init?.body).toBe(blob);uploaded=true;return Response.json({ assetId:'compact' })
+    }) as typeof fetch,
+  })
+  expect(await api.request('/projects/p/assets/optimized-upload','POST',blob,'upload-key')).toEqual({ assetId:'compact' });expect(uploaded).toBe(true)
+})

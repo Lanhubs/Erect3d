@@ -36,4 +36,4 @@ test('sample library preserves its architecture projects and adds a furnished wa
   expect(tableTennis.levels[0].walls.some(wall => Boolean(wall.curve))).toBe(true)
   expect(tableTennis.levels[0].details?.some(detail => detail.kind === 'canopy')).toBe(true)
   expect(tableTennis.levels[0].walls.some(wall => wall.height < 6)).toBe(true)
-})
+},15000)

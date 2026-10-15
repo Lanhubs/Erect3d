@@ -61,7 +61,7 @@ export function scanWalls(dark: Uint8Array, width: number, height: number, detai
   const minRun = detailed ? Math.max(8, Math.round(Math.min(width, height) * .02)) : Math.max(12, Math.round(Math.min(width, height) * .035))
   const parallelGap = Math.max(4, Math.round(Math.min(width, height) * .012))
   const maxStroke = Math.max(16, Math.round(Math.min(width, height) * .08))
-  const minStroke = Math.max(2, Math.round(Math.min(width, height) * .003))
+  const minStroke = Math.max(Math.min(width,height)<300?1:2, Math.round(Math.min(width, height) * .003))
   const candidates: Candidate[] = []
   const stride = detailed ? Math.max(1, Math.floor(Math.min(width, height) / 1000)) : 3
   for (let y = 0; y < height; y += stride) {

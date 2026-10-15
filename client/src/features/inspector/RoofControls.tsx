@@ -12,7 +12,7 @@ const materialColors: Record<Roof['material'], string> = {
 const roofShapes: Array<[Roof['shape'], string]> = [
   ['hidden', 'Flat'], ['gable', 'Gable'], ['hip', 'Hip'], ['shed', 'Shed'],
   ['cross-gable', 'Cross-gable'], ['cross-hip', 'Cross-hip'], ['mansard', 'Mansard'],
-  ['butterfly', 'Butterfly'], ['terrace', 'Roof terrace'],
+  ['butterfly', 'Butterfly'], ['terrace', 'Roof terrace'], ['arena-vault', 'Arena Vault'],
 ]
 const roofMaterials: Array<[Roof['material'], string]> = [
   ['concrete', 'Smooth concrete'], ['membrane', 'Flat roof membrane'], ['standing-seam', 'Standing-seam aluminium'],
@@ -68,7 +68,8 @@ export function RoofControls({ level }: { level: Level }) {
       <label>Form
         <select aria-label="Roof form" value={roof.shape} onChange={event => {
           const shape = event.target.value as Roof['shape']
-          update({ shape, pitch: shape === 'shed' ? Math.min(roof.pitch, 12) : roof.pitch })
+          const pitched=shape!=='hidden' && shape!=='terrace',pitch=pitched?Math.max(shape==='shed'?3:8,roof.pitch || defaultRoof.pitch):roof.pitch
+          update({ shape, pitch: shape === 'shed' ? Math.min(pitch, 12) : pitch })
         }}>
           {roofShapes.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
         </select>

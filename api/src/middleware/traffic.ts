@@ -18,7 +18,10 @@ export function traffic(limits: RateLimiter,trustedProxyIps:string): MiddlewareH
 export function memberTraffic(limits: RateLimiter): MiddlewareHandler<ApiEnv> {
   return async (context,next) => {
     const path = context.req.path,userId = context.get('actor').id
-    const kind = path.includes('/analysis') ? 'ai' : path.includes('/assets/uploads') ? 'upload' : 'normal'
+    // Polling and reviewing proposals do not call the provider or spend its request quota.
+    const startsAnalysis=context.req.method==='POST' && /^\/api\/v1\/projects\/[^/]+\/analysis$/.test(path)
+    const startsUpload=context.req.method==='POST' && /\/assets\/(uploads|optimized-upload)$/.test(path)
+    const kind = startsAnalysis ? 'ai' : startsUpload ? 'upload' : 'normal'
     await limits.consume(`user:${kind}:${userId}`,kind==='ai'?15:kind==='upload'?30:600,60)
     await next()
   }

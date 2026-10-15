@@ -8,8 +8,15 @@ const levelFootprints = (level: Level) => level.rooms.length ? level.rooms.map(r
 
 export function effectiveRoofSections(building: Building): RoofSection[] {
   const sections = building.roofSections || [], result = sections.filter(section => !generatedRoof(section))
+  const canopy=sections.find(section=>section.id===building.architecture?.roofSectionId && generatedRoof(section))
+  // A long-span canopy belongs to the whole arena, above the concourse. Its
+  // identity and surface must not be subtracted by that intermediate floor.
+  if(canopy)result.push(canopy)
   for (const level of building.levels) {
-    const assigned = sections.filter(section => section.levelId === level.id)
+    // Generated roofing requires erected support, not only stale room/slab footprints.
+    if (level.sourceId && !level.walls.some(wall=>wall.height>0) && !level.columns?.some(column=>column.height>0)) continue
+    const assigned = sections.filter(section => section.levelId === level.id && section.id!==canopy?.id)
+    if(canopy?.levelId===level.id && !assigned.length)continue
     const automatic = assigned.filter(generatedRoof)
     if (assigned.length && !automatic.length || !assigned.length && level.autoRoof === false) continue
     const higher = building.levels.filter(item => item.elevation > level.elevation + .1).flatMap(levelFootprints)

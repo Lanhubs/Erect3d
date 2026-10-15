@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { activeLevel, type Calibration, type Project, type Selection } from '../domain/types'
 import { acceptInterpretation } from '../domain/acceptInterpretation'
 import { reusedGroundCalibration, setLevelCalibration } from '../domain/levelCalibration'
@@ -31,8 +31,9 @@ import { FurniturePanel } from '../furniture/FurniturePanel'
 import { acceptFurniture } from '../furniture/acceptance'
 import { useFurnitureReview } from '../furniture/reviewState'
 import { useProjectAutosave } from './useProjectAutosave'
+import { BackendEntry } from '../cloud/BackendEntry'
 const Viewer = lazy(() => import('../rendering/Viewer').then(module => ({ default: module.Viewer })))
-export function Workspace({ project, back }: { project: Project; back: () => void }) {
+export function Workspace({ project, back,onBackendAnalysis,reconstructing=false,statusContent }: { project: Project; back: () => void;onBackendAnalysis?:()=>void;reconstructing?:boolean;statusContent?:ReactNode }) {
   const selection = useProject(s => s.selection), select = useProject(s => s.setSelection)
   const tool = useProject(s => s.tool), setTool = useProject(s => s.setTool)
   const view = useProject(s => s.view), setView = useProject(s => s.setView)
@@ -41,6 +42,7 @@ export function Workspace({ project, back }: { project: Project; back: () => voi
   const undo = useProject(s => s.undo), redo = useProject(s => s.redo)
   const dirty = useProject(s => s.dirty), save = useProjectAutosave(project)
   const activeLevelId = useProject(s => s.activeLevelId), analysis = useAnalysis()
+  const [localAnalysisMode,setLocalAnalysisMode]=useState(false),backend=Boolean(onBackendAnalysis)||!localAnalysisMode
   const { source, url, error, pages, busy, importFile, selectPage } = usePlanSource(project, activeLevelId || project.buildings[0].levels[0].id, analysis.clear)
   const clearAnalysis = analysis.clear
   const [page, setPage] = useState(source?.page || 1), [showImport, setShowImport] = useState(!project.sources.length)
@@ -73,7 +75,7 @@ export function Workspace({ project, back }: { project: Project; back: () => voi
     const copy = setLevelCalibration(project, level.id, next)
     setProject(copy); saveProject(copy)
     setShowImport(false); setManualScale(false); setMode('edit'); setView('plan')
-    if (source && url) analysis.analyze(url, next, source)
+    if (!backend && source && url) analysis.analyze(url, next, source)
   }
   const acceptCandidates = useCallback((replace: boolean) => {
     if (useProject.getState().readOnly) return
@@ -86,6 +88,7 @@ export function Workspace({ project, back }: { project: Project; back: () => voi
     setShowImport(false); setRoofShown(false); setView('model'); setTool('select')
   }, [analysis, editProject, setView, setTool, level.id, level.locked, source?.id])
   const analyzePlan = () => {
+    if (backend) {analysis.clear();onBackendAnalysis?.();return}
     if (!source || !url) return
     setShowImport(false); setMode('edit'); setView('plan')
     analysis.analyze(url, calibration || initialAutoScale(source.width, source.height), source, saveAutoScale)
@@ -98,12 +101,12 @@ export function Workspace({ project, back }: { project: Project; back: () => voi
     setProject(copy); void saveProject(copy)
   }, [source?.id, setProject, level.id])
   useEffect(() => {
-    if (readOnly || !source || !url || autoStarted.current === source.id) return
+    if (backend || readOnly || !source || !url || autoStarted.current === source.id) return
     if ((!calibration || calibration.method === 'auto') && !level.walls.length) {
       autoStarted.current = source.id
       void analysis.analyze(url, calibration || initialAutoScale(source.width, source.height), source, saveAutoScale)
     }
-  }, [source, url, calibration, level.walls.length, analysis, saveAutoScale, readOnly])
+  }, [source, url, calibration, level.walls.length, analysis, saveAutoScale, readOnly,backend])
   useEffect(() => {
     if (!buildRequested.current || analysis.status !== 'completed') return
     const frame = requestAnimationFrame(() => { buildRequested.current = false
@@ -112,7 +115,8 @@ export function Workspace({ project, back }: { project: Project; back: () => voi
   }, [analysis.status, analysis.candidates.length, acceptCandidates, level.walls.length])
   const chooseView = (next: 'plan' | 'split' | 'model') => {
     setShowImport(false)
-    const action = next === 'model' && !readOnly ? modelViewAction(analysis.status, analysis.candidates.length, level.walls.length, Boolean(source)) : 'show'
+    if (backend && source && !level.walls.length && next!=='plan') {onBackendAnalysis?.();return}
+    const action = next !== 'plan' && !readOnly ? modelViewAction(analysis.status, analysis.candidates.length, level.walls.length, Boolean(source)) : 'show'
     if (action === 'build') { acceptCandidates(level.walls.length > 0); return }
     if (action === 'analyze' || action === 'wait') {
       buildRequested.current = true
@@ -127,7 +131,7 @@ export function Workspace({ project, back }: { project: Project; back: () => voi
     const next = setEstimatedSpan(calibration!, metres)
     const copy = setLevelCalibration(project, level.id, next)
     setProject(copy); void saveProject(copy); setShowImport(false); setView('plan')
-    if (source && url) analysis.analyze(url, next, source)
+    if (!backend && source && url) analysis.analyze(url, next, source)
   }
   const reuseGroundScale = () => {
     if (readOnly) return
@@ -136,7 +140,7 @@ export function Workspace({ project, back }: { project: Project; back: () => voi
     if (!next) return
     const copy = setLevelCalibration(project, level.id, next)
     setProject(copy); void saveProject(copy); setShowImport(false)
-    if (url) analysis.analyze(url, next, source)
+    if (!backend && url) analysis.analyze(url, next, source)
   }
   return <div className={`workspace ${mode}-mode`}>
     <WorkspaceHeader projectName={project.name} dirty={dirty} back={back} undo={undo} redo={redo} save={save}
@@ -155,12 +159,13 @@ export function Workspace({ project, back }: { project: Project; back: () => voi
       <SourceStrip source={source} showImport={showImport} toggle={() => setShowImport(value => !value)}
         importFile={async chosen => { if (await importFile(chosen)) { setPage(1); setShowImport(false); setManualScale(false); setMode('edit'); setView('plan') } }} />
       <FurniturePanel level={level} levels={project.buildings[0].levels} source={source} url={url} calibration={calibration} walls={analysis.candidates} rooms={analysis.rooms} completed={analysis.status === 'completed'} select={selectEntity} />
-      <ReconstructionFlow source={source} calibrated={Boolean(calibration)} calibrationOpen={showImport} ready={Boolean(url && !busy)}
+      {backend && !onBackendAnalysis && source?<BackendEntry project={project} local={()=>setLocalAnalysisMode(true)}/>:onBackendAnalysis && source?<section className="reconstruction-flow"><div><strong>PLAN TO 3D</strong><span>{level.walls.length?`${level.walls.length} editable walls. Reconstructing replaces this floor and supports Undo.`:'Reconstruct this drawing into an editable 3D model. Original image quality is preserved.'}</span></div><button className="primary" disabled={reconstructing || readOnly} onClick={onBackendAnalysis}>{reconstructing?'Reconstructing…':'Reconstruct in 3D'}</button>
+        {level.walls.length>0 && <button onClick={()=>chooseView('model')}>View 3D model</button>}</section>:<ReconstructionFlow source={source} calibrated={Boolean(calibration)} calibrationOpen={showImport} ready={Boolean(url && !busy)}
         walls={level.walls.length} candidates={analysis.candidates.length} unresolved={analysis.openings.filter(item => item.choice === 'unknown').length} status={analysis.status}
         analyze={analyzePlan} generate={analyzePlan}
         manual={() => { setShowImport(false); setView('plan'); setTool('wall') }}
         build={acceptCandidates} discard={analysis.clear}
-        view3D={() => chooseView('model')} />
+        view3D={() => chooseView('model')} />}
       </fieldset>
       {analysis.status === 'completed' && analysis.candidates.length > 0 && <ReviewPanel openings={analysis.openings}
         rooms={analysis.rooms} spaceChoices={analysis.spaceChoices} selectedSpace={analysis.selectedSpace} selectSpace={analysis.setSelectedSpace}
@@ -197,7 +202,7 @@ export function Workspace({ project, back }: { project: Project; back: () => voi
               selection={selection} select={selectEntity} roofShown={roofShown} setRoofShown={setRoofShown} walkRequest={walkRequest} />
           </Suspense>}
         </div>}
-      <WorkspaceStatus level={level} units={project.units} />
+      <WorkspaceStatus level={level} units={project.units} extra={statusContent} />
     </div>{mode === 'edit' && <>
       {inspectorOpen && <button className="inspector-scrim" type="button" aria-label="Close properties" onClick={() => setInspectorOpen(false)} />}
       <fieldset disabled={readOnly} className="readonly-controls"><Inspector building={project.buildings[0]} level={level} selection={selection} unit={project.units} open={inspectorOpen} onClose={() => setInspectorOpen(false)} /></fieldset>

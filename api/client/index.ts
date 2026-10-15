@@ -2,6 +2,7 @@ import type { Project } from '../../client/src/domain/types'
 import type { Operation, AcceptedOperation } from '../src/contracts/operations'
 export type { Project, Operation, AcceptedOperation }
 export { documentChanges } from './diff'
+export { compactDocumentChanges } from './compact-diff'
 export type Role = 'OWNER' | 'EDITOR' | 'REVIEWER' | 'CLIENT' | 'VIEWER'
 export type Snapshot = { schemaVersion: number; projectId: string; revision: number; document: Project; checksum: string;
   role?: Role; allowClientApproval?: boolean }
@@ -18,16 +19,20 @@ export class ErectApi {
   constructor(origin: string, fetcher: typeof fetch = fetch) { this.origin = origin; this.fetcher = fetcher }
   async request<T>(path: string, method = 'GET', input?: unknown, idempotencyKey?: string): Promise<T> {
     const headers = new Headers()
-    if (input !== undefined) headers.set('Content-Type', 'application/json')
+    const binary = input instanceof Blob
+    if (input !== undefined) headers.set('Content-Type', binary ? input.type || 'application/octet-stream' : 'application/json')
     if (this.csrf) headers.set('X-CSRF-Token', this.csrf)
     if (idempotencyKey) headers.set('Idempotency-Key', idempotencyKey)
     const fetcher = this.fetcher
     const response = await fetcher(`${this.origin}/api/v1${path}`, {
       method, headers, credentials: 'include',
-      ...(input === undefined ? {} : { body: JSON.stringify(input) })
+      ...(input === undefined ? {} : { body: binary ? input : JSON.stringify(input) })
     })
     if (response.status === 204) return undefined as T
-    const data = await response.json()
+    let data
+    try { data=await response.json() } catch {
+      throw new RemoteError(response.status>=500?response.status:502,'SERVICE_UNAVAILABLE','The server connection is unavailable. Your saved draft remains on this device.')
+    }
     if (!response.ok) throw new RemoteError(response.status, data.error?.code || 'REQUEST_FAILED',
       data.error?.message || 'Request failed', data.error?.requestId, data.error?.details)
     return data as T

@@ -70,3 +70,12 @@ test('locked levels require a separate unlock before geometry edits',async()=>{
   await expect((async()=>{ await h.db`UPDATE operations SET type='tampered' WHERE project_id=${project.id}` })()).rejects.toThrow()
   await expect((async()=>{ await h.db`DELETE FROM snapshots WHERE project_id=${project.id}` })()).rejects.toThrow()
 })
+test('replacing a whole floor cannot bypass a collaborator lock on its existing wall',async()=>{
+  const project=await createProject(h.app,owner),building=project.buildings[0],level=building.levels[0],wall=level.walls[0]
+  await h.db`INSERT INTO entity_locks(project_id,entity_id,user_id,connection_id,expires_at) VALUES (${project.id},${wall.id},${outsider.id},'test-collaborator',now()+interval '1 minute')`
+  const operation={operationId:crypto.randomUUID(),baseRevision:0,type:'document.patch',entityId:level.id,
+    payload:{changes:[{action:'put',path:['buildings',building.id,'levels',level.id],value:{...level,walls:[{...wall,height:4}]}}]}}
+  const denied=await request(h.app,owner,`/projects/${project.id}/operations`,'POST',operation)
+  expect(denied.status).toBe(409);expect((await denied.json()).error.code).toBe('ENTITY_LOCKED')
+  expect((await loadDocument(h.db,project.id)).revision).toBe(0)
+})

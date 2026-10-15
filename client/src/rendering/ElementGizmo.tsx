@@ -1,6 +1,6 @@
 import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber'
 import { useRef } from 'react'
-import { Plane, Raycaster, Vector2, Vector3, type Group } from 'three'
+import { Plane, Raycaster, Vector2, Vector3, type Group,  } from 'three'
 import type { Building, Selection } from '../domain/types'
 import { selectedElement, pointsCenter, canRotate, canAdjustHeight } from '../domain/elementGeometry'
 import { useElementEditing, type EditHandle } from '../features/editing/useElementEditing'

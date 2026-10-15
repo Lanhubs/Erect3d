@@ -360,7 +360,7 @@
     font-size: 8px
   }
 
-  .statusbar span:nth-child(2) {
+  .statusbar>span:nth-child(2) {
     display: none
   }
 

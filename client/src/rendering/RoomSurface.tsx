@@ -4,6 +4,7 @@ import type { Point, Room, Selection } from '../domain/types'
 import { roomShapes } from './roomShape'
 import { materialRoughness } from './materials'
 import { floorTexture } from './textures'
+import {BasketballCourt} from './BasketballCourt'
 
 const p = (x: number, z: number): Point => ({ x, z })
 
@@ -16,6 +17,7 @@ function Marking({ start, end, thickness, color = '#f5f2e7' }: { start: Point; e
 }
 
 function SportsFloorDetails({ room }: { room: Room }) {
+  if(room.category==='basketball-court')return <BasketballCourt room={room}/>
   const points = room.polygon
   if (!points.length) return null
   const xs = points.map(point => point.x), zs = points.map(point => point.z)
@@ -70,7 +72,7 @@ function SportsFloorDetails({ room }: { room: Room }) {
 export function RoomSurface({ room, ceiling, select, openings = [] }: { room: Room; ceiling?: boolean;
   select?: (selection: Selection) => void; openings?: Point[][] }) {
   const shapes = useMemo(() => roomShapes(room, openings), [room, openings])
-  const specialFloor = room.category === 'football-pitch' || room.category === 'table-tennis-hall'
+  const basketball=room.category==='basketball-court',specialFloor = room.category === 'football-pitch' || room.category === 'table-tennis-hall' || basketball
   const position: [number, number, number] = [0, ceiling ? (room.ceilingHeight || 2.9) : specialFloor ? .04 : .006, 0]
   return <group><mesh rotation={[Math.PI / 2, 0, 0]} position={position} receiveShadow
     onPointerOver={event => { if (ceiling) return; event.stopPropagation(); const canvas = document.querySelector<HTMLCanvasElement>('.viewer canvas'); if (canvas) canvas.style.cursor = 'pointer' }}
@@ -78,8 +80,8 @@ export function RoomSurface({ room, ceiling, select, openings = [] }: { room: Ro
     onClick={event => { if (!ceiling && select) { event.stopPropagation(); select({ kind: 'room', id: room.id }) } }}>
     <shapeGeometry args={[shapes]} />
     {ceiling ? <meshStandardMaterial color="#e8e5dd" roughness={.96} side={DoubleSide} />
-      : <meshStandardMaterial color={specialFloor ? room.category === 'football-pitch' ? '#4c8850' : '#72866a' : '#ffffff'}
-        map={specialFloor ? undefined : floorTexture(room.material)} roughness={specialFloor ? .94 : materialRoughness[room.material]}
+      : <meshStandardMaterial color={basketball?'#e4c797':specialFloor ? room.category === 'football-pitch' ? '#4c8850' : '#72866a' : '#ffffff'}
+        map={basketball?floorTexture('timber'):specialFloor ? undefined : floorTexture(room.material)} roughness={basketball ? .48 : specialFloor ? .94 : materialRoughness[room.material]}
         side={DoubleSide} />}
   </mesh>{!ceiling && specialFloor && <SportsFloorDetails room={room} />}</group>
 }

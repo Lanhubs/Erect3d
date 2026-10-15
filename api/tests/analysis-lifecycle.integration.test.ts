@@ -58,7 +58,7 @@ test('completed passes survive a transient failure and retries do not spend quot
   } }
   await expect(analyze(h.db,h.config,store,provider,job,new AbortController().signal)).rejects.toThrow('AI_QUOTA')
   await analyze(h.db,h.config,store,provider,job,new AbortController().signal)
-  expect(calls).toEqual(['structure','openings','openings'])
+  expect(calls).toEqual(['global-understanding','structure','openings','openings'])
   const [row]=await h.db`SELECT status FROM analyses WHERE id=${job.id}`
   expect(row.status).toBe('ready')
   expect(classifyFailure({ status:429 }).retryable).toBe(true)

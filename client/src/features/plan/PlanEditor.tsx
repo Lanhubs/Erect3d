@@ -1,3 +1,4 @@
+import {SystemsLayer} from './SystemsLayer'
 import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { uid, type Level, type Point, type Ramp, type Selection, type SiteFence } from '../../domain/types'
 import { distance, nearestWallOffset, wallCurveThroughPoints, wallLength } from '../../geometry/math'
@@ -173,6 +174,7 @@ export function PlanEditor({ level, selection, select, unit, source, underlay, r
           svg.current?.setPointerCapture(event.pointerId)
         }} />}
       {!review && <RampLayer ramps={level.ramps || []} selection={selection} select={select} tool={tool} />}
+      {!review && <SystemsLayer level={level} selection={selection} select={select}/>}
       {!review && <SeatingLayer sections={level.seatingSections || []} selection={selection} select={select} tool={tool} />}
       {!review && <ArchitecturalDetailLayer details={level.details || []} selection={selection} select={select} tool={tool} />}
       {!review && <OpeningLayer svg={svg} level={level} selection={selection} select={select} tool={tool} />}

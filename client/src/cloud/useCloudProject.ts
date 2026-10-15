@@ -6,9 +6,11 @@ import { canEdit, recordKey, type CloudRecord, type SyncState } from './types'
 import { useProject } from '../state/project'
 import { setCloudPersistence } from '../state/persistenceMode'
 import { connectProject, type Peer } from './realtime'
-import { loadPrivateSource } from './sources'
+import { loadPrivateSource,syncPrivateSources } from './sources'
+import { connectionUnavailable } from './offline'
 import type { User } from './account'
 import { RemoteError } from '../../../api/client'
+import {analysisConnected} from './analysisEvents'
 export type CloudSession = { record?: CloudRecord; state: SyncState; secondary: boolean; peers: Peer[]; error: string; engine?: SyncEngine; reviewVersion: number; reserve?: (id: string, release?: boolean) => void }
 export function useCloudProject(user: User, projectId: string) {
   const [session, setSession] = useState<CloudSession>({ state: 'pending', secondary: false, peers: [], error: '', reviewVersion: 0 })
@@ -21,6 +23,7 @@ export function useCloudProject(user: User, projectId: string) {
     useProject.getState().setProject(null); useProject.getState().setReadOnly(true)
     const fail = (error: unknown) => {
       if (disposed) return
+      if (connectionUnavailable(error) && engineRef.current) {setSession(state=>({...state,state:'offline',error:''}));return}
       if (error instanceof RemoteError && [401,403,404].includes(error.status)) useProject.getState().setReadOnly(true)
       setSession(state => ({ ...state, error: (error as Error).message }))
     }
@@ -28,26 +31,31 @@ export function useCloudProject(user: User, projectId: string) {
       if (disposed) return
       const store = useProject.getState(), document = engine.record.draft
       // Never interrupt a live drag; refresh again after the gesture is committed or cancelled.
-      if (replace && !store.previewBase && JSON.stringify(store.project) !== JSON.stringify(document)) {
-        applying = true; store.setProject(document); applying = false
+      if (replace && !store.previewBase) {
+        applying = true; store.adoptDocument(document); applying = false
       }
       store.setReadOnly(!canEdit(engine.record.base))
-      setSession(state => ({ ...state, record: structuredClone(engine.record), engine, secondary: false, state: engine.state, error: engine.record.error || '' }))
+      setSession(state => ({ ...state, record: structuredClone(engine.record), engine, secondary: false, state: engine.state, error: engine.state==='offline'?'':engine.record.error || '' }))
     }
     const refresh = async () => {
       if (refreshing || disposed || useProject.getState().previewBase) return
       refreshing = true
-      try { await engineRef.current?.refresh(() => !useProject.getState().previewBase); if (!disposed) setSession(state => ({ ...state, reviewVersion: state.reviewVersion + 1 })) }
+      try {
+        const engine=engineRef.current
+        await engine?.refresh(() => !useProject.getState().previewBase)
+        if (engine && !disposed && engine.state==='saved' && canEdit(engine.record.base)) await syncPrivateSources(key,projectId,engine.record.base.document.sources)
+        if (!disposed) setSession(state => ({ ...state,error:engine?.record.error || '',reviewVersion: state.reviewVersion + 1 }))
+      }
       catch (error) { fail(error) } finally { refreshing = false }
     }
     const start = async (writer: boolean) => {
-      const cached = writer ? await repository.get(key) : undefined
+      const cached = await repository.get(key)
       let record: CloudRecord
       try {
         const snapshot = await api.load(projectId)
         record = cached ? { ...cached, base: { ...cached.base, role: snapshot.role, allowClientApproval: snapshot.allowClientApproval } }
           : { key, userId: user.id, base: snapshot, draft: snapshot.document }
-      } catch (error) { if (!(error instanceof TypeError) || !cached) throw error; record = cached }
+      } catch (error) { if (!connectionUnavailable(error) || !cached) throw error; record = cached }
       if (disposed) return
       if (!writer) {
         setCloudPersistence({ projectId, save: async () => { throw new Error('This project is being edited in another tab.') },
@@ -70,14 +78,14 @@ export function useCloudProject(user: User, projectId: string) {
       unsubscribe = useProject.subscribe((next, before) => {
         if (!applying && next.project?.id === projectId && next.version !== before.version && !next.previewBase) {
           const version = next.version
-          void engine.stage(next.project).then(() => useProject.getState().markSaved(version)).catch(fail)
+          void engine.stage(next.project).then(() => {useProject.getState().markSaved(version);void refresh()}).catch(fail)
         }
       })
       const realtime = connectProject(projectId, () => engine.record.base.revision, () => { void refresh() }, peers => {
         if (!disposed) setSession(state => ({ ...state, peers }))
       }, message => fail(new Error(message)))
       disconnect = realtime.close; setSession(state => ({ ...state, reserve: realtime.reserve }))
-      timer = setInterval(() => { void refresh() }, 10000)
+      timer = setInterval(() => { if(!analysisConnected(projectId) && document.visibilityState!=='hidden')void refresh() }, 30000)
       window.addEventListener('online', refresh)
       await refresh()
     }

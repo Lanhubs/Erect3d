@@ -1,7 +1,9 @@
-import { documentChanges, RemoteError, type ErectApi, type Project, type Snapshot } from '../../../api/client'
+import { documentChanges,compactDocumentChanges, RemoteError, type ErectApi, type Project, type Snapshot } from '../../../api/client'
 import type { CloudRecord, CloudRepository, SyncState } from './types'
 import { canEdit } from './types'
 import { patch, type Change } from './changes'
+import { connectionUnavailable } from './offline'
+import { mergeDraft } from './merge'
 type Transport = Pick<ErectApi, 'load' | 'apply'>
 export class SyncEngine {
   record: CloudRecord
@@ -18,7 +20,7 @@ export class SyncEngine {
   private async persist(replace = false) { await this.repo.put(structuredClone(this.record)); this.notify(this, replace) }
   async stage(draft: Project) {
     await this.exclusive(async () => {
-      if (this.stopped || !canEdit(this.record.base)) throw new Error('This cloud project is read only.')
+      if (this.stopped || !canEdit(this.record.base)) throw new Error('This project is read only.')
       this.record.draft = structuredClone(draft)
       if (!this.record.conflict) { this.record.error = undefined; this.state = 'pending' }
       await this.persist()
@@ -30,13 +32,13 @@ export class SyncEngine {
     this.pumping = this.pump().finally(() => { this.pumping = undefined })
     return this.pumping
   }
-  private async pump() {
+  private async pump(rebases=0):Promise<void> {
     try {
       while (!this.stopped) {
         const pending = await this.exclusive(async () => {
           if (this.record.conflict || !canEdit(this.record.base)) return undefined
           if (!this.record.pending) {
-            const changes = documentChanges(this.record.base.document, this.record.draft)
+            const changes = compactDocumentChanges(this.record.base.document, this.record.draft)
             if (!changes.length) { this.state = 'saved'; await this.persist(); return undefined }
             if (changes.length > 512) throw new Error('This edit exceeds 512 changes. Export your draft and reduce this edit before syncing.')
             const operation = { operationId: crypto.randomUUID(), baseRevision: this.record.base.revision,
@@ -59,16 +61,25 @@ export class SyncEngine {
       }
     } catch (error) {
       if (this.stopped) return
-      if (error instanceof RemoteError && error.status === 409) {
+      if (error instanceof RemoteError && error.status === 409 && error.code==='REVISION_CONFLICT') {
         try {
           const snapshot = await this.remote.load(this.record.base.projectId)
-          await this.exclusive(async () => { this.record.conflict = snapshot; this.state = 'conflict'; this.record.error = error.message; await this.persist() })
+          const merged=await this.exclusive(async()=>{
+            const draft=rebases<3 && canEdit(snapshot)?mergeDraft(this.record.base.document,this.record.draft,snapshot.document):undefined
+            if (draft) {
+              this.record={...this.record,base:snapshot,draft,pending:undefined,conflict:undefined,error:undefined}
+              this.state='pending';await this.persist(true);return true
+            }
+            this.record.base={...this.record.base,role:snapshot.role,allowClientApproval:snapshot.allowClientApproval}
+            this.record.conflict=snapshot;this.state='conflict';this.record.error=error.message;await this.persist();return false
+          })
+          if (merged) await this.pump(rebases+1)
           return
         } catch { /* Preserve the frozen operation until connectivity returns. */ }
       }
       await this.exclusive(async () => {
         if (error instanceof RemoteError && [400,422].includes(error.status)) this.record.pending = undefined
-        this.state = error instanceof RemoteError && error.status < 500 || !(error instanceof RemoteError) && !(error instanceof TypeError) ? 'blocked' : 'offline'
+        this.state = connectionUnavailable(error) ? 'offline' : 'blocked'
         this.record.error = (error as Error).message; await this.persist()
       })
     }

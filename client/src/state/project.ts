@@ -4,6 +4,7 @@ import { activeLevel } from '../domain/types'
 import { normalizeProject, refreshAutoSlabs } from '../domain/levels'
 import { repairGeneratedFence } from '../geometry/site'
 import { shareUnchanged } from './shareUnchanged'
+import { confirmManualChanges } from '../intelligence/provenance'
 
 export type Tool = 'select' | 'pan' | 'wall' | 'curve' | 'ramp' | 'door' | 'window' | 'room' | 'measure' | 'calibrate'
 export type View = 'plan' | 'split' | 'model'
@@ -11,15 +12,17 @@ export type GridSettings = { visible: boolean; snap: boolean; step: number; angl
 type Model = { walls: Wall[]; doors: Door[]; windows: WindowUnit[]; passages: Passage[]; rooms: Room[]; ramps: Ramp[]; seatingSections: SeatingSection[]; roof?: Roof }
 type State = {
   project: Project | null; activeLevelId: string | null; selection: Selection; tool: Tool; view: View; grid: GridSettings; readOnly: boolean
-  history: Project[]; future: Project[]; dirty: boolean; version: number; previewBase: Project | null
+  history: Project[]; future: Project[]; dirty: boolean; version: number; previewBase: Project | null; snapshotFingerprint?: string
   preview: (project: Project) => void; finishPreview: () => void; cancelPreview: () => void
   setProject: (project: Project | null) => void; setActiveLevel: (id: string) => void; setSelection: (selection: Selection) => void
   setTool: (tool: Tool) => void; setView: (view: View) => void; setGrid: (change: Partial<GridSettings>) => void
   edit: (change: (model: Model) => Model) => void; editProject: (change: (project: Project) => Project) => void
   undo: () => void; redo: () => void; markSaved: (version: number) => void
-  setReadOnly: (value: boolean) => void; replaceDocument: (project: Project) => void
+  setReadOnly: (value: boolean) => void; replaceDocument: (project: Project) => void; adoptDocument: (project: Project) => void
+  rememberAccepted: (before: Project) => void
 }
 const commit = (set: (change: Partial<State>) => void, state: State, next: Project) => {
+  confirmManualChanges(state.project!, next)
   const project = shareUnchanged(state.project!, { ...next, modified: Date.now() })
   set({ project, history: [...state.history.slice(-49), state.project!], future: [],
     dirty: true, version: state.version + 1 })
@@ -28,7 +31,23 @@ export const useProject = create<State>((set, get) => ({
   project: null, activeLevelId: null, selection: null, tool: 'select', view: 'split', readOnly: false,
   grid: { visible: true, snap: false, step: .1, angle: 0, length: 0 }, history: [], future: [], dirty: false, version: 0, previewBase: null,
   setReadOnly: readOnly => { if (get().readOnly !== readOnly) { get().cancelPreview(); set({ readOnly, tool: 'select' }) } },
+  adoptDocument: input => {
+    const state=get()
+    const fingerprint=JSON.stringify(input)
+    if (state.previewBase || fingerprint===state.snapshotFingerprint) return
+    const project=normalizeProject(input)
+    // Server snapshots omit optional editor defaults. Compare equivalent documents
+    // before resetting history on an actual remote change.
+    if (JSON.stringify(state.project)!==JSON.stringify(project)) state.setProject(input)
+    else set({snapshotFingerprint:fingerprint})
+  },
   replaceDocument: project => { if (!get().readOnly) get().editProject(() => project) },
+  rememberAccepted: before => {
+    const state = get()
+    if (!state.readOnly && state.project?.id === before.id && !state.previewBase) {
+      set({ history: [...state.history.slice(-49), before], future: [] })
+    }
+  },
   preview: project => { if (!get().readOnly) set(state => ({ previewBase: state.previewBase || state.project, project: state.project ? shareUnchanged(state.project, project) : project })) },
   finishPreview: () => {
     const state = get()
@@ -41,7 +60,7 @@ export const useProject = create<State>((set, get) => ({
     const previous = get()
     const keep = project?.id === previous.project?.id && project?.buildings[0].levels.some(level => level.id === previous.activeLevelId)
     set({ project, activeLevelId: keep ? previous.activeLevelId : project?.buildings[0].levels[0].id || null, selection: null,
-      history: [], future: [], dirty: false, version: 0, previewBase: null })
+      history: [], future: [], dirty: false, version: 0, previewBase: null, snapshotFingerprint:input?JSON.stringify(input):undefined })
   },
   setActiveLevel: id => { get().cancelPreview(); set({ activeLevelId: id, selection: null }) },
   setSelection: selection => { get().finishPreview(); set({ selection }) }, setTool: tool => { get().cancelPreview(); if (!get().readOnly || ['select','pan','measure'].includes(tool)) set({ tool }) }, setView: view => set({ view }),

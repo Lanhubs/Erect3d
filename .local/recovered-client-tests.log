@@ -1,0 +1,1081 @@
+bun test v1.4.2 (744846f84)
+
+tests\arenaArchitecture.test.ts:
+(node:19908) [THREE_CJS_DEPRECATED] DeprecationWarning: `require("three")` is deprecated and will be removed.
+Replace `const THREE = require("three")` with `import * as THREE from "three"`.
+(Use `bun.exe --trace-warnings ...` to show where the warning was created)
+24 |   const rebuilt=createArenaArchitecture(concept,levelId,{roofCoverage:'full',seatingRows:16})
+25 |   expect(rebuilt.buildings[0].levels).toHaveLength(2)
+26 |   expect(new Set(rebuilt.buildings[0].architecture!.generatedIds).size).toBe(rebuilt.buildings[0].architecture!.generatedIds.length)
+27 |   expect(rebuilt.buildings[0].levels[0].walls.length).toBe(building.levels[0].walls.length)
+28 |   const removed=structuredClone(rebuilt);removeArchitecture(removed,building.id)
+29 |   expect(removed.buildings[0].levels[0].walls).toEqual(input.buildings[0].levels[0].walls)
+                                                    ^
+error: expect(received).toEqual(expected)
+
+@@ -957,1030 +957,6 @@
+        "x": 77.8170196135435,
+        "z": 31.863451509454062,
+      },
+      "thickness": 0.22,
+    },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 74.03531765218914,
+-       "z": 37.82289364149135,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:0",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 74.2,
+-       "z": 35,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 73.54285658979049,
+-       "z": 40.618601274064495,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:1",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 74.03531765218914,
+-       "z": 37.82289364149135,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 72.72735948204155,
+-       "z": 43.360198704928514,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:2",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 73.54285658979049,
+-       "z": 40.618601274064495,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 71.59668001188601,
+-       "z": 46.02128285211459,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:3",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 72.72735948204155,
+-       "z": 43.360198704928514,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 70.16170724071375,
+-       "z": 48.576226020588734,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:4",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 71.59668001188601,
+-       "z": 46.02128285211459,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 68.43626074074704,
+-       "z": 51.00042271096454,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:5",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 70.16170724071375,
+-       "z": 48.576226020588734,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 56.121768399449124,
+-       "z": 60.39933241323263,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:10",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 59.0005019692704,
+-       "z": 58.9463248343133,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 53.08777338688607,
+-       "z": 61.60773053632506,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:11",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 56.121768399449124,
+-       "z": 60.39933241323263,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 49.927735962102616,
+-       "z": 62.559881669087616,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:12",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 53.08777338688607,
+-       "z": 61.60773053632506,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 46.67208901295159,
+-       "z": 63.246616075613034,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:13",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 49.927735962102616,
+-       "z": 62.559881669087616,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 43.35218619927098,
+-       "z": 63.66132012815927,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:14",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 46.67208901295159,
+-       "z": 63.246616075613034,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 40,
+-       "z": 63.8,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:15",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 43.35218619927098,
+-       "z": 63.66132012815927,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 36.647813800729026,
+-       "z": 63.661320128159275,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:16",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 40,
+-       "z": 63.8,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 33.32791098704841,
+-       "z": 63.246616075613034,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:17",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 36.647813800729026,
+-       "z": 63.661320128159275,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 30.07226403789739,
+-       "z": 62.559881669087616,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:18",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 33.32791098704841,
+-       "z": 63.246616075613034,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 26.91222661311393,
+-       "z": 61.60773053632506,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:19",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 30.07226403789739,
+-       "z": 62.559881669087616,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 23.878231600550876,
+-       "z": 60.39933241323263,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:20",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 26.91222661311393,
+-       "z": 61.60773053632506,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 20.99949803072961,
+-       "z": 58.9463248343133,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:21",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 23.878231600550876,
+-       "z": 60.39933241323263,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 9.838292759286258,
+-       "z": 48.576226020588734,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:26",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 11.563739259252948,
+-       "z": 51.00042271096454,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 8.403319988113992,
+-       "z": 46.02128285211459,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:27",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 9.838292759286258,
+-       "z": 48.576226020588734,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 7.2726405179584575,
+-       "z": 43.36019870492852,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:28",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 8.403319988113992,
+-       "z": 46.02128285211459,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 6.457143410209518,
+-       "z": 40.6186012740645,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:29",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 7.2726405179584575,
+-       "z": 43.36019870492852,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 5.964682347810864,
+-       "z": 37.822893641491355,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:30",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 6.457143410209518,
+-       "z": 40.6186012740645,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 5.799999999999997,
+-       "z": 35,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:31",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 5.964682347810864,
+-       "z": 37.822893641491355,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 5.964682347810864,
+-       "z": 32.17710635850865,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:32",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 5.799999999999997,
+-       "z": 35,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 6.457143410209518,
+-       "z": 29.381398725935505,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:33",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 5.964682347810864,
+-       "z": 32.17710635850865,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 7.27264051795845,
+-       "z": 26.639801295071493,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:34",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 6.457143410209518,
+-       "z": 29.381398725935505,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 8.403319988113989,
+-       "z": 23.97871714788542,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:35",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 7.27264051795845,
+-       "z": 26.639801295071493,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 9.838292759286254,
+-       "z": 21.423773979411266,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:36",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 8.403319988113989,
+-       "z": 23.97871714788542,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 11.563739259252944,
+-       "z": 18.999577289035464,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:37",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 9.838292759286254,
+-       "z": 21.423773979411266,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 23.878231600550873,
+-       "z": 9.600667586767376,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:42",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 20.999498030729605,
+-       "z": 11.053675165686698,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 26.91222661311391,
+-       "z": 8.392269463674946,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:43",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 23.878231600550873,
+-       "z": 9.600667586767376,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 30.072264037897384,
+-       "z": 7.440118330912384,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:44",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 26.91222661311391,
+-       "z": 8.392269463674946,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 33.3279109870484,
+-       "z": 6.753383924386966,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:45",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 30.072264037897384,
+-       "z": 7.440118330912384,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 36.64781380072903,
+-       "z": 6.3386798718407285,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:46",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 33.3279109870484,
+-       "z": 6.753383924386966,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 39.99999999999999,
+-       "z": 6.199999999999999,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:47",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 36.64781380072903,
+-       "z": 6.3386798718407285,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 43.35218619927095,
+-       "z": 6.3386798718407285,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:48",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 39.99999999999999,
+-       "z": 6.199999999999999,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 46.67208901295159,
+-       "z": 6.753383924386963,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:49",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 43.35218619927095,
+-       "z": 6.3386798718407285,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 49.9277359621026,
+-       "z": 7.440118330912384,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:50",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 46.67208901295159,
+-       "z": 6.753383924386963,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 53.08777338688608,
+-       "z": 8.392269463674946,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:51",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 49.9277359621026,
+-       "z": 7.440118330912384,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 56.121768399449124,
+-       "z": 9.600667586767376,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:52",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 53.08777338688608,
+-       "z": 8.392269463674946,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 59.00050196927039,
+-       "z": 11.053675165686691,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:53",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 56.121768399449124,
+-       "z": 9.600667586767376,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 70.16170724071374,
+-       "z": 21.42377397941126,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:58",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 68.43626074074704,
+-       "z": 18.999577289035457,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 71.59668001188601,
+-       "z": 23.978717147885398,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:59",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 70.16170724071374,
+-       "z": 21.42377397941126,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 72.72735948204155,
+-       "z": 26.63980129507148,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:60",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 71.59668001188601,
+-       "z": 23.978717147885398,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 73.54285658979049,
+-       "z": 29.381398725935494,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:61",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 72.72735948204155,
+-       "z": 26.63980129507148,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 74.03531765218914,
+-       "z": 32.17710635850866,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:62",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 73.54285658979049,
+-       "z": 29.381398725935494,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 74.2,
+-       "z": 35,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_lower-facade:wall:63",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 74.03531765218914,
+-       "z": 32.17710635850866,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 20.06,
+-       "z": 10.84,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_tower:0:wall:0",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 12.059999999999999,
+-       "z": 10.84,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 20.06,
+-       "z": 18.84,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_tower:0:wall:1",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 20.06,
+-       "z": 10.84,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 12.059999999999999,
+-       "z": 18.84,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_tower:0:wall:2",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 20.06,
+-       "z": 18.84,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 12.059999999999999,
+-       "z": 10.84,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_tower:0:wall:3",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 12.059999999999999,
+-       "z": 18.84,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 67.94,
+-       "z": 10.84,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_tower:1:wall:0",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 59.94,
+-       "z": 10.84,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 67.94,
+-       "z": 18.84,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_tower:1:wall:1",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 67.94,
+-       "z": 10.84,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 59.94,
+-       "z": 18.84,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_tower:1:wall:2",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 67.94,
+-       "z": 18.84,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 59.94,
+-       "z": 10.84,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_tower:1:wall:3",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 59.94,
+-       "z": 18.84,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 20.06,
+-       "z": 51.16,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_tower:2:wall:0",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 12.059999999999999,
+-       "z": 51.16,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 20.06,
+-       "z": 59.16,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_tower:2:wall:1",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 20.06,
+-       "z": 51.16,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 12.059999999999999,
+-       "z": 59.16,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_tower:2:wall:2",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 20.06,
+-       "z": 59.16,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 12.059999999999999,
+-       "z": 51.16,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_tower:2:wall:3",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 12.059999999999999,
+-       "z": 59.16,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 67.94,
+-       "z": 51.16,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_tower:3:wall:0",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 59.94,
+-       "z": 51.16,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 67.94,
+-       "z": 59.16,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_tower:3:wall:1",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 67.94,
+-       "z": 51.16,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 59.94,
+-       "z": 59.16,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_tower:3:wall:2",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 67.94,
+-       "z": 59.16,
+-     },
+-     "thickness": 0.28,
+-   },
+-   {
+-     "color": "#c5cbd0",
+-     "end": {
+-       "x": 59.94,
+-       "z": 51.16,
+-     },
+-     "height": 5.2,
+-     "id": "concept_level_5d9c9c67-e65b-4716-b7b2-a36a985318_tower:3:wall:3",
+-     "kind": "exterior",
+-     "material": "concrete",
+-     "start": {
+-       "x": 59.94,
+-       "z": 59.16,
+-     },
+-     "thickness": 0.28,
+-   },
+  ]
+
+- Expected  - 1024
++ Received  + 0
+
+      at <anonymous> (C:\Users\Dell\Desktop\projects\erect3d\client\tests\arenaArchitecture.test.ts:29:48)
+(fail) arena concept preserves measured entities, persists through API/save and rebuilds without duplicates [712.93ms]
+(pass) generated walls remain movable semantic entities and selected openings leave their batch for editing [368.01ms]
+(pass) full, partial and open canopy buffers have finite indexed surfaces, no degenerate triangles and expected coverage [378.38ms]
+(pass) resolution adapts within memory and quality bounds without oscillating near the frame target [0.43ms]
+
+tests\enhancement.test.ts:
+(pass) existing walls and doors round-trip through original-image coordinates without changing model IDs or geometry [2.04ms]
+(pass) corrections update one hosted door while preserving its veranda and finish, and a preview cannot mutate the original [3.36ms]
+(pass) unchanged detections are discarded and new openings keep an existing host after alias reconciliation [1.21ms]
+(pass) manual changes confirm properties without mutating previous history; legacy existing properties stay protected [2.91ms]
+(pass) roof alternatives only affect explicit design selection and preserve one roof over the architectural footprint [2.08ms]
+(pass) evidence with an obsolete calibration origin cannot be reused just because its pixel scale matches [0.40ms]
+(pass) rejected existing false geometry becomes an explicit removal, while unknown measurement IDs cannot delete model entities [2.44ms]
+(pass) removal preview cannot orphan hosted openings, mutate the original or silently remove additional elements [2.39ms]
+
+tests\reconstructionState.test.ts:
+(pass) old cached results cannot hide the progress of a newly started reconstruction [1.47ms]
+
+tests\roof.test.ts:
+(pass) all roof forms produce finite surfaces over the building footprint [4.73ms]
+(pass) cross roof sheets cover the footprint once without overlapping planes or gaps [1.77ms]
+(pass) shed roof has wall infill rather than floating above the house [0.24ms]
+(pass) roof section splitting preserves a concave footprint on both sides [0.52ms]
+(pass) roof choices remain part of edits and undo history [5.15ms]
+(pass) legacy projects keep their single roof and normalized projects retain independent roof sections [1.04ms]
+
+ 18 pass
+ 1 fail
+ 15001 expect() calls
+Ran 19 tests across 4 files. [3.46s]

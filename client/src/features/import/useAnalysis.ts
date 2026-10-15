@@ -7,6 +7,7 @@ import { enclosedSpaces } from '../../geometry/roomTopology'
 import { assembleDraft } from '../../geometry/reconstruct'
 import type { WorldFeature } from '../../geometry/openingCandidates'
 import { findOpeningCandidates, type OpeningChoice } from '../../geometry/openingCandidates'
+import { publishLocalEvidence } from '../../cloud/localEvidence'
 
 export type AnalysisStatus = 'idle' | 'preparing' | 'analyzing' | 'building' | 'completed' | 'failed'
 export function useAnalysis() {
@@ -35,7 +36,7 @@ export function useAnalysis() {
     setSpaceChoices({}); setSelectedSpace(null)
   }, [])
   useEffect(() => () => { generation.current++; abort.current?.abort(); worker.current?.terminate() }, [])
-  const analyze = useCallback(async (url: string, calibration: Calibration | undefined, sourceSize: { width: number; height: number },
+  const analyze = useCallback(async (url: string, calibration: Calibration | undefined, sourceSize: { width: number; height: number; id?: string },
     onAutoScale?: (estimate: Calibration) => void) => {
     const job = ++generation.current
     abort.current?.abort(); worker.current?.terminate(); worker.current = null
@@ -44,13 +45,7 @@ export function useAnalysis() {
     setSpaceChoices({}); setSelectedSpace(null)
     try {
       const response = await fetch(url, { signal: abort.current.signal })
-      const scale = Math.min(3200 / Math.max(sourceSize.width, sourceSize.height),
-        Math.min(sourceSize.width, sourceSize.height) < 300 ? 600 / Math.min(sourceSize.width, sourceSize.height) : 1)
-      const bitmap = await createImageBitmap(await response.blob(), {
-        resizeWidth: Math.max(1, Math.round(sourceSize.width * scale)),
-        resizeHeight: Math.max(1, Math.round(sourceSize.height * scale)),
-        resizeQuality: scale > 1 ? 'pixelated' : 'high',
-      })
+      const bitmap = await createImageBitmap(await response.blob())
       if (job !== generation.current) { bitmap.close(); return }
       const canvas = document.createElement('canvas')
       canvas.width = bitmap.width; canvas.height = bitmap.height
@@ -64,22 +59,29 @@ export function useAnalysis() {
       const activeWorker = new Worker(new URL('../../workers/analyze.ts', import.meta.url), { type: 'module' })
       worker.current = activeWorker
       setStatus('analyzing')
+      return await new Promise<ReturnType<typeof worldInterpretation> | undefined>(resolve => {
+      const signal = abort.current!.signal
+      const cancelled = () => resolve(undefined)
+      signal.addEventListener('abort', cancelled, { once: true })
+      const finish = (result?: ReturnType<typeof worldInterpretation>) => { signal.removeEventListener('abort', cancelled); resolve(result) }
       activeWorker.onmessage = (event: MessageEvent<PlanAnalysisResult & { error?: string; stage?: 'building' }>) => {
         if (job !== generation.current) return
         if (event.data.stage === 'building') { setStatus('building'); return }
         if (event.data.error) {
           setError(`Plan analysis failed: ${event.data.error}`); setStatus('failed')
-          activeWorker.terminate(); worker.current = null
+          activeWorker.terminate(); worker.current = null; finish()
           return
         }
         const result = worldInterpretation(event.data, sourceSize, calibration)
+        if (sourceSize.id) publishLocalEvidence(sourceSize.id, sourceSize, result.calibration, result.walls, result.features, result.details)
         if (result.calibration.method === 'auto') onAutoScale?.(result.calibration)
         setCandidates(result.walls); setFeatures(result.features); setDetails(result.details); setReport(result.report)
         setDetailChoices(Object.fromEntries(result.details.map(detail => [detail.id, detail.kind === 'stair'])))
-        setStatus('completed'); activeWorker.terminate(); worker.current = null
+        setStatus('completed'); activeWorker.terminate(); worker.current = null; finish(result)
       }
-      activeWorker.onerror = () => { if (job === generation.current) { setError('Plan analysis failed in the worker.'); setStatus('failed'); activeWorker.terminate(); worker.current = null } }
+      activeWorker.onerror = () => { if (job === generation.current) { setError('Plan analysis failed in the worker.'); setStatus('failed'); activeWorker.terminate(); worker.current = null; finish() } }
       activeWorker.postMessage({ pixels: data.data, width: data.width, height: data.height }, [data.data.buffer])
+      })
     } catch (cause) { if (job === generation.current) { setError((cause as Error).message); setStatus('failed') } }
   }, [])
   return useMemo(() => ({ status, candidates, setCandidates, openings, setOpeningChoices, rooms, spaceChoices, setSpaceChoices, selectedSpace, setSelectedSpace,

@@ -18,9 +18,8 @@ export function levelBoundsPoints(level: Level, levels?: Level[]): Point[] {
   }
   for (const section of level.seatingSections || []) {
     const dx = section.end.x - section.start.x, dz = section.end.z - section.start.z, length = Math.hypot(dx, dz) || 1
-    const center = { x: (section.start.x + section.end.x) / 2, z: (section.start.z + section.end.z) / 2 }
-    const sign = (-dz * (section.outward.x - center.x) + dx * (section.outward.z - center.z)) >= 0 ? 1 : -1
-    points.push(section.start, section.end, ...[section.start, section.end].map(p => ({ x: p.x - dz / length * sign * section.rows * section.rowDepth, z: p.z + dx / length * sign * section.rows * section.rowDepth })))
+    const outwardLength=Math.hypot(section.outward.x,section.outward.z)||1,growth=(section.rowWidthGrowth||0)*(section.rows-1)/2
+    points.push(section.start,section.end,...[section.start,section.end].map((p,index)=>({x:p.x+section.outward.x/outwardLength*section.rows*section.rowDepth+dx/length*growth*(index?1:-1),z:p.z+section.outward.z/outwardLength*section.rows*section.rowDepth+dz/length*growth*(index?1:-1)})))
   }
   for (const door of level.doors) points.push(...(verandaGeometry(level, door)?.polygon || []))
   points.push(...(level.furniture || []).flatMap(furnitureFootprint))

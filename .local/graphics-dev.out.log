@@ -31,3 +31,293 @@
 14:27:38 [vite] (client) hmr update /src/rendering/BuildingRoofs.tsx
 14:27:41 [vite] (client) hmr update /src/rendering/Viewer.tsx
 14:28:05 [vite] (client) page reload src/geometry/arenaCanopyBuffers.ts
+14:31:54 [vite] (client) hmr update /src/rendering/RenderResources.tsx
+14:31:54 [vite] (client) hmr invalidate /src/rendering/RenderResources.tsx Could not Fast Refresh ("RenderResources" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+14:31:54 [vite] (client) hmr update /src/rendering/GraphicsRuntime.tsx, /src/rendering/SeatingMesh.tsx, /src/rendering/EntityInstances.tsx
+14:31:54 [vite] (client) hmr invalidate /src/rendering/GraphicsRuntime.tsx Could not Fast Refresh ("GraphicsSettings" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+14:31:54 [vite] (client) hmr update /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/SiteEnvironment.tsx, /src/rendering/SeatingMesh.tsx, /src/rendering/CachedEnvironment.tsx, /src/rendering/PresentationPipeline.tsx, /src/rendering/ArenaCanopy.tsx
+14:31:54 [vite] (client) hmr invalidate /src/rendering/EntityInstances.tsx Could not Fast Refresh ("spatialBatches" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+14:31:54 [vite] (client) hmr update /src/rendering/ArchitectureFacade.tsx, /src/rendering/ColumnInstances.tsx, /src/rendering/SitePropInstances.tsx, /src/rendering/RailingInstances.tsx, /src/rendering/ArenaSkylights.tsx
+14:31:58 [vite] (client) hmr update /src/rendering/EntityInstances.tsx
+14:32:04 [vite] (client) hmr invalidate /src/rendering/ArchitectureFacade.tsx Could not Fast Refresh ("batchedFacadeIds" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+14:32:04 [vite] (client) hmr update /src/rendering/BuildingScene.tsx
+14:36:23 [vite] (client) hmr update /src/rendering/PresentationPipeline.tsx
+14:50:31 [vite] (client) hmr update /src/cloud/CloudRoute.tsx, /src/cloud/CloudDashboard.tsx, /src/cloud/RecoverDrafts.tsx, /src/cloud/BackendEntry.tsx, /src/features/landing/LandingDemo.tsx, /src/cloud/CloudWorkspace.tsx, /src/app/Workspace.tsx, /src/features/plan/PlanEditor.tsx, /src/cloud/WorkspaceDock.tsx, /src/app/WorkspaceHeader.tsx, /src/features/inspector/Inspector.tsx, /src/features/plan/OpeningLayer.tsx, /src/features/levels/LevelManager.tsx, /src/features/plan/ElementHandles.tsx, /src/furniture/FurnitureLayer.tsx and 36 more
+14:50:44 [vite] (client) hmr update /src/cloud/SourcePanel.tsx
+14:53:19 [vite] (client) hmr update /src/rendering/GraphicsRuntime.tsx
+14:53:24 [vite] (client) hmr update /src/rendering/Viewer.tsx
+14:53:28 [vite] (client) hmr update /src/rendering/PresentationPipeline.tsx
+14:53:32 [vite] (client) hmr update /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/SiteEnvironment.tsx, /src/rendering/SeatingMesh.tsx, /src/rendering/CachedEnvironment.tsx, /src/rendering/PresentationPipeline.tsx, /src/rendering/ArenaCanopy.tsx
+14:54:48 [vite] (client) hmr update /src/rendering/SeatingMesh.tsx
+14:54:52 [vite] (client) hmr update /src/rendering/RenderResources.tsx
+14:54:53 [vite] (client) hmr invalidate /src/rendering/RenderResources.tsx Could not Fast Refresh ("RenderResources" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+14:54:53 [vite] (client) hmr update /src/rendering/GraphicsRuntime.tsx, /src/rendering/SeatingMesh.tsx, /src/rendering/EntityInstances.tsx
+14:54:53 [vite] (client) hmr invalidate /src/rendering/GraphicsRuntime.tsx Could not Fast Refresh ("GraphicsSettings" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+14:54:53 [vite] (client) hmr update /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/SiteEnvironment.tsx, /src/rendering/SeatingMesh.tsx, /src/rendering/CachedEnvironment.tsx, /src/rendering/PresentationPipeline.tsx, /src/rendering/ArenaCanopy.tsx
+14:54:53 [vite] (client) hmr invalidate /src/rendering/EntityInstances.tsx Could not Fast Refresh ("spatialBatches" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+14:54:53 [vite] (client) hmr update /src/rendering/ArchitectureFacade.tsx, /src/rendering/ColumnInstances.tsx, /src/rendering/SitePropInstances.tsx, /src/rendering/RailingInstances.tsx, /src/rendering/ArenaSkylights.tsx
+14:55:55 [vite] (client) hmr update /src/rendering/EntityInstances.tsx
+14:55:55 [vite] (client) hmr invalidate /src/rendering/EntityInstances.tsx Could not Fast Refresh ("spatialBatches" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+14:55:55 [vite] (client) hmr update /src/rendering/ArchitectureFacade.tsx, /src/rendering/ColumnInstances.tsx, /src/rendering/SitePropInstances.tsx, /src/rendering/RailingInstances.tsx, /src/rendering/ArenaSkylights.tsx
+14:55:55 [vite] (client) hmr invalidate /src/rendering/ArchitectureFacade.tsx Could not Fast Refresh ("batchedFacadeIds" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+14:55:55 [vite] (client) hmr update /src/rendering/BuildingScene.tsx
+14:55:59 [vite] (client) hmr update /src/rendering/EntityInstances.tsx
+14:55:59 [vite] (client) hmr invalidate /src/rendering/EntityInstances.tsx Could not Fast Refresh ("spatialBatches" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+14:55:59 [vite] (client) hmr update /src/rendering/ArchitectureFacade.tsx, /src/rendering/ColumnInstances.tsx, /src/rendering/SitePropInstances.tsx, /src/rendering/RailingInstances.tsx, /src/rendering/ArenaSkylights.tsx
+14:55:59 [vite] (client) hmr invalidate /src/rendering/ArchitectureFacade.tsx Could not Fast Refresh ("batchedFacadeIds" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+14:55:59 [vite] (client) hmr update /src/rendering/BuildingScene.tsx
+14:57:25 [vite] (client) hmr update /src/rendering/EntityInstances.tsx
+14:57:25 [vite] (client) hmr invalidate /src/rendering/EntityInstances.tsx Could not Fast Refresh ("spatialBatches" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+14:57:25 [vite] (client) hmr update /src/rendering/ArchitectureFacade.tsx, /src/rendering/ColumnInstances.tsx, /src/rendering/SitePropInstances.tsx, /src/rendering/RailingInstances.tsx, /src/rendering/ArenaSkylights.tsx
+14:57:25 [vite] (client) hmr invalidate /src/rendering/ArchitectureFacade.tsx Could not Fast Refresh ("batchedFacadeIds" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+14:57:25 [vite] (client) hmr update /src/rendering/BuildingScene.tsx
+14:57:29 [vite] (client) hmr update /src/rendering/SeatingMesh.tsx
+17:44:11 [vite] (client) hmr update /src/cloud/CloudDashboard.tsx, /src/cloud/CloudRoute.tsx, /src/cloud/CloudWorkspace.tsx, /src/cloud/AccountPanel.tsx, /src/cloud/BackendEntry.tsx, /src/cloud/CollaborationPanel.tsx, /src/cloud/ConflictReview.tsx, /src/cloud/RecoverDrafts.tsx, /src/cloud/CloudTools.tsx, /src/cloud/SourcePanel.tsx, /src/cloud/EvidenceControls.tsx, /src/cloud/ProposalPreview.tsx, /src/cloud/ReconstructionProgress.tsx, /src/cloud/ProposalReview.tsx, /src/cloud/ProposalModelPreview.tsx and 1 more
+17:44:11 [vite] (client) page reload index.html
+17:44:11 [vite] (client) hmr update /src/App.tsx
+17:44:11 [vite] (client) hmr update /src/app/Workspace.tsx
+17:44:12 [vite] (client) hmr update /src/App.tsx
+17:44:12 [vite] (client) hmr update /src/app/Workspace.tsx
+17:44:12 [vite] (client) hmr update /src/app/WorkspaceHeader.tsx
+17:44:12 [vite] (client) hmr update /src/app/WorkspaceStatus.tsx
+17:44:12 [vite] (client) hmr update /src/App.css
+17:44:12 [vite] (client) hmr update /src/App.css
+17:44:12 [vite] (client) hmr update /src/cloud/AccountPanel.tsx
+17:44:13 [vite] (client) hmr update /src/features/landing/LandingDemo.tsx, /src/cloud/CloudWorkspace.tsx, /src/app/Workspace.tsx, /src/features/plan/PlanEditor.tsx, /src/cloud/WorkspaceDock.tsx, /src/app/WorkspaceHeader.tsx, /src/features/inspector/Inspector.tsx, /src/features/plan/OpeningLayer.tsx, /src/features/levels/LevelManager.tsx, /src/features/plan/ElementHandles.tsx, /src/furniture/FurnitureLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/ElementGizmo.tsx, /src/rendering/SoftwareElementHandles.tsx and 28 more
+17:44:13 [vite] (client) hmr update /src/app/Workspace.tsx, /src/cloud/EvidenceControls.tsx
+17:44:13 [vite] (client) hmr update /src/features/inspector/Inspector.tsx
+17:44:13 [vite] (client) hmr update /src/App.css
+17:44:13 [vite] (client) hmr update /src/cloud/AccountPanel.tsx
+17:44:13 [vite] (client) hmr update /src/cloud/CandidateDetails.tsx
+17:44:13 [vite] (client) hmr update /src/cloud/CloudDashboard.tsx
+17:44:13 [vite] (client) hmr update /src/cloud/CloudRoute.tsx
+17:44:13 [vite] (client) hmr update /src/cloud/CloudTools.tsx
+17:44:13 [vite] (client) hmr update /src/cloud/CloudWorkspace.tsx
+17:44:13 [vite] (client) hmr update /src/cloud/ProposalPreview.tsx
+17:44:13 [vite] (client) hmr update /src/cloud/ProposalReview.tsx
+17:44:13 [vite] (client) hmr update /src/cloud/SourcePanel.tsx
+17:44:13 [vite] (client) hmr update /src/cloud/CloudRoute.tsx, /src/cloud/CloudDashboard.tsx, /src/cloud/CloudWorkspace.tsx, /src/cloud/AccountPanel.tsx, /src/cloud/BackendEntry.tsx, /src/cloud/CollaborationPanel.tsx
+17:44:13 [vite] (client) hmr update /src/cloud/CloudDashboard.tsx, /src/cloud/CloudRoute.tsx, /src/cloud/CloudWorkspace.tsx, /src/cloud/AccountPanel.tsx, /src/cloud/BackendEntry.tsx, /src/cloud/CollaborationPanel.tsx, /src/cloud/RecoverDrafts.tsx, /src/cloud/CloudTools.tsx, /src/cloud/SourcePanel.tsx, /src/cloud/EvidenceControls.tsx, /src/cloud/ProposalPreview.tsx, /src/cloud/ReconstructionProgress.tsx, /src/cloud/ProposalReview.tsx, /src/cloud/ProposalModelPreview.tsx, /src/cloud/DesignReference.tsx
+17:44:13 [vite] (client) hmr update /src/cloud/cloud.css
+17:44:13 [vite] (client) hmr update /src/cloud/AccountPanel.tsx, /src/cloud/BackendEntry.tsx
+17:44:13 [vite] (client) hmr update /src/cloud/CloudWorkspace.tsx
+17:44:13 [vite] (client) hmr update /src/cloud/CloudRoute.tsx, /src/cloud/CloudDashboard.tsx, /src/cloud/RecoverDrafts.tsx, /src/cloud/BackendEntry.tsx
+17:44:13 [vite] (client) hmr update /src/cloud/CloudWorkspace.tsx
+17:44:13 [vite] (client) hmr update /src/cloud/CloudRoute.tsx, /src/cloud/CloudDashboard.tsx, /src/cloud/RecoverDrafts.tsx, /src/cloud/BackendEntry.tsx, /src/cloud/CloudWorkspace.tsx, /src/cloud/SourcePanel.tsx, /src/cloud/EvidenceControls.tsx, /src/cloud/ProposalPreview.tsx
+17:44:13 [vite] (client) hmr update /src/cloud/CloudWorkspace.tsx
+17:44:14 [vite] (client) hmr update /src/features/plan/OpeningLayer.tsx
+17:44:14 [vite] (client) hmr update /src/features/projects/Dashboard.tsx
+17:44:14 [vite] (client) hmr update /src/features/plan/PlanEditor.tsx, /src/features/plan/ElementHandles.tsx, /src/features/plan/FencePlanLayer.tsx, /src/furniture/FurnitureLayer.tsx, /src/rendering/BuildingScene.tsx
+17:44:14 [vite] (client) hmr update /src/rendering/BuildingRoofs.tsx
+17:44:14 [vite] (client) hmr update /src/features/landing/LandingDemo.tsx, /src/cloud/CloudWorkspace.tsx, /src/app/Workspace.tsx, /src/features/plan/PlanEditor.tsx, /src/cloud/WorkspaceDock.tsx, /src/app/WorkspaceHeader.tsx, /src/features/inspector/Inspector.tsx, /src/features/plan/OpeningLayer.tsx, /src/features/levels/LevelManager.tsx, /src/features/plan/ElementHandles.tsx, /src/furniture/FurnitureLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/ElementGizmo.tsx, /src/rendering/SoftwareElementHandles.tsx and 21 more
+17:44:14 [vite] (client) page reload src/main.tsx
+17:44:14 [vite] (client) hmr update /src/features/analysis/BuildingAnalysis.tsx, /src/features/structure/StructurePanel.tsx, /src/features/inspector/StructureInspector.tsx, /src/features/analysis/AnalysisPanel.tsx, /src/features/reconstruction/SpaceReview.tsx, /src/rendering/RoomSurface.tsx, /src/rendering/SoftwarePreview.tsx, /src/rendering/BuildingRoofs.tsx
+17:44:14 [vite] (client) hmr update /src/app/Workspace.tsx, /src/features/landing/LandingDemo.tsx, /src/cloud/CloudWorkspace.tsx, /src/features/plan/PlanEditor.tsx, /src/cloud/WorkspaceDock.tsx, /src/app/WorkspaceHeader.tsx, /src/features/inspector/Inspector.tsx, /src/features/plan/OpeningLayer.tsx, /src/features/levels/LevelManager.tsx, /src/features/plan/ElementHandles.tsx, /src/furniture/FurnitureLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/ElementGizmo.tsx, /src/rendering/SoftwareElementHandles.tsx and 28 more
+17:44:14 [vite] (client) hmr update /src/rendering/BuildingRoofs.tsx
+17:44:14 [vite] (client) hmr update /src/features/landing/LandingDemo.tsx, /src/cloud/CloudWorkspace.tsx, /src/app/Workspace.tsx, /src/features/plan/PlanEditor.tsx, /src/cloud/WorkspaceDock.tsx, /src/app/WorkspaceHeader.tsx, /src/features/inspector/Inspector.tsx, /src/features/plan/OpeningLayer.tsx, /src/features/levels/LevelManager.tsx, /src/features/plan/ElementHandles.tsx, /src/furniture/FurnitureLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/ElementGizmo.tsx, /src/rendering/SoftwareElementHandles.tsx and 28 more
+17:44:14 [vite] (client) hmr update /src/rendering/GraphicsBenchmark.tsx
+17:44:14 [vite] (client) hmr update /src/cloud/CloudRoute.tsx, /src/cloud/CloudDashboard.tsx, /src/cloud/RecoverDrafts.tsx, /src/cloud/BackendEntry.tsx, /src/features/landing/LandingDemo.tsx, /src/cloud/CloudWorkspace.tsx, /src/app/Workspace.tsx, /src/features/plan/PlanEditor.tsx, /src/cloud/WorkspaceDock.tsx, /src/app/WorkspaceHeader.tsx, /src/features/inspector/Inspector.tsx, /src/features/plan/OpeningLayer.tsx, /src/features/levels/LevelManager.tsx, /src/features/plan/ElementHandles.tsx, /src/furniture/FurnitureLayer.tsx and 37 more
+17:44:14 [vite] (client) hmr update /src/app/Workspace.tsx, /src/cloud/EvidenceControls.tsx
+17:44:14 [vite] (client) hmr update /src/features/inspector/Inspector.tsx
+17:44:14 [vite] (client) hmr update /src/features/inspector/RoofControls.tsx
+17:44:14 [vite] (client) hmr update /src/features/inspector/RoofControls.tsx
+17:44:14 [vite] (client) hmr update /src/features/plan/OpeningLayer.tsx
+17:44:14 [vite] (client) hmr update /src/features/plan/SeatingLayer.tsx
+17:44:14 [vite] (client) hmr update /src/features/projects/Dashboard.tsx
+17:44:14 [vite] (client) hmr update /src/features/plan/PlanEditor.tsx, /src/features/plan/ElementHandles.tsx, /src/features/plan/FencePlanLayer.tsx, /src/furniture/FurnitureLayer.tsx, /src/rendering/BuildingScene.tsx
+17:44:14 [vite] (client) hmr update /src/features/analysis/BuildingAnalysis.tsx, /src/features/structure/StructurePanel.tsx, /src/features/inspector/StructureInspector.tsx, /src/features/analysis/AnalysisPanel.tsx, /src/features/reconstruction/SpaceReview.tsx, /src/rendering/RoomSurface.tsx, /src/rendering/SoftwarePreview.tsx, /src/rendering/VerandaMesh.tsx, /src/rendering/RoofAssembly.tsx
+17:44:14 [vite] vite.config.ts changed, restarting server...
+17:44:14 [vite] (client) hmr update /src/rendering/BuildingRoofs.tsx
+17:44:14 [vite] (client) hmr update /src/rendering/BuildingScene.tsx
+17:44:14 [vite] (client) hmr update /src/rendering/DoorMesh.tsx
+17:44:14 [vite] (client) hmr update /src/rendering/ElementGizmo.tsx
+17:44:14 [vite] (client) hmr update /src/rendering/InspectionCamera.tsx
+17:44:14 [vite] (client) hmr update /src/rendering/RoofAssembly.tsx
+17:44:14 [vite] (client) hmr update /src/rendering/SiteEnvironment.tsx
+17:44:14 [vite] (client) hmr update /src/rendering/RoomSurface.tsx
+17:44:14 [vite] (client) hmr update /src/rendering/Viewer.tsx
+17:44:14 [vite] (client) hmr update /src/rendering/SeatingMesh.tsx
+17:44:14 [vite] (client) hmr update /src/rendering/SoftwarePreview.tsx
+17:44:14 [vite] (client) hmr update /src/features/landing/LandingDemo.tsx, /src/cloud/CloudWorkspace.tsx, /src/app/Workspace.tsx, /src/features/plan/PlanEditor.tsx, /src/cloud/WorkspaceDock.tsx, /src/app/WorkspaceHeader.tsx, /src/features/inspector/Inspector.tsx, /src/features/plan/OpeningLayer.tsx, /src/features/levels/LevelManager.tsx, /src/features/plan/ElementHandles.tsx, /src/furniture/FurnitureLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/ElementGizmo.tsx, /src/rendering/SoftwareElementHandles.tsx and 21 more
+17:44:16 [vite] server restarted.
+17:46:35 [vite] (client) hmr update /src/cloud/CloudRoute.tsx, /src/cloud/CloudWorkspace.tsx, /src/cloud/CloudDashboard.tsx, /src/cloud/AccountPanel.tsx, /src/cloud/CollaborationPanel.tsx, /src/cloud/ConflictReview.tsx, /src/cloud/CloudTools.tsx, /src/cloud/SourcePanel.tsx, /src/cloud/ProposalPreview.tsx, /src/cloud/ProposalReview.tsx
+17:46:35 [vite] (client) page reload index.html
+17:46:35 [vite] (client) hmr update /src/app/Workspace.tsx
+17:46:35 [vite] (client) hmr update /src/App.tsx
+17:46:35 [vite] (client) hmr update /src/cloud/AccountPanel.tsx
+17:46:35 [vite] (client) hmr update /src/app/Workspace.tsx
+17:46:35 [vite] (client) hmr update /src/app/WorkspaceHeader.tsx
+17:46:36 [vite] (client) hmr update /src/app/WorkspaceStatus.tsx
+17:46:36 [vite] (client) hmr update /src/App.css
+17:46:36 [vite] (client) hmr update /src/App.css
+17:46:37 [vite] (client) hmr update /src/cloud/AccountPanel.tsx
+17:46:37 [vite] (client) hmr update /src/cloud/CandidateDetails.tsx
+17:46:37 [vite] (client) hmr update /src/cloud/CloudDashboard.tsx
+17:46:37 [vite] (client) hmr update /src/cloud/CloudRoute.tsx
+17:46:37 [vite] (client) hmr update /src/cloud/CloudTools.tsx
+17:46:37 [vite] (client) hmr update /src/cloud/CloudWorkspace.tsx
+17:46:37 [vite] (client) hmr update /src/cloud/ProposalPreview.tsx
+17:46:37 [vite] (client) hmr update /src/cloud/ProposalReview.tsx
+17:46:37 [vite] (client) hmr update /src/cloud/SourcePanel.tsx
+17:46:37 [vite] (client) hmr update /src/cloud/CloudRoute.tsx, /src/cloud/CloudWorkspace.tsx, /src/cloud/CloudDashboard.tsx, /src/cloud/AccountPanel.tsx, /src/cloud/CollaborationPanel.tsx
+17:46:37 [vite] (client) hmr update /src/cloud/CloudRoute.tsx, /src/cloud/CloudWorkspace.tsx, /src/cloud/CloudDashboard.tsx, /src/cloud/AccountPanel.tsx, /src/cloud/CollaborationPanel.tsx, /src/cloud/CloudTools.tsx, /src/cloud/SourcePanel.tsx, /src/cloud/ProposalPreview.tsx, /src/cloud/ProposalReview.tsx
+17:46:37 [vite] (client) hmr update /src/cloud/cloud.css
+17:46:37 [vite] (client) hmr update /src/app/Workspace.tsx, /src/features/structure/ArchitecturalDetailsPanel.tsx, /src/app/WorkspaceHeader.tsx, /src/features/levels/LevelManager.tsx, /src/features/plan/PlanEditor.tsx, /src/furniture/FurniturePanel.tsx, /src/features/structure/StructurePanel.tsx, /src/features/inspector/Inspector.tsx, /src/cloud/CloudWorkspace.tsx, /src/features/landing/LandingDemo.tsx, /src/features/plan/OpeningLayer.tsx, /src/features/plan/FencePlanLayer.tsx, /src/furniture/FurnitureLayer.tsx and 17 more
+17:46:37 [vite] (client) hmr update /src/app/Workspace.tsx
+17:46:37 [vite] (client) hmr update /src/features/inspector/Inspector.tsx
+17:46:37 [vite] (client) hmr update /src/features/plan/OpeningLayer.tsx
+17:46:37 [vite] (client) hmr update /src/features/projects/Dashboard.tsx
+17:46:37 [vite] (client) hmr update /src/features/plan/PlanEditor.tsx, /src/features/plan/FencePlanLayer.tsx, /src/furniture/FurnitureLayer.tsx, /src/features/plan/ElementHandles.tsx
+17:46:37 [vite] (client) hmr update /src/App.tsx
+17:46:37 [vite] (client) hmr update /src/app/Workspace.tsx, /src/features/structure/ArchitecturalDetailsPanel.tsx, /src/app/WorkspaceHeader.tsx, /src/features/levels/LevelManager.tsx, /src/features/plan/PlanEditor.tsx, /src/furniture/FurniturePanel.tsx, /src/features/structure/StructurePanel.tsx, /src/features/inspector/Inspector.tsx, /src/cloud/CloudWorkspace.tsx, /src/features/landing/LandingDemo.tsx, /src/features/plan/OpeningLayer.tsx, /src/features/plan/FencePlanLayer.tsx, /src/furniture/FurnitureLayer.tsx and 13 more
+17:46:37 [vite] (client) hmr update /src/cloud/cloud.css
+17:46:37 [vite] (client) hmr update /src/features/projects/Dashboard.tsx, /src/cloud/CloudRoute.tsx, /src/cloud/AccountPanel.tsx
+17:46:37 [vite] (client) hmr update /src/cloud/CloudWorkspace.tsx
+17:46:37 [vite] (client) hmr update /src/cloud/CloudWorkspace.tsx, /src/cloud/CloudDashboard.tsx
+17:46:37 [vite] (client) hmr update /src/cloud/CloudWorkspace.tsx
+17:46:37 [vite] (client) hmr update /src/cloud/CloudWorkspace.tsx, /src/cloud/CloudDashboard.tsx, /src/cloud/SourcePanel.tsx, /src/cloud/ProposalPreview.tsx
+17:46:37 [vite] (client) hmr update /src/cloud/CloudWorkspace.tsx
+17:46:37 [vite] (client) hmr update /src/app/Workspace.tsx, /src/features/structure/ArchitecturalDetailsPanel.tsx, /src/app/WorkspaceHeader.tsx, /src/features/levels/LevelManager.tsx, /src/features/plan/PlanEditor.tsx, /src/furniture/FurniturePanel.tsx, /src/features/structure/StructurePanel.tsx, /src/features/inspector/Inspector.tsx, /src/cloud/CloudWorkspace.tsx, /src/features/landing/LandingDemo.tsx, /src/features/plan/OpeningLayer.tsx, /src/features/plan/FencePlanLayer.tsx, /src/furniture/FurnitureLayer.tsx and 17 more
+17:46:37 [vite] (client) hmr update /src/features/analysis/BuildingAnalysis.tsx, /src/features/structure/StructurePanel.tsx, /src/features/reconstruction/SpaceReview.tsx, /src/features/analysis/AnalysisPanel.tsx, /src/features/inspector/StructureInspector.tsx
+17:46:37 [vite] (client) hmr update /src/app/Workspace.tsx, /src/features/structure/ArchitecturalDetailsPanel.tsx, /src/app/WorkspaceHeader.tsx, /src/features/levels/LevelManager.tsx, /src/features/plan/PlanEditor.tsx, /src/furniture/FurniturePanel.tsx, /src/features/structure/StructurePanel.tsx, /src/features/inspector/Inspector.tsx, /src/cloud/CloudWorkspace.tsx, /src/features/landing/LandingDemo.tsx, /src/features/plan/OpeningLayer.tsx, /src/features/plan/FencePlanLayer.tsx, /src/furniture/FurnitureLayer.tsx and 17 more
+17:46:37 [vite] (client) hmr update /src/features/landing/LandingDemo.tsx, /src/cloud/CloudDashboard.tsx, /src/app/Workspace.tsx, /src/features/structure/ArchitecturalDetailsPanel.tsx, /src/app/WorkspaceHeader.tsx, /src/features/levels/LevelManager.tsx, /src/features/plan/PlanEditor.tsx, /src/furniture/FurniturePanel.tsx, /src/features/structure/StructurePanel.tsx, /src/features/inspector/Inspector.tsx, /src/cloud/CloudWorkspace.tsx, /src/features/plan/OpeningLayer.tsx, /src/features/plan/FencePlanLayer.tsx and 19 more
+17:46:37 [vite] (client) hmr update /src/app/Workspace.tsx
+17:46:37 [vite] (client) hmr update /src/features/inspector/RoofControls.tsx
+17:46:37 [vite] (client) page reload src/main.tsx
+17:46:37 [vite] (client) hmr update /src/features/plan/SeatingLayer.tsx
+17:46:37 [vite] (client) hmr update /src/features/analysis/BuildingAnalysis.tsx, /src/features/structure/StructurePanel.tsx, /src/features/reconstruction/SpaceReview.tsx, /src/features/analysis/AnalysisPanel.tsx, /src/features/inspector/StructureInspector.tsx
+17:46:37 [vite] vite.config.ts changed, restarting server...
+17:46:38 [vite] server restarted.
+17:47:09 [vite] (client) page reload index.html
+17:47:10 [vite] (client) page reload index.html
+17:47:11 [vite] vite.config.ts changed, restarting server...
+17:47:11 [vite] server restarted.
+17:47:21 [vite] (client) page reload index.html
+17:47:22 [vite] changed tsconfig file detected: C:/Users/Dell/Desktop/projects/erect3d/client/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+17:47:22 [vite] vite.config.ts changed, restarting server...
+17:47:22 [vite] server restarted.
+17:47:28 [vite] (client) page reload index.html
+17:49:24 [vite] .env.local changed, restarting server...
+17:49:24 [vite] (client) page reload index.html
+17:49:24 [vite] server restarted.
+17:49:40 [vite] (client) page reload index.html
+18:05:09 [vite] (client) page reload index.html
+18:05:13 [vite] changed tsconfig file detected: C:/Users/Dell/Desktop/projects/erect3d/client/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+18:08:36 [vite] changed tsconfig file detected: C:/Users/Dell/Desktop/projects/erect3d/client/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+18:08:36 [vite] (client) page reload index.html
+18:10:54 [vite] (client) page reload index.html
+18:10:59 [vite] changed tsconfig file detected: C:/Users/Dell/Desktop/projects/erect3d/client/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+18:13:19 [vite] (client) page reload index.html
+19:19:15 [vite] (client) [optimizer] bundling dependencies...
+19:19:16 [vite] (client) dependencies optimized: pdfjs-dist, react-dom, react-dom/client, react-icons/fi, react, react/jsx-dev-runtime, zustand
+19:19:16 [vite] (client) optimized dependencies changed. reloading
+19:27:22 [vite] (client) page reload src/cloud/localEvidence.ts
+19:27:26 [vite] (client) dependency optimized: zod
+19:27:26 [vite] (client) optimized dependencies changed. reloading
+19:29:41 [vite] (client) page reload src/cloud/localEvidence.ts
+19:29:41 [vite] (client) page reload src/cloud/EvidenceControls.tsx
+19:29:41 [vite] (client) page reload src/intelligence/provenance.ts
+19:29:42 [vite] (client) page reload src/cloud/DesignReview.tsx
+19:29:42 [vite] (client) page reload src/cloud/ProposalModelPreview.tsx
+19:29:42 [vite] (client) page reload src/intelligence/errors.ts
+19:29:42 [vite] (client) page reload src/intelligence/designCompletion.ts
+19:29:42 [vite] (client) page reload C:/Users/Dell/Desktop/projects/erect3d/api/src/modules/plan-analysis/quality.ts
+19:29:42 [vite] (client) page reload src/cloud/BackendEntry.tsx
+19:29:42 [vite] (client) page reload src/cloud/RecoverDrafts.tsx
+19:29:42 [vite] (client) page reload src/cloud/offline.ts
+19:29:42 [vite] (client) page reload src/cloud/analysisStatus.ts
+19:29:42 [vite] (client) page reload src/cloud/merge.ts
+19:29:42 [vite] (client) page reload src/cloud/analysisEvents.ts
+19:29:42 [vite] (client) page reload C:/Users/Dell/Desktop/projects/erect3d/api/client/compact-diff.ts
+19:29:42 [vite] (client) page reload C:/Users/Dell/Desktop/projects/erect3d/api/src/contracts/vision.ts
+19:29:42 [vite] (client) page reload src/domain/architectureTypes.ts
+19:29:42 [vite] (client) page reload src/geometry/arenaLayout.ts
+19:29:42 [vite] (client) page reload src/features/inspector/ArchitectureControls.tsx
+19:29:42 [vite] (client) page reload src/cloud/analysisStatus.ts
+19:29:42 [vite] (client) page reload src/cloud/watchAnalysis.ts
+19:29:42 [vite] (client) page reload src/cloud/ReconstructionProgress.tsx
+19:29:42 [vite] (client) page reload src/cloud/WorkspaceDock.tsx
+19:29:42 [vite] (client) page reload C:/Users/Dell/Desktop/projects/erect3d/api/client/compact-diff.ts
+19:29:42 [vite] (client) page reload C:/Users/Dell/Desktop/projects/erect3d/api/src/contracts/vision.ts
+19:29:42 [vite] (client) page reload src/domain/architectureTypes.ts
+19:29:42 [vite] (client) page reload src/domain/arenaParts.ts
+19:29:42 [vite] (client) page reload src/domain/arenaTowers.ts
+19:29:42 [vite] (client) page reload src/domain/arenaArchitecture.ts
+19:29:42 [vite] (client) page reload src/geometry/arenaLayout.ts
+19:29:42 [vite] (client) page reload src/features/inspector/ArchitectureControls.tsx
+19:29:42 [vite] (client) page reload src/cloud/DesignReference.tsx
+19:30:40 [vite] (client) page reload src/cloud/localEvidence.ts
+19:30:40 [vite] (client) page reload src/cloud/EvidenceControls.tsx
+19:30:40 [vite] (client) page reload src/cloud/ProposalModelPreview.tsx
+19:30:40 [vite] (client) page reload src/cloud/DesignReview.tsx
+19:30:40 [vite] (client) page reload src/intelligence/provenance.ts
+19:30:40 [vite] (client) page reload src/intelligence/errors.ts
+19:30:40 [vite] (client) page reload src/intelligence/designCompletion.ts
+19:30:40 [vite] (client) page reload src/cloud/BackendEntry.tsx
+19:30:40 [vite] (client) page reload src/cloud/analysisStatus.ts
+19:30:40 [vite] (client) page reload src/cloud/merge.ts
+19:30:40 [vite] (client) page reload src/cloud/offline.ts
+19:30:40 [vite] (client) page reload src/cloud/RecoverDrafts.tsx
+19:30:40 [vite] (client) page reload C:/Users/Dell/Desktop/projects/erect3d/api/src/modules/plan-analysis/quality.ts
+19:30:40 [vite] (client) page reload src/cloud/analysisEvents.ts
+19:30:40 [vite] (client) page reload src/cloud/watchAnalysis.ts
+19:30:40 [vite] (client) page reload src/cloud/ReconstructionProgress.tsx
+19:30:40 [vite] (client) page reload C:/Users/Dell/Desktop/projects/erect3d/api/client/compact-diff.ts
+19:30:40 [vite] (client) page reload C:/Users/Dell/Desktop/projects/erect3d/api/src/contracts/vision.ts
+19:30:40 [vite] (client) page reload src/domain/architectureTypes.ts
+19:30:40 [vite] (client) page reload src/geometry/arenaLayout.ts
+19:30:40 [vite] (client) page reload src/cloud/analysisEvents.ts
+19:30:40 [vite] (client) page reload src/cloud/ReconstructionProgress.tsx
+19:30:40 [vite] (client) page reload src/cloud/watchAnalysis.ts
+19:30:40 [vite] (client) page reload src/cloud/WorkspaceDock.tsx
+19:30:40 [vite] (client) page reload src/features/inspector/ArchitectureControls.tsx
+19:30:40 [vite] (client) page reload src/cloud/DesignReference.tsx
+19:30:40 [vite] (client) page reload C:/Users/Dell/Desktop/projects/erect3d/api/client/compact-diff.ts
+19:30:40 [vite] (client) page reload C:/Users/Dell/Desktop/projects/erect3d/api/src/contracts/vision.ts
+19:30:40 [vite] (client) page reload src/domain/architectureTypes.ts
+19:30:40 [vite] (client) page reload src/domain/arenaParts.ts
+19:30:40 [vite] (client) page reload src/domain/arenaTowers.ts
+19:30:40 [vite] (client) page reload src/domain/arenaArchitecture.ts
+19:30:40 [vite] (client) page reload src/geometry/arenaLayout.ts
+19:30:40 [vite] (client) page reload src/cloud/DesignReference.tsx
+19:30:40 [vite] (client) page reload src/features/inspector/ArchitectureControls.tsx
+19:33:57 [vite] (client) page reload src/cloud/localEvidence.ts
+19:33:57 [vite] (client) page reload src/cloud/EvidenceControls.tsx
+19:33:57 [vite] (client) page reload src/intelligence/provenance.ts
+19:33:57 [vite] (client) page reload src/cloud/DesignReview.tsx
+19:33:57 [vite] (client) page reload src/intelligence/errors.ts
+19:33:57 [vite] (client) page reload src/intelligence/designCompletion.ts
+19:33:57 [vite] (client) page reload src/cloud/ProposalModelPreview.tsx
+19:33:57 [vite] (client) page reload src/cloud/analysisStatus.ts
+19:33:57 [vite] (client) page reload src/cloud/BackendEntry.tsx
+19:33:57 [vite] (client) page reload src/cloud/merge.ts
+19:33:57 [vite] (client) page reload src/cloud/offline.ts
+19:33:57 [vite] (client) page reload src/cloud/RecoverDrafts.tsx
+19:33:57 [vite] (client) page reload C:/Users/Dell/Desktop/projects/erect3d/api/src/modules/plan-analysis/quality.ts
+19:33:57 [vite] (client) page reload src/cloud/analysisEvents.ts
+19:33:57 [vite] (client) page reload C:/Users/Dell/Desktop/projects/erect3d/api/client/compact-diff.ts
+19:33:57 [vite] (client) page reload C:/Users/Dell/Desktop/projects/erect3d/api/src/contracts/vision.ts
+19:33:57 [vite] (client) page reload src/domain/architectureTypes.ts
+19:33:57 [vite] (client) page reload src/geometry/arenaLayout.ts
+19:33:57 [vite] (client) page reload src/cloud/analysisEvents.ts
+19:33:57 [vite] (client) page reload src/cloud/ReconstructionProgress.tsx
+19:33:57 [vite] (client) page reload src/cloud/reconstructionState.ts
+19:33:57 [vite] (client) page reload src/cloud/watchAnalysis.ts
+19:33:57 [vite] (client) page reload src/cloud/WorkspaceDock.tsx
+19:33:57 [vite] (client) page reload src/features/inspector/ArchitectureControls.tsx
+19:33:57 [vite] (client) page reload C:/Users/Dell/Desktop/projects/erect3d/api/client/compact-diff.ts
+19:33:57 [vite] (client) page reload C:/Users/Dell/Desktop/projects/erect3d/api/src/contracts/vision.ts
+19:33:57 [vite] (client) page reload src/domain/architectureTypes.ts
+19:33:57 [vite] (client) page reload src/domain/arenaParts.ts
+19:33:57 [vite] (client) page reload src/domain/arenaTowers.ts
+19:33:57 [vite] (client) page reload src/domain/arenaArchitecture.ts
+19:33:57 [vite] (client) page reload src/geometry/arenaLayout.ts
+19:33:57 [vite] (client) page reload src/cloud/DesignReference.tsx
+19:33:57 [vite] (client) page reload src/features/inspector/ArchitectureControls.tsx
+19:34:26 [vite] (client) page reload src/intelligence/circulation.ts
+19:36:03 [vite] (client) page reload src/intelligence/convertProposal.ts
+19:38:48 [vite] (client) page reload src/domain/types.ts
+19:38:48 [vite] (client) page reload src/domain/elementGeometry.ts
+19:41:05 [vite] (client) page reload src/domain/types.ts
+19:42:18 [vite] (client) page reload src/features/inspector/Inspector.tsx
+19:48:23 [vite] (client) page reload src/features/plan/PlanEditor.tsx

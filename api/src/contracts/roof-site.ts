@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { color, id, name, point, polygon, positive, scalar } from './primitives'
 
 export const roof = z.object({
-  shape: z.enum(['hidden', 'gable', 'hip', 'shed', 'mansard', 'butterfly', 'terrace', 'cross-gable', 'cross-hip']),
+  shape: z.enum(['hidden', 'gable', 'hip', 'shed', 'mansard', 'butterfly', 'terrace', 'cross-gable', 'cross-hip', 'arena-vault']),
   material: z.enum(['concrete', 'standing-seam', 'corrugated', 'concrete-tile', 'long-span-metal',
     'stone-coated-metal', 'clay-tile', 'shingle', 'membrane', 'glass']),
   color, pitch: z.number().min(0).max(85), overhang: z.number().min(0).max(100),

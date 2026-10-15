@@ -1,34 +1,39 @@
-import { useState } from 'react'
+import { useEffect,useState } from 'react'
 import { Workspace } from '../app/Workspace'
 import { useProject } from '../state/project'
 import { useCloudProject } from './useCloudProject'
 import { useAccount, type User } from './account'
 import { CloudTools } from './CloudTools'
 import { ConflictReview } from './ConflictReview'
-import { downloadDocument } from './changes'
-import { localCopy } from './projectActions'
-const labels = { saved: 'Synced', pending: 'Device draft queued', syncing: 'Syncing…', offline: 'Offline · draft kept on device', conflict: 'Revision conflict · draft kept', blocked: 'Sync needs attention · draft kept' }
+import {WorkspaceDock} from './WorkspaceDock'
+import {useReconstruction} from './reconstructionState'
 export function CloudWorkspace({ user, projectId, navigate }: { user: User; projectId: string; navigate: (path: string) => void }) {
   const session = useCloudProject(user, projectId), project = useProject(state => state.project)
-  const [tools, setTools] = useState(false), [conflict, setConflict] = useState(false), [error, setError] = useState(''), [copying, setCopying] = useState(false)
+  const [tools, setTools] = useState(false), [conflict, setConflict] = useState(false), [error, setError] = useState('')
+  const [reconstructRequest,setReconstructRequest]=useState(0)
+  const reconstruction=useReconstruction(state=>state.current),reconstructing=reconstruction?.projectId===projectId && reconstruction.status==='pending'
   const generation = useAccount(state => state.generation)
+  const [offlineReady,setOfflineReady]=useState(false)
+  useEffect(()=>{
+    let alive=true
+    if ('serviceWorker' in navigator) void navigator.serviceWorker.ready.then(()=>{if(alive)setOfflineReady(true)})
+    return()=>{alive=false}
+  },[])
   const back = async () => {
-    try { useProject.getState().finishPreview(); await session.engine?.flush(); navigate('/cloud') }
+    try { useProject.getState().finishPreview(); await session.engine?.flush(); navigate('/projects') }
     catch (error) { setError((error as Error).message) }
   }
-  if (!project || !session.record) return <main className="cloud-page"><button onClick={() => navigate('/cloud')}>Cloud projects</button><p role={session.error ? 'alert' : 'status'}>{session.error || 'Opening private project…'}</p><button onClick={() => window.location.reload()}>Retry</button></main>
+  if (!project || !session.record) return <main className="cloud-page"><button onClick={() => navigate('/projects')}>Projects</button><p role={session.error ? 'alert' : 'status'}>{session.error || 'Opening project…'}</p><button onClick={() => window.location.reload()}>Retry</button></main>
   return <div className="cloud-workspace" key={generation}>
-    <div className="cloud-bar"><span role="status">{session.secondary ? 'Read only · editing in another tab' : labels[session.state]} · r{session.record.base.revision} · {session.record.base.role}</span>
-      {session.engine && <button onClick={() => void session.engine!.refresh().catch(error => setError(error.message))}>Retry sync</button>}
-      {session.record.conflict && session.engine && <button className="primary" onClick={() => setConflict(true)}>Review conflict</button>}
-      <button aria-expanded={tools} onClick={() => setTools(value => !value)}>Cloud tools{session.peers.length ? ` · ${session.peers.length} online` : ''}</button>
-      <details className="cloud-draft-menu"><summary>Device draft</summary><button onClick={() => downloadDocument(useProject.getState().previewBase || useProject.getState().project!)}>Export JSON</button>
-        <button disabled={copying} onClick={async () => { setCopying(true); setError(''); try { const id = await localCopy({ ...session.record!, draft: useProject.getState().previewBase || useProject.getState().project! }); navigate(`/${id}`) } catch (error) { setError((error as Error).message) } finally { setCopying(false) } }}>Save separate local copy</button></details>
-      {session.secondary && <button onClick={() => window.location.reload()}>Try editing in this tab</button>}
-    </div>
-    {(session.error || error) && <div className="cloud-error" role="alert">{error || session.error}</div>}
-    <Workspace project={project} back={() => { void back() }} />
-    {tools && <CloudTools session={session} close={() => setTools(false)} />}
+    <Workspace project={project} back={() => { void back() }} reconstructing={reconstructing}
+      statusContent={<WorkspaceDock session={session} projectId={projectId} offlineReady={offlineReady} error={error || session.error}
+        onError={setError} reviewConflict={()=>setConflict(true)} toolsOpen={tools}
+        toggleTools={()=>{setReconstructRequest(0);setTools(value=>!value)}} showDetails={()=>setTools(true)}/>}
+      onBackendAnalysis={()=>{
+      const current=useReconstruction.getState().current;if(current?.projectId===projectId && current.status==='pending')return
+      useReconstruction.getState().update({projectId,status:'pending',job_status:'queued',startedAt:Date.now(),message:'Preparing your floor plan…'});setReconstructRequest(value=>value+1)
+    }} />
+    <CloudTools session={session} open={tools} reconstructRequest={reconstructRequest} close={() => {setReconstructRequest(0);setTools(false)}} />
     {conflict && session.engine && session.record.conflict && <ConflictReview key={session.record.conflict.revision} engine={session.engine} close={() => setConflict(false)} />}
   </div>
 }

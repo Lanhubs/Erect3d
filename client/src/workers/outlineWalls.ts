@@ -2,8 +2,8 @@ import type { Candidate } from './wallScan'
 import { filterWallNetwork } from './wallNetwork'
 
 type Edge = { horizontal: boolean; fixed: number; start: number; end: number; stroke: number; last: number }
-export function scanWallEdges(mask: Uint8Array, width: number, height: number) {
-  const found: Edge[] = [], minimum = Math.max(16, Math.min(width, height) * .03)
+export function scanWallEdges(mask: Uint8Array, width: number, height: number, minimum = Math.max(16, Math.min(width, height) * .03)) {
+  const found: Edge[] = []
   for (const horizontal of [true, false]) {
     const count = horizontal ? height : width, span = horizontal ? width : height
     for (let fixed = 0; fixed < count; fixed++) {

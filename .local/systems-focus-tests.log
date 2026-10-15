@@ -1,0 +1,25 @@
+bun test v1.4.2 (744846f84)
+
+tests\arenaArchitecture.test.ts:
+(node:11584) [THREE_CJS_DEPRECATED] DeprecationWarning: `require("three")` is deprecated and will be removed.
+Replace `const THREE = require("three")` with `import * as THREE from "three"`.
+(Use `bun.exe --trace-warnings ...` to show where the warning was created)
+(pass) arena concept preserves measured entities, persists through API/save and rebuilds without duplicates [473.25ms]
+(pass) generated walls remain movable semantic entities and selected openings leave their batch for editing [76.08ms]
+(pass) full, partial and open canopy buffers have finite indexed surfaces, no degenerate triangles and expected coverage [270.83ms]
+(pass) resolution adapts within memory and quality bounds without oscillating near the frame target [0.34ms]
+
+tests\enhancement.test.ts:
+(pass) existing walls and doors round-trip through original-image coordinates without changing model IDs or geometry [1.75ms]
+(pass) corrections update one hosted door while preserving its veranda and finish, and a preview cannot mutate the original [3.47ms]
+(pass) unchanged detections are discarded and new openings keep an existing host after alias reconciliation [1.02ms]
+(pass) manual changes confirm properties without mutating previous history; legacy existing properties stay protected [1.34ms]
+(pass) roof alternatives only affect explicit design selection and preserve one roof over the architectural footprint [1.10ms]
+(pass) evidence with an obsolete calibration origin cannot be reused just because its pixel scale matches [0.20ms]
+(pass) rejected existing false geometry becomes an explicit removal, while unknown measurement IDs cannot delete model entities [0.92ms]
+(pass) removal preview cannot orphan hosted openings, mutate the original or silently remove additional elements [1.57ms]
+
+ 12 pass
+ 0 fail
+ 29651 expect() calls
+Ran 12 tests across 2 files. [1176.00ms]

@@ -1,48 +1,51 @@
-import { useEffect, useState } from 'react'
-import type { Project } from '../domain/types'
+import { useEffect,useState } from 'react'
+import { Dashboard,type DashboardProject } from '../features/projects/Dashboard'
+import type { ArchitecturalSample } from '../domain/sampleLibrary'
 import { fixtureProject } from '../domain/fixture'
 import { useAccount } from './account'
-import { createRemote, remoteProjects } from './projectActions'
+import { AccountPanel } from './AccountPanel'
+import { createRemote,remoteProjects,createFromTemplate } from './projectActions'
+import { api } from './api'
 import { getTask } from './cache'
-export function CloudDashboard({ localProjects, navigate }: { localProjects: Project[]; navigate: (path: string) => void }) {
-  const user = useAccount(state => state.user)!
-  const [items, setItems] = useState<{ id: string; name: string; revision: number; pending?: boolean }[]>([])
-  const [name, setName] = useState(''), [error, setError] = useState(''), [busy, setBusy] = useState(false), [cached, setCached] = useState(false)
-  const [retryCreate, setRetryCreate] = useState(false), [localId, setLocalId] = useState('')
-  const refresh = async () => {
+import { RecoverDrafts } from './RecoverDrafts'
+import { documentChanges } from '../../../api/client'
+export function CloudDashboard({navigate}:{navigate:(path:string)=>void}) {
+  const user=useAccount(state=>state.user)!
+  const [items,setItems]=useState<DashboardProject[]>([]),[samples,setSamples]=useState<ArchitecturalSample[]>([])
+  const [error,setError]=useState(''),[samplesError,setSamplesError]=useState(''),[busy,setBusy]=useState(false),[offline,setOffline]=useState(false)
+  const [retryCreate,setRetryCreate]=useState(false)
+  const refresh=async()=>{
     try {
-      const result = await remoteProjects(user.id); setCached(result.cached)
-      setItems(result.projects.map(project => ({ ...project, pending: result.records.some(record => record.base.projectId === project.id && (record.pending || record.conflict || JSON.stringify(record.draft) !== JSON.stringify(record.base.document))) })))
-      const task = await getTask<{ complete?: boolean }>(`${user.id}/create/new`); setRetryCreate(Boolean(task && !task.complete))
-    } catch (error) { setError((error as Error).message) }
+      const result=await remoteProjects(user.id);setOffline(result.cached)
+      setItems(result.projects.map(project=>{
+        const record=result.records.find(record=>record.base.projectId===project.id)
+        return {...project,modified:record?.draft.modified || Date.parse(project.modified_at || '') || Date.now(),sources:record?.draft.sources || [],
+          pending:Boolean(record && (record.pending || record.conflict || documentChanges(record.base.document,record.draft).length))}
+      }))
+      const task=await getTask<{complete?:boolean}>(`${user.id}/create/new`);setRetryCreate(Boolean(task && !task.complete))
+    } catch(error) {setError((error as Error).message)}
+    try {setSamples((await api.request<{items:ArchitecturalSample[]}>('/templates')).items);setSamplesError('')}
+    catch {setSamplesError('Templates require a connection to the server. Open an existing project to keep working offline.')}
   }
-  useEffect(() => { void refresh() }, [user.id]) // Account changes remount this panel.
-  const run = async (action: () => Promise<string>) => {
-    setBusy(true); setError('')
-    try { navigate(`/cloud/${await action()}`) } catch (error) { setError((error as Error).message); await refresh() } finally { setBusy(false) }
+  useEffect(()=>{void refresh();const online=()=>void refresh();window.addEventListener('online',online);return()=>window.removeEventListener('online',online)},[user.id])
+  const run=async(action:()=>Promise<string>)=>{
+    setBusy(true);setError('')
+    try {navigate(`/projects/${await action()}`)}catch(error){setError((error as Error).message);await refresh()}finally{setBusy(false)}
   }
-  return <section className="cloud-projects">
-    <h1>Cloud projects</h1><p>Private account workspace · edits queue on this device when offline.</p>
-    <div className="cloud-inline">
-      <input aria-label="Cloud project name" placeholder="Project name" value={name} onChange={e => setName(e.target.value)} disabled={busy || retryCreate} />
-      <button className="primary" disabled={busy || !retryCreate && !name.trim()} onClick={() => void run(() => {
-        const project = fixtureProject(name.trim() || 'Cloud project'); const level = project.buildings[0].levels[0]
-        Object.assign(level, { walls: [], doors: [], windows: [], rooms: [], slabs: [] })
-        return createRemote(user.id, project, 'new')
-      })}>{retryCreate ? 'Retry pending creation' : 'Create cloud project'}</button>
-      <button disabled={busy} onClick={() => { setError(''); void refresh() }}>Refresh</button>
-    </div>
-    <details><summary>Copy a local project to cloud</summary>
-      <p>This creates a separate cloud model. Its plan files are uploaded only when you choose “Upload plan privately” inside the project.</p>
-      <div className="cloud-inline"><select aria-label="Local project to copy" value={localId} onChange={e => setLocalId(e.target.value)}>
-        <option value="">Choose local project</option>{localProjects.map(project => <option key={project.id} value={project.id}>{project.name}</option>)}
-      </select><button disabled={busy || !localId} onClick={() => void run(() => createRemote(user.id, localProjects.find(project => project.id === localId)!, `local-${localId}`, true))}>Copy to cloud</button></div>
-    </details>
-    {cached && <p role="status">Offline: showing projects cached for this account on this device.</p>}
-    {error && <p role="alert" className="error">{error}</p>}
-    <div className="project-list">{items.map(project => <div className="project-row" key={project.id}>
-      <div className="project-info"><strong>{project.name}</strong><span>Revision {project.revision}{project.pending ? ' · Device draft pending' : ''}</span></div>
-      <button disabled={busy} onClick={() => navigate(`/cloud/${project.id}`)}>Open cloud project</button>
-    </div>)}</div>{!items.length && <p>No cloud projects yet.</p>}
-  </section>
+  return <Dashboard projects={items} samples={samples} account={<AccountPanel/>} busy={busy} createBlocked={offline} samplesError={samplesError}
+    open={project=>navigate(`/projects/${project.id}`)}
+    openSample={(sample,duplicate)=>void run(()=>createFromTemplate(user.id,sample.id,duplicate))}
+    create={(name,_sample,building,units)=>void run(()=>{
+      const project=fixtureProject(name);project.units=units
+      if (building.trim()) project.buildings[0].name=building.trim()
+      Object.assign(project.buildings[0].levels[0],{walls:[],doors:[],windows:[],rooms:[],slabs:[]})
+      return createRemote(user.id,project,'new')
+    })}
+    remove={id=>{setBusy(true);void api.request(`/projects/${id}`,'DELETE').then(refresh).catch(error=>setError(error.message)).finally(()=>setBusy(false))}}
+    notice={<>{offline && <p role="status">Offline · Open a previously opened project. Your edits will sync automatically when the connection returns.</p>}
+      {error && <p role="alert">{error}</p>}
+      {retryCreate && <button onClick={()=>void run(()=>createRemote(user.id,fixtureProject('Project'),'new'))}>Retry pending project creation</button>}
+      <button disabled={busy} onClick={()=>{setError('');void refresh()}}>Refresh projects</button>
+      <RecoverDrafts userId={user.id} open={id=>navigate(`/projects/${id}`)}/>
+    </>}/>
 }

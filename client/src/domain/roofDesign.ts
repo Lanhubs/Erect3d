@@ -5,6 +5,7 @@ export const generatedRoof = (section: NonNullable<Building['roofSections']>[num
   section.automatic === true || section.followFootprint === true && /^Plan roof \d+$/.test(section.name)
 
 export function rebuildImportedRoof(building: Building, level: Level) {
+  if(building.architecture?.sourceLevelId===level.id && building.roofSections?.some(section=>section.id===building.architecture!.roofSectionId))return
   const retained = (building.roofSections || []).filter(section => section.levelId !== level.id || !generatedRoof(section))
   const regions = roofRegions(level.rooms.map(room => room.polygon))
   const roof = building.roof || level.roof || defaultRoof

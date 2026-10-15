@@ -11,9 +11,9 @@ export function AccountPanel() {
   }
   if (user) return <div className="cloud-account"><span>{user.name} · {user.email}</span>
     <button disabled={busy} onClick={() => void submit(signOut)}>Sign out</button>{error && <p role="alert">{error}</p>}</div>
-  return <section className="cloud-signin" aria-label="Cloud account">
-    <h2>{register ? 'Create a cloud account' : 'Sign in to cloud projects'}</h2>
-    <p>Local projects stay on this device. Cloud projects use your private account and save revisions on the server.</p>
+  return <section className="cloud-signin" aria-label="Account">
+    <h2>{register ? 'Create your account' : 'Sign in to your projects'}</h2>
+    <p>Your projects save to your account. Opened projects remain editable offline and sync when you reconnect.</p>
     {checking ? <p role="status">Checking your session…</p> : <form onSubmit={event => {
       event.preventDefault(); void submit(() => signIn(email, password, register ? name : undefined))
     }}>

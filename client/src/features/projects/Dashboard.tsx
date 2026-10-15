@@ -1,15 +1,15 @@
-import { useMemo, useState } from 'react'
+import { useState,type ReactNode } from 'react'
 import type { Project } from '../../domain/types'
-import { createSampleLibrary, type ArchitecturalSample, type SampleCategory } from '../../domain/sampleLibrary'
+import type { ArchitecturalSample, SampleCategory } from '../../domain/sampleLibrary'
 import { wallBoundsPoints, wallSubpath } from '../../geometry/math'
-import { cloudEnabled } from '../../cloud/config'
+export type DashboardProject = Pick<Project,'id'|'name'|'modified'|'sources'> & {pending?:boolean;revision?:number}
 
 type Props = {
-  projects: Project[]; open: (project: Project) => void
-  openSample: (project: Project, duplicate: boolean) => void
+  projects: DashboardProject[]; open: (project: DashboardProject) => void
+  samples:ArchitecturalSample[]; openSample: (sample: ArchitecturalSample, duplicate: boolean) => void
   create: (name: string, sample: boolean, building: string, units: Project['units']) => void
   remove: (id: string) => void
-  cloud?: () => void
+  account?:ReactNode;notice?:ReactNode;busy?:boolean;createBlocked?:boolean;samplesError?:string
 }
 const categories: SampleCategory[] = ['Residential', 'Commercial', 'Public', 'Public / Sports']
 
@@ -53,24 +53,24 @@ function SamplePlan({ sample }: { sample: ArchitecturalSample }) {
   </svg>
 }
 
-export function Dashboard({ projects, open, openSample, create, remove, cloud }: Props) {
+export function Dashboard({ projects, samples, open, openSample, create, remove, account,notice,busy,createBlocked,samplesError }: Props) {
   const [name, setName] = useState('')
   const [building, setBuilding] = useState('')
   const [units, setUnits] = useState<Project['units']>('m')
   const [previewId, setPreviewId] = useState<string | null>(null)
-  const samples = useMemo(() => createSampleLibrary(), [])
   return <main className="dashboard">
     <header className="dashboard-head">
       
       <div  className="brand-mark"><img src="/favicon.svg" alt="Erect3D logo" /></div>
       <div><strong>ERECT</strong><small>ARCHITECTURAL RECONSTRUCTION</small></div>
-      {cloudEnabled && cloud && <nav aria-label="Project storage"><button aria-current="page">Local projects</button><button onClick={cloud}>Cloud projects</button></nav>}
+      {account}
     </header>
     <div className="dashboard-main">
       <div className="section-lead"><div className="eyebrow">WORKSPACE</div>
         <h1>Architectural projects</h1><p>Import or draw a floor plan, edit the building, and explore every level in 3D.</p>
       </div>
-      <div className="create-row">
+      {notice}
+      <fieldset className="create-row" disabled={busy || createBlocked} style={{border:0,padding:0}}>
         <input aria-label="Project name" placeholder="Project name" value={name}
           onChange={event => setName(event.target.value)}
           onKeyDown={event => {
@@ -84,18 +84,18 @@ export function Dashboard({ projects, open, openSample, create, remove, cloud }:
         </select>
         <button className="primary" disabled={!name.trim()}
           onClick={() => create(name.trim(), false, building, units)}>Create project</button>
-        <button onClick={() => create('Courtyard residence', true, '', 'm')}>Open sample building</button>
-      </div>
+        <button disabled={!samples.length} onClick={() => openSample(samples[0],false)}>Open sample building</button>
+      </fieldset>
       <div className="list-head"><span>RECENT PROJECTS</span><span>{projects.length} total</span></div>
       {projects.length === 0 ? <div className="no-projects">No projects yet. Create one or inspect the sample building.</div>
         : <div className="project-list">{projects.toSorted((a, b) => b.modified - a.modified).map(project =>
           <div className="project-row" key={project.id}>
             <div className="project-icon">{project.sources.length ? 'PL' : '3D'}</div>
             <div className="project-info"><strong>{project.name}</strong>
-              <span>{project.sources[0]?.name || 'Manual model'} · Updated {new Date(project.modified).toLocaleDateString()}</span>
+              <span>{project.sources[0]?.name || 'Building model'} · Updated {new Date(project.modified).toLocaleDateString()}{project.pending?' · Changes waiting to sync':''}</span>
             </div>
-            <button onClick={() => open(project)}>Open</button>
-            <button className="quiet" onClick={() => {
+            <button disabled={busy} onClick={() => open(project)}>Open</button>
+            <button disabled={busy} className="quiet" onClick={() => {
               if (confirm(`Delete ${project.name}?`)) remove(project.id)
             }}>Delete</button>
           </div>)}</div>}
@@ -104,6 +104,7 @@ export function Dashboard({ projects, open, openSample, create, remove, cloud }:
           <div><div className="eyebrow">REAL EDITABLE PROJECTS</div><h2 id="sample-library-heading">Sample library</h2></div>
           <p>Open a model in the editor or duplicate it as a starting point.</p>
         </header>
+        {samplesError && <p role="status">{samplesError}</p>}
         {categories.map(category => <section className="sample-category" key={category} aria-labelledby={`sample-${category}`}>
           <h3 id={`sample-${category}`}>{category}</h3>
           <div className="sample-grid">{samples.filter(sample => sample.category === category).map(sample => {
@@ -118,8 +119,8 @@ export function Dashboard({ projects, open, openSample, create, remove, cloud }:
                 <button type="button" aria-expanded={active} onClick={() => setPreviewId(active ? null : sample.id)}>
                   {active ? 'Hide plan' : 'Preview plan'}
                 </button>
-                <button type="button" className="primary" onClick={() => openSample(sample.project, false)}>Open sample</button>
-                <button type="button" className="quiet" onClick={() => openSample(sample.project, true)}>Duplicate</button>
+                <button disabled={busy || createBlocked} type="button" className="primary" onClick={() => openSample(sample, false)}>Open sample</button>
+                <button disabled={busy || createBlocked} type="button" className="quiet" onClick={() => openSample(sample, true)}>Duplicate</button>
               </div>
             </article>
           })}</div>
@@ -129,7 +130,7 @@ export function Dashboard({ projects, open, openSample, create, remove, cloud }:
         <h2>From floor plan to editable 3D building</h2>
         <p>Work from a PNG, JPEG or PDF drawing, or start with a blank plan. Review detected walls, edit doors and windows, and configure rooms, floors, stairs, columns and roofs.</p>
         <h2>Explore the entire building</h2>
-        <p>Design multiple levels with real elevations, inspect section and exploded views, then walk through the model in your browser. Projects are stored locally on this device.</p>
+        <p>Design multiple levels with real elevations, inspect section and exploded views, then walk through the model in your browser. Projects save to your account. Keep editing opened projects offline; changes sync automatically when you reconnect.</p>
       </section>
     </div>
   </main>

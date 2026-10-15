@@ -13,6 +13,7 @@ import { ApiError } from './security/errors'
 import { log } from './security/log'
 import { mountRoutes } from './routes'
 import { buildOpenApi } from './contracts/openapi'
+import { mountPrivateObjects } from './storage/routes'
 export function createApp(services:Services) {
   const app = new Hono<ApiEnv>({ strict:false }),{ config,db,metrics,limits,store } = services
   app.use('*',observe(metrics))
@@ -28,7 +29,11 @@ export function createApp(services:Services) {
     await browserHeaders(context,next)
   })
   app.use('/api/v1/*',originGuard(config))
-  app.use('/api/v1/*',bodyLimit({ maxSize:2*1024*1024,onError:context=>context.json({ error:{ code:'BODY_TOO_LARGE',message:'Request exceeds 2 MiB',requestId:context.get('requestId') } },413) }))
+  app.use('/api/v1/*',async (context,next)=>{
+    const upload=context.req.method==='POST' && /^\/api\/v1\/projects\/[a-zA-Z0-9_.:-]+\/assets\/optimized-upload\/?$/.test(context.req.path)
+    if (upload) return next()
+    return bodyLimit({ maxSize:2*1024*1024,onError:context=>context.json({ error:{ code:'BODY_TOO_LARGE',message:'Request exceeds its permitted size',requestId:context.get('requestId') } },413) })(context,next)
+  })
   app.use('/api/v1/*',traffic(limits,config.TRUSTED_PROXY_IPS))
   app.get('/health',context=>context.json({ status:'alive' }))
   app.get('/ready',async context => {
@@ -38,6 +43,8 @@ export function createApp(services:Services) {
     } catch { return context.json({ status:'unavailable' },503) }
   })
   mountRoutes(app,services)
+  app.use('/private-assets/*',traffic(limits,config.TRUSTED_PROXY_IPS))
+  mountPrivateObjects(app,services)
   app.get('/api/v1/openapi.json',context=>context.json(buildOpenApi(app,config.COOKIE_NAME)))
   app.onError((error,context) => {
     const requestId = context.get('requestId'),known = error instanceof ApiError

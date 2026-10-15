@@ -8,7 +8,8 @@ templates, not a claim that a server has already been provisioned or deployed.
 Use a Linux VPS with Bun 1.4.2, PostgreSQL 17, Nginx and TLS certificates. Keep PostgreSQL
 and the API private to the server/network. If using native Redis protection, use Redis
 7.2 or newer with authentication and private networking. PostgreSQL protection is also
-supported. Choose private S3-compatible storage and a bucket with public reads disabled.
+supported. Use private Cloudflare R2 storage with public reads disabled. Original files
+use reversible ZIP storage; image pixels and PDF contents are not rewritten.
 
 Deploy the repository as `/opt/erect3d`, keeping **both** `api/` and `client/`. API imports
 use pure client geometry at runtime. Install pinned dependencies in each directory and
@@ -44,11 +45,13 @@ DATABASE_SERVER_NAME=db.internal
 ALLOWED_ORIGINS=https://erect3d.olanrewaju.xyz
 TRUSTED_PROXY_IPS=127.0.0.1
 RATE_LIMIT_BACKEND=postgres
-S3_ENDPOINT=https://YOUR_PRIVATE_STORAGE_ENDPOINT
-S3_BUCKET=YOUR_PRIVATE_BUCKET
-S3_REGION=us-east-1
-S3_ACCESS_KEY_ID=REPLACE_WITH_SECRET
-S3_SECRET_ACCESS_KEY=REPLACE_WITH_SECRET
+STORAGE_BACKEND=r2
+R2_ENDPOINT=https://YOUR_ACCOUNT_ID.r2.cloudflarestorage.com
+R2_BUCKET=YOUR_PRIVATE_BUCKET
+R2_REGION=auto
+R2_ACCESS_KEY_ID=REPLACE_WITH_SECRET
+R2_SECRET_ACCESS_KEY=REPLACE_WITH_SECRET
+PDF_OPTIMIZER_PATH=/usr/bin/qpdf
 ```
 
 `DATABASE_CA_FILE` is optional if the database certificate chains to a trusted public CA.
@@ -82,6 +85,11 @@ automatically run by API/worker startup.
 
 ## Private storage
 
+See [R2_STORAGE.md](R2_STORAGE.md) for private R2 credentials, CORS, optimization and
+staging lifecycle rules. Create `/var/lib/erect3d` owned by the service account before
+starting the systemd units; their write allowance uses that directory. R2 remains the
+production store; local filesystem verification does not certify R2 integration.
+
 Give the API/worker credentials PUT, GET, HEAD and DELETE access to the private bucket
 prefixes `staging/`, `private/` and `_erect3d/health`. Startup/readiness writes and stats
 the private health sentinel. Block anonymous bucket/object reads. Configure exact-origin
@@ -110,8 +118,9 @@ X-Real-IP header. The example TLS certificate paths use your existing public dom
 Run `nginx -t` before reloading. Test these templates on the VPS; they were not executed
 on a Linux host during local development.
 
-HTTP JSON is limited to 2 MiB. Large floor plans go directly to private storage through
-signed URLs, not through Nginx/API request bodies. Share-token API access logs are disabled;
+HTTP JSON is limited to 2 MiB. The browser's optimized binary upload route accepts up to
+200 MiB through Nginx/API and compresses files before writing to R2. Signed uploads are
+also supported for other clients. Sensitive API access logs are disabled;
 ensure upstream load balancers and error logging also redact sensitive paths/URLs.
 
 An alternative API/worker container is provided in `deploy/Dockerfile`:

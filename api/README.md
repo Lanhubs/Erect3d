@@ -1,7 +1,7 @@
 # Erect3D API
 
 Bun + TypeScript + Hono backend for the existing editor, with PostgreSQL persistence,
-private S3 storage, a separate worker and optional Gemini interpretation. All backend
+private Cloudflare R2 storage, a separate worker and optional Gemini interpretation. All backend
 files live here. The frontend is in `../client`; its `Project` is the canonical model.
 
 ## What is available
@@ -14,9 +14,9 @@ files live here. The frontend is in `../client`; its `Project` is the canonical 
 - Durable background jobs and reviewable Gemini proposals with explicit acceptance.
 - Material/component libraries and geometry-derived quantity schedules.
 
-The optional browser adapter is in `client/index.ts`. It has **not yet been connected
-to the editor UI**. Existing IndexedDB saves, local analysis and manual editing continue
-to operate. This API does not silently replace them.
+The browser adapter is in `client/index.ts` and is connected to the editor's unified
+Projects workspace. Samples load from the API. IndexedDB caches opened projects and
+pending edits for offline work, then syncs automatically when connectivity returns.
 
 ## Development
 
@@ -30,9 +30,16 @@ cd ../api
 bun install --frozen-lockfile
 ```
 
-Copy `.env.example` to an ignored `.env.local`. Set `DATABASE_URL` to your development
+Copy `.env.r2.example` to an ignored `.env.local`. Set `DATABASE_URL` to your development
 database. Leave cloud credentials empty to test accounts, projects and collaboration;
 asset and AI routes then return an explicit unavailable error.
+
+For local account creation, set `NODE_ENV=development` and
+`PUBLIC_REGISTRATION=true` in the API env file. Restart the API after changing env
+settings. An explicit `PUBLIC_REGISTRATION=false` disables sign-up in every mode;
+production also disables sign-up unless explicitly enabled.
+For the frontend production preview, also set `VITE_PUBLIC_REGISTRATION=true` in
+`client/.env.local` and rebuild; the Vite development server shows signup automatically.
 
 Optional Docker services, from the repository root:
 
@@ -79,6 +86,7 @@ Real cloud checks are separate, operator-invoked commands:
 
 ```sh
 bun --env-file=.env.local run check:storage
+# Add LIVE_STORAGE_ORIGIN=https://erect3d.olanrewaju.xyz to check signed GET CORS.
 # Consumes provider quota; explicit opt-in is required:
 LIVE_GEMINI_CONFIRM=yes bun --env-file=.env.local run check:ai
 ```
@@ -93,6 +101,8 @@ needs to allow your exact frontend origin for browser PUT/GET requests.
 - [Registered endpoint inventory](docs/ENDPOINTS.md)
 - [WebSocket protocol](docs/REALTIME.md)
 - [VPS deployment and operations](docs/VPS.md)
+- [Private R2 storage and file optimization](docs/R2_STORAGE.md)
+- [Hybrid interpretation scope and accuracy gates](docs/HYBRID_INTERPRETATION.md)
 - [Delivery report, verification and limitations](docs/DELIVERY.md)
 
 Authenticated OpenAPI is available at `/api/v1/openapi.json`. Routes are derived from

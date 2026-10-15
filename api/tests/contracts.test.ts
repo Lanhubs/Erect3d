@@ -58,7 +58,7 @@ test('AI proposals preserve review and uncertainty and optional furniture stays 
     candidates:[candidate,{ ...candidate,id:'chair',kind:'furniture' as const }],warnings:[] }
   expect(reconcile([], [proposal],'structure').candidates).toHaveLength(1)
   expect(intelligenceSchema.safeParse({ ...proposal,coordinatesVersion:2 }).success).toBe(false)
-  expect(analysisPasses('structure',false)).toEqual(['structure','openings'])
+  expect(analysisPasses('structure',false)).toEqual(['global-understanding','structure','openings'])
   expect(imageToWorld({ x:.5,y:.25 },1000,800,{ calibration:{ a:{ x:0,z:0 },b:{ x:1,z:0 },knownMetres:1,metresPerPixel:.01 },alignment:{ x:2,z:3 } } as any)).toEqual({ x:7,z:5 })
 })
 test('semantic comparisons detect polygon edits and slow WebSocket peers are bounded',()=>{

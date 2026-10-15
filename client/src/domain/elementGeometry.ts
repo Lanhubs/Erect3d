@@ -3,7 +3,7 @@ import { atWall } from '../geometry/math'
 import { stairOpening } from '../geometry/stairs'
 
 export function selectedElement(building: Building, selection: Selection) {
-  if (!selection) return null
+  if (!selection || selection.kind==='architecture') return null
   if (selection.kind === 'fence') return building.siteFence?.id === selection.id
     ? { level: building.levels[0], element: building.siteFence, points: building.siteFence.boundary || [], height: building.siteFence.height } : null
   for (const level of building.levels) {

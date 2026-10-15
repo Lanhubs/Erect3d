@@ -13,6 +13,7 @@ import { loadDocument, saveSnapshot } from './documents'
 import { validateGeometry } from './geometry-validation'
 import { validateLockedLevels } from './locked-levels'
 import { validateDocumentSize } from './size'
+import {changeEntityIds} from './change-locks'
 
 export async function commitOperation(db: Database, config: Config, actor: Actor, projectId: string, operation: Operation) {
   return db.begin(async tx => commitInTransaction(tx, config, actor, projectId, operation))
@@ -27,11 +28,11 @@ export async function commitInTransaction(tx: Database, config: Config, actor: A
     return { ...operation, revision: Number(previous.revision), actorId: actor.id, modifiedAt: previous.payload.modifiedAt }
   }
   if (Number(project.revision) !== operation.baseRevision) throw new ApiError(409, 'REVISION_CONFLICT', 'Reload newer changes before applying this edit', { revision: Number(project.revision) })
-  const ids = [...new Set(operation.payload.changes.flatMap(change => change.path))]
+  const current = await loadDocument(tx, projectId)
+  const ids = changeEntityIds(current.document,operation.payload.changes)
   const locks = await tx`SELECT entity_id FROM entity_locks WHERE project_id=${projectId}
     AND user_id<>${actor.id} AND expires_at>now() AND entity_id=ANY(${tx.array(ids,'TEXT')})`
   if (locks.length) throw new ApiError(409, 'ENTITY_LOCKED', 'Another collaborator is editing this entity')
-  const current = await loadDocument(tx, projectId)
   const modifiedAt = Date.now(), revision = operation.baseRevision + 1
   const document = parse(projectSchema, applyChanges(current.document, operation.payload.changes, modifiedAt))
   validateDocumentSize(document, config.MAX_PROJECT_BYTES)

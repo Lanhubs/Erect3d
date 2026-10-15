@@ -4,6 +4,7 @@ COPY api/package.json api/bun.lock ./
 RUN bun install --frozen-lockfile
 
 FROM oven/bun:1.4.2 AS api-runtime
+RUN apt-get update && apt-get install -y --no-install-recommends qpdf && rm -rf /var/lib/apt/lists/*
 WORKDIR /app/api
 COPY --from=dependencies /app/api/node_modules ./node_modules
 COPY api/src ./src
@@ -16,5 +17,6 @@ COPY client/src /app/client/src
 RUN ln -s /app/api/node_modules /app/node_modules
 USER bun
 ENV HOST=0.0.0.0
+ENV PDF_OPTIMIZER_PATH=/usr/bin/qpdf
 EXPOSE 4000
 CMD ["bun", "src/index.ts"]

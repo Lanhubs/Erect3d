@@ -6,6 +6,19 @@ import { fixtureProject } from '../src/domain/fixture'
 import type { CloudRecord, CloudRepository } from '../src/cloud/types'
 const snapshot = (): Snapshot => ({ schemaVersion: 1, projectId: 'project_cloud', revision: 0,
   document: { ...fixtureProject('Original'), id: 'project_cloud' }, checksum: 'test', role: 'OWNER' })
+test('a detailed floor replacement and Undo sync atomically within the operation limit',async()=>{
+  const context=setup(),before=structuredClone(context.remote.document),level=before.buildings[0].levels[0],wall=level.walls[0]
+  level.walls=Array.from({length:300},(_,index)=>({...wall,id:`old_${index}`}))
+  context.remote={...context.remote,document:before};await context.engine.adopt(context.remote)
+  const after=structuredClone(before)
+  after.buildings[0].levels[0].walls=Array.from({length:300},(_,index)=>({...wall,id:`new_${index}`}))
+  await context.engine.stage(after);await context.engine.sync()
+  expect(context.engine.state).toBe('saved');expect(context.calls[0].payload.changes).toHaveLength(1)
+  expect(context.remote.document.buildings[0].levels[0].walls.at(-1)?.id).toBe('new_299')
+  await context.engine.stage(before);await context.engine.sync()
+  expect(context.engine.state).toBe('saved');expect(context.calls[1].payload.changes).toHaveLength(1)
+  expect(context.remote.document.buildings[0].levels[0].walls.at(-1)?.id).toBe('old_299')
+})
 class MemoryRepository implements CloudRepository {
   value?: CloudRecord; fail = false
   async get() { return structuredClone(this.value) }
@@ -75,12 +88,34 @@ test('remote conflicts keep the full draft until selected changes are explicitly
   expect(context.calls.at(-1)?.operationId).not.toBe(context.calls[0].operationId)
 })
 test('another remote edit during conflict review requires reviewing the updated revision', async () => {
-  const context = setup(); context.remote = { ...context.remote, revision: 1 }
+  const context = setup(); context.remote = { ...context.remote, revision: 1,document:{...context.remote.document,name:'Collaborator name'} }
   await context.engine.stage({ ...context.engine.record.draft, name: 'Keep me' }); await context.engine.sync()
   context.remote = { ...context.remote, revision: 2 }
   await expect(context.engine.resolve([])).rejects.toThrow('changed again')
   expect(context.engine.record.draft.name).toBe('Keep me'); expect(context.engine.record.conflict?.revision).toBe(2)
-  await context.engine.resolve([]); expect(context.engine.record.draft.name).toBe('Original')
+  await context.engine.resolve([]); expect(context.engine.record.draft.name).toBe('Collaborator name')
+})
+test('offline edits automatically merge independent collaborator changes on reconnect',async()=>{
+  const context=setup();context.offline=true
+  await context.engine.stage({...context.engine.record.draft,name:'My offline name'});await context.engine.sync()
+  const first=context.repo.value!.pending!.operation.operationId
+  context.remote={...context.remote,revision:1,document:{...context.remote.document,units:'mm'}}
+  context.offline=false;await context.engine.refresh()
+  expect(context.remote.document.name).toBe('My offline name');expect(context.remote.document.units).toBe('mm')
+  expect(context.engine.record.conflict).toBeUndefined();expect(context.engine.state).toBe('saved')
+  expect(context.calls.at(-1)!.operationId).not.toBe(first);expect(context.calls.at(-1)!.baseRevision).toBe(1)
+})
+test('identical changes already accepted by a collaborator do not create conflicts',async()=>{
+  const context=setup();context.remote={...context.remote,revision:1,document:{...context.remote.document,name:'Same name'}}
+  await context.engine.stage({...context.engine.record.draft,name:'Same name'});await context.engine.sync()
+  expect(context.engine.record.conflict).toBeUndefined();expect(context.remote.revision).toBe(1);expect(context.engine.state).toBe('saved')
+})
+test('entity locks keep the frozen draft and never trigger a revision merge',async()=>{
+  const context=setup(),draft={...context.engine.record.draft,name:'Keep locked edit'}
+  context.transport.apply=async()=>{throw new RemoteError(409,'ENTITY_LOCKED','Another collaborator is editing this entity')}
+  await context.engine.stage(draft);await context.engine.sync()
+  expect(context.engine.state).toBe('blocked');expect(context.engine.record.draft.name).toBe(draft.name)
+  expect(context.engine.record.pending).toBeDefined();expect(context.engine.record.conflict).toBeUndefined()
 })
 test('a failed durable queue write never sends an unstored operation', async () => {
   const context = setup(); context.repo.fail = true

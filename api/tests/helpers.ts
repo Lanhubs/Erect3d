@@ -4,6 +4,7 @@ import { createApp } from '../src/app'
 import { newId } from '../src/security/tokens'
 import type { Project } from '../src/contracts/project'
 import type { ObjectStore } from '../src/storage/objects'
+import { unpackSource } from '../src/storage/archive'
 import type { PlanIntelligenceProvider } from '../src/modules/ai/provider'
 export const origin='http://127.0.0.1:5173'
 export function harness(overrides:{ store?:ObjectStore;provider?:PlanIntelligenceProvider;ai?:boolean }={}) {
@@ -44,9 +45,13 @@ export class MemoryStore implements ObjectStore {
   async read(key:string,maximum:number) {
     const value=this.objects.get(key)
     if (!value || value.length>maximum) throw new Error('Invalid object')
-    return value
+    return unpackSource(key,value,maximum)
   }
-  async stat(key:string) { return { size:(await this.read(key,Number.MAX_SAFE_INTEGER)).length } }
+  async stat(key:string) {
+    const value=this.objects.get(key)
+    if(!value)throw new Error('Invalid object')
+    return {size:value.length}
+  }
   async write(key:string,bytes:Uint8Array) { this.objects.set(key,bytes) }
   async delete(key:string) { this.objects.delete(key) }
   async probe() {}

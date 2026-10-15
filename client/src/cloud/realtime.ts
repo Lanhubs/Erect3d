@@ -1,5 +1,6 @@
 import { api } from './api'
 import { useProject } from '../state/project'
+import {analysisEvent} from './analysisEvents'
 export type Peer = { userId: string; connectionId: string; presence: { activeLevelId?: string; selection?: string[]; editingEntityId?: string }; time: number }
 export function connectProject(projectId: string, revision: () => number, changed: () => void, peers: (items: Peer[]) => void, error: (message: string) => void) {
   let socket: WebSocket | undefined, stopped = false, retry: ReturnType<typeof setTimeout> | undefined
@@ -21,7 +22,7 @@ export function connectProject(projectId: string, revision: () => number, change
   const connect = () => {
     if (stopped) return
     socket = new WebSocket(api.collaborationUrl(projectId, revision()))
-    socket.onopen = () => { delay = 1000; presence(); changed() }
+    socket.onopen = () => { delay = 1000;analysisEvent(projectId,'connection.open'); presence(); changed() }
     socket.onmessage = event => {
       try {
         const message = JSON.parse(event.data)
@@ -29,10 +30,12 @@ export function connectProject(projectId: string, revision: () => number, change
         else if (message.type === 'presence.update') {
           people.set(message.connectionId, { ...message, time: Date.now() }); peers([...people.values()])
         } else if (message.type === 'error') { error(message.error?.message || 'Collaboration request failed'); reserved = undefined; socket?.close(); changed() }
-        else if (message.type !== 'connected' && message.type !== 'operation.ack') changed()
+        else if (message.type?.startsWith('analysis.')) analysisEvent(projectId,message.type,message.payload)
+        else if (['operation.accepted','revision.restored'].includes(message.type)) changed()
       } catch { socket?.close() }
     }
     socket.onclose = () => {
+      analysisEvent(projectId,'connection.close')
       people.clear(); peers([])
       reserved = undefined
       if (!stopped) { retry = setTimeout(connect, delay); delay = Math.min(delay * 2, 30000) }
@@ -49,5 +52,5 @@ export function connectProject(projectId: string, revision: () => number, change
     if (next.activeLevelId !== before.activeLevelId || next.selection !== before.selection) presence()
   })
   connect()
-  return { reserve, close: () => { stopped = true; clearInterval(timer); clearTimeout(retry); unsubscribe(); socket?.close() } }
+  return { reserve, close: () => { stopped = true;analysisEvent(projectId,'connection.close'); clearInterval(timer); clearTimeout(retry); unsubscribe(); socket?.close() } }
 }

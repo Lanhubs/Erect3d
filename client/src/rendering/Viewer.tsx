@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
-import { ACESFilmicToneMapping, PCFSoftShadowMap } from 'three'
+import { PCFShadowMap } from 'three'
 import { PerspectiveCamera } from 'three'
 import type { Building, Level, Selection } from '../domain/types'
 import { zoomEvent, type ZoomDetail } from '../app/useWorkspaceZoom'
@@ -14,6 +14,10 @@ import { useProject } from '../state/project'
 import { useFurnitureReview } from '../furniture/reviewState'
 import { WalkControls } from '../walkthrough/WalkControls'
 import type { WalkOptions, WalkViewpoint } from '../walkthrough/types'
+import {graphicsRenderer,legacyRenderer,type RendererChoice} from './graphicsRenderer'
+import {GraphicsRuntime,type GraphicsSnapshot} from './GraphicsRuntime'
+import {RendererBoundary} from './RendererBoundary'
+import {GraphicsDiagnostics} from './GraphicsDiagnostics'
 
 function CanvasSizeSync() {
   const { camera, gl } = useThree()
@@ -39,10 +43,11 @@ function CanvasSizeSync() {
 }
 
 export function Viewer({ building, activeLevelId, isolateId = null, selection, select, roofShown, setRoofShown,
-  walkRequest = 0, presentation = false, onExitPresentation }: {
+  walkRequest = 0, presentation = false, onExitPresentation, benchmark }: {
   building: Building; activeLevelId: string; isolateId?: string | null; selection: Selection;
   select: (selection: Selection) => void; roofShown: boolean; setRoofShown: (value: boolean) => void;
   walkRequest?: number; presentation?: boolean; onExitPresentation?: () => void
+  benchmark?: {renderer:RendererChoice;optimized:boolean;continuous?:boolean;report?:(snapshot:GraphicsSnapshot)=>void}
 }) {
   const level = building.levels.find(item => item.id === activeLevelId) || building.levels[0]
   const [walk, setWalk] = useState(false), [lockedWalk, setLockedWalk] = useState(false), [dragWalk, setDragWalk] = useState(false)
@@ -51,14 +56,20 @@ export function Viewer({ building, activeLevelId, isolateId = null, selection, s
   const furnitureShown = useFurnitureReview(state => state.shown), toggleFurniture = useFurnitureReview(state => state.toggle)
   const controllerOptions = useMemo(() => ({ ...walkOptions, roomId: selection?.kind === 'room' ? selection.id : undefined }), [walkOptions, selection])
   const [top, setTop] = useState(false), [ceiling, setCeiling] = useState(false)
+  const [roofCutaway,setRoofCutaway]=useState(false)
   const [cameraPreset, setCameraPreset] = useState<CameraPreset>('default')
   const [buildingView, setBuildingView] = useState<BuildingView>(building.levels.length > 1 ? 'building' : 'current')
   const previousLevelCount = useRef(building.levels.length)
   const [sectionHeight, setSectionHeight] = useState<number | null>(null), [verticalSection, setVerticalSection] = useState<number | null>(null)
-  const [quality, setQuality] = useState<'auto' | 'performance' | 'balanced' | 'high'>('auto')
+  const [quality, setQuality] = useState<'auto' | 'performance' | 'balanced' | 'high'>(benchmark?'balanced':'auto')
+  const [stats,setStats]=useState<GraphicsSnapshot|null>(null)
+  const [renderDpr,setRenderDpr]=useState(1)
+  const rendererChoice=benchmark?.renderer || 'auto'
+  const rendererFactory=useCallback((defaults:Parameters<typeof graphicsRenderer>[0])=>graphicsRenderer(defaults,rendererChoice),[rendererChoice])
+  const report=(snapshot:GraphicsSnapshot)=>{setStats(snapshot);benchmark?.report?.(snapshot)}
   const [webglAvailable] = useState(() => {
     try { const probe = document.createElement('canvas'); const context = probe.getContext('webgl2') || probe.getContext('webgl')
-      if (!context) return false
+      if (!context) return 'gpu' in navigator
       context.getExtension('WEBGL_lose_context')?.loseContext(); return true
     } catch { return false }
   })
@@ -96,7 +107,7 @@ export function Viewer({ building, activeLevelId, isolateId = null, selection, s
   const xPoints = building.levels.flatMap(item => wallBoundsPoints(item.walls).map(point => point.x))
   const minX = Math.min(0, ...xPoints), maxX = Math.max(8, ...xPoints)
   const sportsKind = building.levels.some(item => item.rooms.some(room => room.category === 'football-pitch')) ? 'stadium'
-    : building.levels.some(item => item.rooms.some(room => room.category === 'table-tennis-hall')) ? 'arena' : null
+    : building.levels.some(item => item.rooms.some(room => room.category === 'table-tennis-hall' || room.category === 'basketball-court')) ? 'arena' : null
   const tool = useProject(state => state.tool), editing = useElementEditing(!walk && !presentation && tool === 'select')
   return <section className="viewer" ref={viewerRef} tabIndex={0} aria-label="Editable 3D building" onKeyDown={editing.keyboard}
     onPointerDownCapture={event => { if (!(event.target as HTMLElement).closest('button,input,select')) viewerRef.current?.focus() }}>
@@ -108,6 +119,7 @@ export function Viewer({ building, activeLevelId, isolateId = null, selection, s
       <details className="view-options"><summary>View options</summary><div>
       <WalkControls building={building} options={walkOptions} setOptions={setWalkOptions} active={walk} current={walkLevel} savePoint={() => viewpoint.current} />
       <button aria-pressed={furnitureShown} onClick={toggleFurniture}>Furniture {furnitureShown ? 'on' : 'off'}</button>
+      {building.architecture && <button aria-pressed={roofCutaway} onClick={()=>setRoofCutaway(value=>!value)}>{roofCutaway?'Show full roof':'Roof cutaway'}</button>}
       {!presentation && <select aria-label="Render quality" value={quality} onChange={event => setQuality(event.target.value as typeof quality)}>
         <option value="auto">Auto</option><option value="performance">Performance</option><option value="balanced">Balanced</option><option value="high">High</option>
       </select>}
@@ -134,16 +146,28 @@ export function Viewer({ building, activeLevelId, isolateId = null, selection, s
       {presentation && <button onClick={onExitPresentation}>Exit present</button>}
     </div></div>
     {error && <div className="inline-error">{error}</div>}
-    <div className="canvas-wrap">{webglAvailable ? <Canvas shadows={{ type: PCFSoftShadowMap }}
-      dpr={quality === 'high' ? [1, 2] : quality === 'balanced' || quality === 'auto' ? [1, 1.5] : [1, 1]}
-      camera={{ fov: 55, near: .03, far: 1000 }} gl={{ antialias: true, toneMapping: ACESFilmicToneMapping }}>
+    <div className="canvas-wrap">{webglAvailable ? <RendererBoundary key={rendererChoice} fallback={
+      <Canvas key="legacy-recovery" gl={legacyRenderer} shadows={{type:PCFShadowMap}} dpr={renderDpr} frameloop={walk?'always':'demand'} camera={{fov:55,near:.03,far:1000}}>
+        <CanvasSizeSync/><GraphicsRuntime mode={quality} onResolution={setRenderDpr} report={import.meta.env.DEV?report:undefined}>
+          <BuildingScene building={building} activeLevelId={activeLevelId} view={buildingView} isolateId={isolateId}
+            selection={selection} select={select} walk={walk} top={top} ceiling={ceiling} roofShown={roofShown} roofCutaway={roofCutaway}
+            sectionHeight={sectionHeight} verticalSection={verticalSection} quality={quality} openDoors={openDoors}
+            toggleDoor={toggleDoor} onWalkPosition={onWalkPosition} cameraPreset={cameraPreset} walkOptions={controllerOptions} onCapture={onCapture}/>
+        </GraphicsRuntime>
+      </Canvas>
+    }><Canvas shadows={{ type: PCFShadowMap }}
+      dpr={renderDpr}
+      key={rendererChoice} frameloop={walk || benchmark?.continuous ? 'always' : 'demand'}
+      camera={{ fov: 55, near: .03, far: 1000 }} gl={rendererFactory}>
       <CanvasSizeSync />
+      <GraphicsRuntime mode={presentation?'high':quality} optimized={benchmark?.optimized ?? true} onResolution={setRenderDpr} report={import.meta.env.DEV?report:undefined}>
       <BuildingScene building={building} activeLevelId={activeLevelId} view={buildingView} isolateId={isolateId}
         selection={selection} select={select} walk={walk} top={top} ceiling={ceiling}
-        roofShown={roofShown} sectionHeight={sectionHeight} verticalSection={verticalSection} quality={quality}
+        roofShown={roofShown} roofCutaway={roofCutaway} sectionHeight={sectionHeight} verticalSection={verticalSection} quality={quality}
         openDoors={openDoors} toggleDoor={toggleDoor} onWalkPosition={onWalkPosition} cameraPreset={cameraPreset}
         walkOptions={controllerOptions} onCapture={onCapture} />
-    </Canvas> : <SoftwarePreview key={`${level.id}:${top}`} level={level} levels={building.levels} building={building} selection={selection} select={select} roofShown={roofShown}
+      </GraphicsRuntime>
+    </Canvas></RendererBoundary> : <SoftwarePreview key={`${level.id}:${top}`} level={level} levels={building.levels} building={building} selection={selection} select={select} roofShown={roofShown}
       top={top} sectionHeight={sectionHeight} />}
       {sectionHeight !== null && <label className="section-control">Cut height · {sectionHeight.toFixed(1)} m
         <input aria-label="Section cut height" type="range" min="0.4" max={maxHeight} step="0.1" value={sectionHeight}
@@ -159,6 +183,7 @@ export function Viewer({ building, activeLevelId, isolateId = null, selection, s
         <button type="button" aria-label="Fit model" title="Fit model" onClick={() => zoomCamera({ reset: true })}>Fit</button>
       </div>}
     </div>
+    {import.meta.env.DEV && <GraphicsDiagnostics stats={stats}/>}
     <div className="viewport-foot">{walk
       ? `${walkLevel || level.name} · W A S D move · Shift faster · ${lockedWalk ? 'Mouse look · Esc release' : dragWalk ? 'Drag to look · Esc pause' : 'Click to explore'} · E open/close door`
       : editing.message || (selection ? 'Handles: blue move/reshape · purple rotate · green resize · amber height · Arrows move · Shift fine · Esc cancel'

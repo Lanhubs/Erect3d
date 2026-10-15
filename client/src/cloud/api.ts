@@ -1,5 +1,6 @@
 import { SessionApi } from './sessionApi'
 const origin = (import.meta.env.VITE_API_ORIGIN || window.location.origin).replace(/\/$/, '')
+export const privateAssetUrl = (url: string) => new URL(url, `${origin}/`).href
 let expectedUser: string | null = null
 export function setExpectedUser(id: string | null) { expectedUser = id }
 export async function browserLock<T>(name: string, action: () => Promise<T>): Promise<T> {

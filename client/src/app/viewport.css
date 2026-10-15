@@ -127,12 +127,12 @@
   color:#546458;
   font:10px 'IBM Plex Mono',monospace
 }
-.statusbar span{
+.statusbar>span{
   display:flex;
   align-items:center;
   gap:6px
 }
-.statusbar span:last-child{
+.statusbar>span:last-child{
   margin-left:auto
 }
 .page-choice{

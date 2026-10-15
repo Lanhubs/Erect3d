@@ -47,11 +47,13 @@ export function OpeningLayer({ svg, level, selection, select, tool }: Props) {
     svg.current?.setPointerCapture(event.pointerId)
   }
   return <g className="opening-layer">
-    {level.doors.map(door => { const wall = level.walls.find(item => item.id === door.wallId); if (!wall) return null
+    {level.doors.map((door,index) => { const wall = level.walls.find(item => item.id === door.wallId); if (!wall) return null
       const offset = preview?.id === door.id ? preview.offset : door.offset
       const points = wallSubpath(wall, offset, offset + door.width).map(point => `${point.x},${point.z}`).join(' ')
       const chosen = selection?.id === door.id
-      return <g key={door.id} className="plan-entity plan-door" onPointerDown={event => begin(event, 'doors', door.id, wall, door.width, offset)}>
+      return <g key={door.id} className="plan-entity plan-door" role="button" aria-label={`Door ${index+1}`} aria-pressed={chosen} tabIndex={0}
+        onKeyDown={event=>{if(event.key==='Enter' || event.key===' ') {event.preventDefault();event.stopPropagation();select({kind:'door',id:door.id})}}}
+        onPointerDown={event => begin(event, 'doors', door.id, wall, door.width, offset)}>
         <polyline points={points} fill="none" stroke="transparent" strokeWidth={Math.max(.38, wall.thickness * 2.2)} />
         <polyline points={points} fill="none" stroke={chosen ? '#d89237' : '#f4f5f2'} strokeWidth={wall.thickness * 1.25} pointerEvents="none" />
         {chosen && <polyline points={points} fill="none" stroke="#5f431d" strokeWidth=".055" pointerEvents="none" />}

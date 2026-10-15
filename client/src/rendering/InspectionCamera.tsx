@@ -8,7 +8,7 @@ export type CameraPreset = 'default' | 'exterior' | 'overview' | 'interior'
 export function InspectionCamera({ walk, top, center, span, preset = 'default', sportsKind }: {
   walk: boolean; top: boolean; center: [number, number, number]; span: number;
   preset?: CameraPreset; sportsKind?: 'stadium' | 'arena' | null }) {
-  const { camera, gl } = useThree()
+  const { camera, gl, invalidate } = useThree()
   const controlsRef = useRef<OrbitControls | null>(null)
   const previous = useRef<{ position: typeof camera.position; quaternion: typeof camera.quaternion; target: typeof camera.position } | null>(null), wasWalking = useRef(false)
   const [cx, cy, cz] = center
@@ -24,11 +24,11 @@ export function InspectionCamera({ walk, top, center, span, preset = 'default', 
       else if (preset === 'interior' && sportsKind === 'stadium') camera.position.set(cx + span * .18, 4.2, cz + span * .24)
       else if (preset === 'interior' && sportsKind === 'arena') camera.position.set(cx, 3.4, cz - span * .18)
       else if (preset === 'exterior') camera.position.set(cx + span * .5, span * .17,
-        cz + span * (sportsKind === 'arena' ? -.72 : .65))
+        cz + span * (sportsKind === 'arena' ? .72 : .65))
       else if (preset === 'overview') camera.position.set(cx + span * .62, span * .69,
-        cz + span * (sportsKind === 'arena' ? -.65 : .65))
+        cz + span * .65)
       else if (sportsKind) camera.position.set(cx + span * .55, span * .56,
-        cz + span * (sportsKind === 'arena' ? -.7 : .7))
+        cz + span * .7)
       else camera.position.set(cx + span * .82, span * .68, cz + span * 1.0)
       camera.lookAt(cx, top ? cy : targetY, cz)
     }
@@ -42,6 +42,9 @@ export function InspectionCamera({ walk, top, center, span, preset = 'default', 
     controls.enableDamping = true; controls.enableRotate = !top; controls.enableZoom = true
     controls.minDistance = 2; controls.maxDistance = Math.max(160, span * 4)
     controlsRef.current = controls
+    const changed=()=>invalidate()
+    controls.addEventListener('change', changed)
+    invalidate()
     const host = gl.domElement.closest('.viewer')
     const manipulate = (event: Event) => { controls.enabled = !(event as CustomEvent<boolean>).detail }
     host?.addEventListener(manipulationEvent, manipulate)
@@ -54,7 +57,7 @@ export function InspectionCamera({ walk, top, center, span, preset = 'default', 
     }
     host?.addEventListener(zoomEvent, zoom)
     return () => { previous.current = { position: camera.position.clone(), quaternion: camera.quaternion.clone(), target: controls.target.clone() }
-      host?.removeEventListener(zoomEvent, zoom); host?.removeEventListener(manipulationEvent, manipulate); controlsRef.current = null; controls.dispose() }
-  }, [walk, top, camera, gl, preset, sportsKind])
+      host?.removeEventListener(zoomEvent, zoom); host?.removeEventListener(manipulationEvent, manipulate); controls.removeEventListener('change', changed); controlsRef.current = null; controls.dispose() }
+  }, [walk, top, camera, gl, preset, sportsKind, invalidate])
   return null
 }

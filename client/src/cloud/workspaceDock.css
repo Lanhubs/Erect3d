@@ -1,0 +1,56 @@
+.cloud-workspace .work-main{container-type:inline-size;container-name:work-area}
+.cloud-workspace .statusbar-with-tools{position:relative;z-index:30;height:34px;gap:12px;padding:0 8px;overflow:visible}
+.cloud-workspace .statusbar-with-tools>span{flex:none;white-space:nowrap}
+.cloud-workspace .statusbar-with-tools>span:first-child{max-width:180px;overflow:hidden;text-overflow:ellipsis}
+.cloud-workspace .statusbar-with-tools>span:last-of-type{margin-left:auto}
+.cloud-workspace .present-mode .statusbar-with-tools{display:flex}
+.cloud-dock{display:flex;align-items:center;justify-content:flex-end;gap:6px;min-width:0;flex:0 1 auto;margin-left:auto;font:11px 'DM Sans',sans-serif;color:#435747}
+.cloud-dock button,.cloud-dock summary{display:flex;align-items:center;gap:6px;border:1px solid transparent;background:transparent;color:inherit;border-radius:4px;padding:4px 7px;font:inherit;cursor:pointer;white-space:nowrap;min-height:26px;box-sizing:border-box}
+.cloud-dock button:hover,.cloud-dock summary:hover,.cloud-dock button[aria-expanded=true],.cloud-dock details[open]>summary{background:#f8faf6;border-color:#bdc8ba}
+.cloud-dock button:focus-visible,.cloud-dock summary:focus-visible{outline:2px solid #526d58;outline-offset:1px}
+.cloud-dock svg{width:14px;height:14px;flex:none}
+.cloud-session-menu{flex:none}
+.cloud-session-menu>summary{list-style:none}
+.cloud-session-menu>summary::-webkit-details-marker{display:none}
+.cloud-sync-trigger>span{display:block;max-width:170px;overflow:hidden;text-overflow:ellipsis}
+.cloud-sync-trigger.needs-attention{color:#9b593b}
+.cloud-offline-ready{width:5px;height:5px;border-radius:50%;background:#648061;flex:none}
+.cloud-status-panel,.reconstruction-popover,.reconstruction-cancel-error{position:fixed;bottom:calc(42px + env(safe-area-inset-bottom));right:8px;z-index:45;width:min(340px,calc(100vw - 16px));max-height:calc(100dvh - 70px);overflow:auto;padding:12px;background:#fafbf8;border:1px solid #b9c6b7;border-radius:7px;box-shadow:0 -8px 28px #263b3024;font:12px 'DM Sans',sans-serif;line-height:1.5;white-space:normal;box-sizing:border-box}
+.cloud-status-panel p,.reconstruction-popover p{margin:8px 0;overflow-wrap:anywhere}
+.cloud-status-panel>button,.reconstruction-popover>button{display:inline-flex;margin:5px 5px 0 0;background:#fff;border-color:#bdc8ba;padding:6px 9px}
+.cloud-status-panel .cloud-draft-menu{margin-top:8px;border-top:1px solid #d4dcd1;padding-top:4px}
+.cloud-accessible-alert{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.reconstruction-progress{position:relative;display:flex;align-items:center;gap:1px;min-width:0;max-width:460px;flex:1 1 320px;border-right:1px solid #bdc8ba;padding-right:6px}
+.reconstruction-trigger{position:relative;min-width:0;flex:1;overflow:hidden;max-width:100%}
+.reconstruction-trigger strong{font-size:11px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1;text-align:left}
+.reconstruction-trigger small{font-variant-numeric:tabular-nums;color:#6a7867;flex:none;font-size:10px}
+.reconstruction-trigger progress{position:absolute;inset:auto 0 0;width:100%;height:2px;accent-color:#ad7948;border:0}
+.reconstruction-progress[data-pending=true] .reconstruction-trigger{color:#855d36}
+.reconstruction-progress>button:not(.reconstruction-trigger){flex:none;padding:4px;min-width:26px}
+.reconstruction-popover header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.reconstruction-popover ol{list-style:none;display:flex;gap:8px;margin:8px 0;padding:0;flex-wrap:wrap}
+.reconstruction-popover li{color:#788478}
+.reconstruction-popover li[aria-current=step]{color:#26382e;font-weight:700}
+.reconstruction-popover li[data-complete=true]{color:#32664c}
+.reconstruction-popover li+li::before{content:'›';margin-right:8px;color:#889388}
+.reconstruction-cancel-error{color:#8f3e32;background:#f5e7e2}
+@container work-area (max-width:1100px){
+  .statusbar-with-tools>span:nth-child(2){display:none}
+  .cloud-revision{display:none}
+  .reconstruction-progress{max-width:360px}
+}
+@container work-area (max-width:750px){
+  .statusbar-with-tools>span:last-of-type{display:none}
+  .cloud-sync-trigger>span,.cloud-tools-trigger>span{display:none}
+  .cloud-dock{flex:1}
+  .reconstruction-progress{max-width:none}
+}
+@media(max-width:640px){
+  .cloud-workspace .statusbar-with-tools{height:calc(42px + env(safe-area-inset-bottom));padding:0 6px env(safe-area-inset-bottom);gap:6px}
+  .cloud-workspace .statusbar-with-tools>span:first-child{max-width:84px}
+  .cloud-dock{gap:3px}
+  .cloud-dock>button,.cloud-session-menu>summary,.reconstruction-progress>button{min-height:32px;min-width:32px;padding:5px}
+  .reconstruction-progress{padding-right:3px}
+  .reconstruction-trigger strong{font-size:10px}
+  .cloud-status-panel,.reconstruction-popover,.reconstruction-cancel-error{bottom:calc(50px + env(safe-area-inset-bottom));font-size:13px}
+}

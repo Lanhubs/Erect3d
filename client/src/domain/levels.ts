@@ -117,7 +117,10 @@ export function normalizeProject(input: Project): Project {
       level.alignment ||= { x: 0, z: 0 }
     }
     repairImportedRoofs(building); repairGeneratedFence(building)
-    connectAdjacentLevels({ ...project, buildings: [building] })
+    // Parametric architecture owns its explicit circulation connections. A
+    // missing inferred stair is a review item, not permission to place another
+    // stair in an unrelated room while loading the saved document.
+    if(!building.architecture&&!building.systems?.systems.length)connectAdjacentLevels({ ...project, buildings: [building] })
   }
   return project
 }

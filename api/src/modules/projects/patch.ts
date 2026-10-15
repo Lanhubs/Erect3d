@@ -6,7 +6,7 @@ export function applyChanges(input: Project, changes: Change[], modifiedAt: numb
   const result = structuredClone(input)
   for (const change of changes) {
     if (change.path.some(part => forbidden.has(part))) throw new ApiError(422, 'INVALID_PATH', 'Immutable or unsafe property')
-    if (change.path.length === 1 && !['name', 'units', 'calibration'].includes(change.path[0])) {
+    if (change.path.length === 1 && !['name', 'units', 'calibration', 'interpretation'].includes(change.path[0])) {
       throw new ApiError(422, 'INVALID_PATH', 'Use entity changes instead of replacing the document')
     }
     let parent: any = result

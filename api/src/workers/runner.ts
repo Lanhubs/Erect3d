@@ -18,11 +18,11 @@ export class Worker {
   private lastMaintenance=0
   readonly id = crypto.randomUUID()
   constructor(private db: Database,private config: Config,private store?: ObjectStore,private provider?: PlanIntelligenceProvider,private metrics?: Metrics) {}
-  async runOnce() {
+  async runOnce(requestedId?: string) {
     if (this.stopping) return false
-    if (Date.now()-this.lastMaintenance>3600000) { await maintenance(this.db);this.lastMaintenance=Date.now() }
-    await recoverExhausted(this.db)
-    const job = await claim(this.db,this.id,this.config.WORKER_LEASE_SECONDS)
+    if (!requestedId && Date.now()-this.lastMaintenance>3600000) { await maintenance(this.db);this.lastMaintenance=Date.now() }
+    await recoverExhausted(this.db,requestedId)
+    const job = await claim(this.db,this.id,this.config.WORKER_LEASE_SECONDS,requestedId)
     if (!job) return false
     const controller = new AbortController()
     const started=performance.now()
@@ -51,6 +51,8 @@ export class Worker {
       if (this.metrics) this.metrics.jobsFailed++
       report(this.metrics?.sink,'job',{ kind:job.kind,status:'failed',elapsedMs:performance.now()-started })
       log('job.failed',{ jobId:job.id,requestId:job.request_id,code:failure.code,retryable:failure.retryable })
+      if (error instanceof TypeError) log('job.client_failed',{jobId:job.id,
+        frames:(error.stack || '').split('\n').filter(line=>/^\s+at\s/.test(line)).slice(0,5).map(line=>line.replace(/https?:\/\/\S+/g,'[remote]'))})
     } finally { clearInterval(interval); this.controller = undefined }
     return true
   }

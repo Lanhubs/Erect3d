@@ -1,0 +1,40 @@
+$ tsc -b && vite build
+vite v8.3.0 building client environment for production...
+transforming...
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by "C:/Users/Dell/Desktop/projects/erect3d/client/node_modules/@techstark/opencv-js/dist/opencv.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "crypto" has been externalized for browser compatibility, imported by "C:/Users/Dell/Desktop/projects/erect3d/client/node_modules/@techstark/opencv-js/dist/opencv.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+✓ 391 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/offline-worker.js                                2.00 kB
+dist/assets/canopyGeometry-CzVdx3gV.js                3.96 kB
+dist/index.html                                       4.00 kB │ gzip:   1.50 kB
+dist/assets/worker-KF76owD4.js                       10.06 kB
+dist/assets/pdf.worker.min-Dswkl-cV.mjs           1,265.41 kB
+dist/assets/analyze-DiNSaLhB.js                  15,580.43 kB
+dist/assets/index-WOINbNNR.css                       61.33 kB │ gzip:  13.29 kB
+dist/assets/AnimatedModelPreview-CiaE748S.js          3.36 kB │ gzip:   1.14 kB
+dist/assets/ArchitecturalPreviews3D-BTxzG_s4.js       5.31 kB │ gzip:   1.63 kB
+dist/assets/ExplodedBuildingPreview-Du43o0A6.js       5.53 kB │ gzip:   1.63 kB
+dist/assets/GTAONode-B6bUWM81.js                      6.01 kB │ gzip:   2.38 kB
+dist/assets/three.tsl-BDLGCGHR.js                    19.16 kB │ gzip:   7.96 kB
+dist/assets/Viewer-CzyHgAtb.js                      178.49 kB │ gzip:  58.65 kB
+dist/assets/pdf-xpLmdmwQ.js                         430.93 kB │ gzip: 129.03 kB
+dist/assets/index-DGAtxdeD.js                       676.17 kB │ gzip: 200.60 kB
+dist/assets/three.webgpu-BMqJLyEN.js                704.93 kB │ gzip: 196.87 kB
+dist/assets/react-three-fiber.esm-sAnCmqNU.js       911.66 kB │ gzip: 242.60 kB
+
+[INEFFECTIVE_DYNAMIC_IMPORT] node_modules/three/build/three.tsl.js is dynamically imported by src/rendering/PresentationPipeline.tsx but also statically imported by node_modules/three/examples/jsm/objects/SkyMesh.js, node_modules/three/examples/jsm/tsl/display/GTAONode.js, dynamic import will not move module into another chunk.
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 4.41s
+[PLUGIN_TIMINGS] Plugin hooks ran for 3.1s of this 4.4s build (72%).
+2 hooks are listed without a time. Their calls overlapped, so the time inside one call includes work from other calls. To find their cost, profile the build with `node --cpu-prof`:
+  - vite:css transform (8 calls)
+  - vite:worker-import-meta-url transform (3 calls)
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+
