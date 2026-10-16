@@ -1,7 +1,192 @@
+1:59:56 PM [vite] (client) Re-optimizing dependencies because vite config has changed
 
-  VITE v8.3.0  ready in 856 ms
+  VITE v8.3.0  ready in 2227 ms
 
   ➜  Local:   http://127.0.0.1:5180/
   ➜  press h + enter to show help
-19:53:16 [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx
-19:53:16 [vite] (client) hmr update /src/cloud/CloudWorkspace.tsx, /src/features/landing/LandingDemo.tsx, /src/app/Workspace.tsx, /src/cloud/WorkspaceDock.tsx, /src/features/plan/PlanEditor.tsx, /src/features/inspector/Inspector.tsx, /src/app/WorkspaceHeader.tsx, /src/features/levels/LevelManager.tsx, /src/features/structure/ArchitecturalDetailsPanel.tsx, /src/features/structure/StructurePanel.tsx, /src/furniture/FurniturePanel.tsx, /src/cloud/SourcePanel.tsx, /src/cloud/CollaborationPanel.tsx, /src/features/plan/SystemsLayer.tsx and 31 more
+1:59:59 PM [vite] (client) [optimizer] bundling dependencies...
+2:04:48 PM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx
+2:04:52 PM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx
+2:05:27 PM [vite] (client) hmr update /src/rendering/GraphicsBenchmark.tsx
+2:05:36 PM [vite] (client) page reload src/geometry/canopyRegions.ts
+2:17:01 PM [vite] (client) hmr update /src/rendering/GraphicsRuntime.tsx
+2:17:01 PM [vite] (client) hmr invalidate /src/rendering/GraphicsRuntime.tsx Could not Fast Refresh ("GraphicsSettings" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+2:17:01 PM [vite] (client) hmr update /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/LevelGeometry.tsx, /src/rendering/SiteEnvironment.tsx, /src/rendering/CachedEnvironment.tsx, /src/rendering/PresentationPipeline.tsx, /src/rendering/ArenaCanopy.tsx, /src/rendering/SeatingMesh.tsx, /src/rendering/LinkedFloors.tsx
+2:17:05 PM [vite] (client) hmr update /src/rendering/graphicsBenchmark.css
+2:17:09 PM [vite] (client) hmr update /src/rendering/PresentationPipeline.tsx
+2:17:18 PM [vite] (client) hmr update /src/rendering/BuildingRoofs.tsx
+2:19:02 PM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx
+2:19:09 PM [vite] (client) hmr update /src/rendering/BuildingRoofs.tsx
+2:19:16 PM [vite] (client) hmr update /src/rendering/LevelGeometry.tsx
+2:20:49 PM [vite] (client) hmr update /src/rendering/BuildingScene.tsx
+2:21:17 PM [vite] (client) hmr update /src/rendering/BuildingRoofs.tsx
+2:21:25 PM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx
+2:22:12 PM [vite] (client) hmr update /src/rendering/GraphicsBenchmark.tsx
+2:25:01 PM [vite] (client) hmr update /src/rendering/GraphicsBenchmark.tsx
+2:30:19 PM [vite] (client) hmr update /src/rendering/GraphicsBenchmark.tsx
+7:40:21 PM [vite] (client) hmr update /src/rendering/GraphicsBenchmark.tsx
+7:40:24 PM [vite] (client) hmr update /src/features/projects/Dashboard.tsx
+7:41:39 PM [vite] (client) hmr update /src/features/inspector/ArchitectureControls.tsx
+7:41:42 PM [vite] (client) hmr update /src/features/inspector/RoofControls.tsx
+7:42:40 PM [vite] (client) hmr update /src/cloud/ReconstructionProgress.tsx, /src/cloud/ProposalReview.tsx
+7:42:54 PM [vite] (client) hmr update /src/rendering/BuildingRoofs.tsx
+7:42:58 PM [vite] (client) hmr update /src/features/analysis/BuildingAnalysis.tsx, /src/features/structure/StructurePanel.tsx, /src/features/analysis/AnalysisPanel.tsx, /src/features/inspector/StructureInspector.tsx, /src/features/reconstruction/SpaceReview.tsx, /src/rendering/RoomSurface.tsx, /src/rendering/SoftwarePreview.tsx, /src/rendering/BuildingRoofs.tsx
+7:42:58 PM [vite] (client) hmr update /src/features/analysis/BuildingAnalysis.tsx, /src/features/structure/StructurePanel.tsx, /src/features/analysis/AnalysisPanel.tsx, /src/features/inspector/StructureInspector.tsx, /src/features/reconstruction/SpaceReview.tsx, /src/rendering/RoomSurface.tsx, /src/rendering/SoftwarePreview.tsx, /src/rendering/BuildingRoofs.tsx
+7:44:02 PM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/features/inspector/SystemsInspector.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx, /src/features/inspector/SystemGeometryFields.tsx, /src/features/plan/PlanEditor.tsx, /src/features/plan/ElementHandles.tsx, /src/furniture/FurnitureLayer.tsx, /src/rendering/ElementGizmo.tsx, /src/rendering/SoftwareElementHandles.tsx
+7:44:06 PM [vite] (client) hmr update /src/features/inspector/SystemsInspector.tsx, /src/rendering/GraphicsBenchmark.tsx
+7:44:22 PM [vite] (client) hmr update /src/rendering/LinkedFloors.tsx
+7:44:25 PM [vite] (client) hmr update /src/rendering/LinkedFloors.tsx
+7:45:14 PM [vite] (client) hmr update /src/rendering/LinkedFloors.tsx
+7:45:17 PM [vite] (client) hmr update /src/rendering/GraphicsBenchmark.tsx
+7:45:20 PM [vite] (client) hmr update /src/rendering/GraphicsBenchmark.tsx
+7:45:23 PM [vite] (client) hmr update /src/rendering/InspectionCamera.tsx
+7:46:48 PM [vite] (client) hmr update /src/features/analysis/BuildingAnalysis.tsx, /src/features/structure/StructurePanel.tsx, /src/features/analysis/AnalysisPanel.tsx, /src/features/inspector/StructureInspector.tsx, /src/features/reconstruction/SpaceReview.tsx, /src/rendering/RoomSurface.tsx, /src/rendering/SoftwarePreview.tsx, /src/rendering/BuildingRoofs.tsx
+7:49:40 PM [vite] (client) hmr update /src/rendering/GraphicsBenchmark.tsx
+7:59:54 PM [vite] (client) hmr update /src/rendering/GraphicsBenchmark.tsx
+8:00:00 PM [vite] (client) hmr update /src/rendering/BuildingScene.tsx
+8:03:28 PM [vite] (client) hmr update /src/rendering/EntityInstances.tsx
+8:03:28 PM [vite] (client) hmr invalidate /src/rendering/EntityInstances.tsx Could not Fast Refresh ("spatialBatches" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+8:03:28 PM [vite] (client) hmr update /src/rendering/BuildingSystems.tsx, /src/rendering/RailingInstances.tsx, /src/rendering/ArchitectureFacade.tsx, /src/rendering/ColumnInstances.tsx, /src/rendering/SitePropInstances.tsx, /src/rendering/ArenaSkylights.tsx
+8:03:29 PM [vite] (client) hmr invalidate /src/rendering/ArchitectureFacade.tsx Could not Fast Refresh ("batchedFacadeIds" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+8:03:29 PM [vite] (client) hmr update /src/rendering/LevelGeometry.tsx
+8:03:34 PM [vite] (client) hmr update /src/rendering/SiteEnvironment.tsx
+8:03:37 PM [vite] (client) hmr update /src/rendering/BuildingScene.tsx
+8:04:22 PM [vite] (client) hmr update /src/rendering/Viewer.tsx
+9:40:33 PM [vite] (client) hmr update /src/features/inspector/SystemsInspector.tsx, /src/rendering/GraphicsBenchmark.tsx
+9:40:36 PM [vite] (client) hmr update /src/features/inspector/SystemsInspector.tsx, /src/rendering/GraphicsBenchmark.tsx
+9:40:39 PM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/features/inspector/SystemsInspector.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx, /src/features/inspector/SystemGeometryFields.tsx, /src/features/plan/PlanEditor.tsx, /src/features/plan/ElementHandles.tsx, /src/furniture/FurnitureLayer.tsx, /src/rendering/ElementGizmo.tsx, /src/rendering/SoftwareElementHandles.tsx
+9:41:21 PM [vite] (client) hmr update /src/features/inspector/SystemsInspector.tsx
+9:41:24 PM [vite] (client) hmr update /src/features/inspector/SystemGeometryFields.tsx
+9:41:26 PM [vite] (client) hmr update /src/features/plan/PlanEditor.tsx, /src/features/plan/ElementHandles.tsx, /src/furniture/FurnitureLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/ElementGizmo.tsx, /src/rendering/SoftwareElementHandles.tsx
+9:41:29 PM [vite] (client) hmr update /src/rendering/BuildingSystems.tsx
+12:11:30 AM [vite] (client) hmr update /src/rendering/BuildingSystems.tsx
+12:12:14 AM [vite] (client) hmr update /src/rendering/ArticulationSystem.tsx
+12:12:16 AM [vite] (client) hmr update /src/rendering/ArticulationSystem.tsx
+12:12:18 AM [vite] (client) hmr update /src/rendering/BuildingSystems.tsx
+12:13:38 AM [vite] (client) hmr update /src/rendering/BuildingSystems.tsx
+12:13:41 AM [vite] (client) hmr update /src/rendering/ArticulationSystem.tsx
+12:14:33 AM [vite] (client) page reload src/domain/types.ts
+12:14:47 AM [vite] (client) hmr update /src/cloud/ProposalModelPreview.tsx
+12:14:50 AM [vite] (client) hmr update /src/features/plan/PlanEditor.tsx, /src/features/inspector/Inspector.tsx, /src/features/plan/OpeningLayer.tsx, /src/features/inspector/OpeningInspector.tsx, /src/features/plan/ElementHandles.tsx, /src/furniture/FurnitureLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/ElementGizmo.tsx, /src/rendering/SoftwareElementHandles.tsx
+12:15:38 AM [vite] (client) hmr update /src/rendering/WallMesh.tsx
+12:16:24 AM [vite] (client) hmr update /src/rendering/RenderResources.tsx
+12:16:24 AM [vite] (client) hmr invalidate /src/rendering/RenderResources.tsx Could not Fast Refresh ("RenderResources" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+12:16:24 AM [vite] (client) hmr update /src/rendering/GraphicsRuntime.tsx, /src/rendering/SeatingMesh.tsx, /src/rendering/EntityInstances.tsx, /src/rendering/ArticulationSystem.tsx
+12:16:24 AM [vite] (client) hmr invalidate /src/rendering/GraphicsRuntime.tsx Could not Fast Refresh ("GraphicsSettings" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+12:16:24 AM [vite] (client) hmr update /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/LevelGeometry.tsx, /src/rendering/SiteEnvironment.tsx, /src/rendering/CachedEnvironment.tsx, /src/rendering/PresentationPipeline.tsx, /src/rendering/ArenaCanopy.tsx, /src/rendering/SeatingMesh.tsx, /src/rendering/LinkedFloors.tsx
+12:16:24 AM [vite] (client) hmr invalidate /src/rendering/EntityInstances.tsx Could not Fast Refresh ("spatialBatches" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+12:16:24 AM [vite] (client) hmr update /src/rendering/BuildingSystems.tsx, /src/rendering/RailingInstances.tsx, /src/rendering/ArchitectureFacade.tsx, /src/rendering/ColumnInstances.tsx, /src/rendering/SitePropInstances.tsx, /src/rendering/ArenaSkylights.tsx, /src/rendering/ArticulationSystem.tsx, /src/rendering/WindowMesh.tsx
+12:16:29 AM [vite] (client) hmr update /src/features/inspector/OpeningInspector.tsx
+12:17:53 AM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/features/inspector/SystemsInspector.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx, /src/features/inspector/SystemGeometryFields.tsx, /src/features/plan/PlanEditor.tsx, /src/features/plan/ElementHandles.tsx, /src/furniture/FurnitureLayer.tsx, /src/rendering/ElementGizmo.tsx, /src/rendering/SoftwareElementHandles.tsx
+12:17:57 AM [vite] (client) hmr update /src/features/inspector/SystemGeometryFields.tsx
+12:18:00 AM [vite] (client) hmr update /src/features/plan/PlanEditor.tsx, /src/features/plan/ElementHandles.tsx, /src/furniture/FurnitureLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/ElementGizmo.tsx, /src/rendering/SoftwareElementHandles.tsx
+12:18:06 AM [vite] (client) hmr update /src/rendering/ArticulationSystem.tsx
+12:18:09 AM [vite] (client) hmr update /src/rendering/ArticulationSystem.tsx
+12:18:12 AM [vite] (client) hmr update /src/rendering/ArticulationSystem.tsx
+12:19:40 AM [vite] (client) hmr update /src/cloud/ProposalModelPreview.tsx
+12:19:44 AM [vite] (client) hmr update /src/rendering/ArticulationSystem.tsx
+12:19:47 AM [vite] (client) hmr update /src/rendering/ArticulationSystem.tsx
+12:21:11 AM [vite] (client) hmr update /src/rendering/DoorMesh.tsx
+12:21:23 AM [vite] (client) page reload src/domain/types.ts
+12:21:34 AM [vite] (client) hmr update /src/cloud/ProposalModelPreview.tsx
+12:21:37 AM [vite] (client) hmr update /src/features/inspector/OpeningInspector.tsx
+12:23:52 AM [vite] (client) hmr update /src/rendering/WindowMesh.tsx
+12:23:54 AM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx
+12:23:59 AM [vite] (client) hmr update /src/rendering/BuildingSystems.tsx
+12:24:02 AM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx
+12:26:39 AM [vite] (client) hmr update /src/features/plan/PlanEditor.tsx, /src/features/inspector/Inspector.tsx, /src/features/plan/OpeningLayer.tsx, /src/features/inspector/OpeningInspector.tsx, /src/features/plan/ElementHandles.tsx, /src/furniture/FurnitureLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/ElementGizmo.tsx, /src/rendering/SoftwareElementHandles.tsx, /src/rendering/WindowMesh.tsx, /src/features/inspector/WindowConstructionFields.tsx
+12:26:48 AM [vite] (client) hmr update /src/cloud/ProposalModelPreview.tsx
+12:26:58 AM [vite] (client) hmr update /src/cloud/CandidateDetails.tsx
+12:29:44 AM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx
+12:29:47 AM [vite] (client) hmr update /src/rendering/ArticulationSystem.tsx
+12:29:50 AM [vite] (client) hmr update /src/rendering/BuildingSystems.tsx
+12:29:52 AM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx, /src/rendering/ArticulationSystem.tsx
+12:29:54 AM [vite] (client) hmr update /src/rendering/ArticulationSystem.tsx
+12:29:57 AM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx
+12:30:43 AM [vite] (client) hmr update /src/features/inspector/ArticulationFields.tsx
+12:30:45 AM [vite] (client) hmr update /src/features/inspector/SystemsInspector.tsx, /src/rendering/LinkedFloors.tsx
+12:30:47 AM [vite] (client) hmr update /src/rendering/LinkedFloors.tsx
+12:30:49 AM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/features/inspector/SystemsInspector.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx, /src/features/inspector/SystemGeometryFields.tsx, /src/features/plan/PlanEditor.tsx, /src/features/plan/ElementHandles.tsx, /src/furniture/FurnitureLayer.tsx, /src/rendering/ElementGizmo.tsx, /src/rendering/SoftwareElementHandles.tsx
+12:31:49 AM [vite] (client) hmr update /src/cloud/ProposalModelPreview.tsx
+12:33:11 AM [vite] (client) hmr update /src/rendering/LevelGeometry.tsx
+12:33:13 AM [vite] (client) hmr update /src/rendering/WallMesh.tsx
+12:33:15 AM [vite] (client) hmr update /src/rendering/RenderResources.tsx
+12:33:15 AM [vite] (client) hmr invalidate /src/rendering/RenderResources.tsx Could not Fast Refresh ("RenderResources" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+12:33:15 AM [vite] (client) hmr update /src/rendering/GraphicsRuntime.tsx, /src/rendering/SeatingMesh.tsx, /src/rendering/EntityInstances.tsx, /src/rendering/ArticulationSystem.tsx
+12:33:15 AM [vite] (client) hmr invalidate /src/rendering/GraphicsRuntime.tsx Could not Fast Refresh ("GraphicsSettings" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+12:33:15 AM [vite] (client) hmr update /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/LevelGeometry.tsx, /src/rendering/SiteEnvironment.tsx, /src/rendering/CachedEnvironment.tsx, /src/rendering/PresentationPipeline.tsx, /src/rendering/ArenaCanopy.tsx, /src/rendering/SeatingMesh.tsx, /src/rendering/LinkedFloors.tsx
+12:33:15 AM [vite] (client) hmr invalidate /src/rendering/EntityInstances.tsx Could not Fast Refresh ("spatialBatches" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+12:33:15 AM [vite] (client) hmr update /src/rendering/BuildingSystems.tsx, /src/rendering/RailingInstances.tsx, /src/rendering/ArchitectureFacade.tsx, /src/rendering/ColumnInstances.tsx, /src/rendering/SitePropInstances.tsx, /src/rendering/ArenaSkylights.tsx, /src/rendering/ArticulationSystem.tsx, /src/rendering/WindowMesh.tsx, /src/rendering/DoorMesh.tsx
+12:34:06 AM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx
+12:34:08 AM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx
+12:34:11 AM [vite] (client) hmr update /src/rendering/BuildingRoofs.tsx
+12:34:16 AM [vite] (client) hmr update /src/rendering/GraphicsBenchmark.tsx
+12:36:18 AM [vite] (client) hmr update /src/rendering/WindowMesh.tsx
+12:36:22 AM [vite] (client) hmr update /src/rendering/ArticulationSystem.tsx
+12:38:41 AM [vite] (client) hmr update /src/rendering/CrossRoofSurface.tsx
+12:38:43 AM [vite] (client) hmr update /src/rendering/RoofPanelSurface.tsx
+12:39:03 AM [vite] (client) hmr update /src/rendering/BuildingScene.tsx
+12:39:43 AM [vite] (client) hmr update /src/rendering/CrossRoofSurface.tsx
+12:39:45 AM [vite] (client) hmr update /src/rendering/RoofPanelSurface.tsx
+5:43:54 AM [vite] (client) page reload src/domain/types.ts
+5:44:06 AM [vite] (client) hmr update /src/cloud/ProposalModelPreview.tsx
+5:44:09 AM [vite] (client) hmr update /src/cloud/CloudWorkspace.tsx, /src/features/landing/LandingDemo.tsx, /src/cloud/WorkspaceDock.tsx, /src/app/Workspace.tsx, /src/features/plan/PlanEditor.tsx, /src/cloud/CollaborationPanel.tsx, /src/features/inspector/Inspector.tsx, /src/cloud/SourcePanel.tsx, /src/app/WorkspaceHeader.tsx, /src/features/structure/StructurePanel.tsx, /src/features/structure/ArchitecturalDetailsPanel.tsx, /src/features/levels/LevelManager.tsx, /src/furniture/FurniturePanel.tsx, /src/features/plan/SystemsLayer.tsx and 23 more
+5:44:16 AM [vite] (client) hmr update /src/features/inspector/Inspector.tsx
+5:46:34 AM [vite] (client) hmr update /src/features/inspector/SystemsInspector.tsx, /src/rendering/GraphicsBenchmark.tsx
+5:46:46 AM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/features/inspector/SystemsInspector.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx, /src/features/inspector/SystemGeometryFields.tsx, /src/features/plan/PlanEditor.tsx, /src/features/plan/ElementHandles.tsx, /src/furniture/FurnitureLayer.tsx, /src/rendering/ElementGizmo.tsx, /src/rendering/SoftwareElementHandles.tsx
+5:46:50 AM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx
+5:50:26 AM [vite] (client) hmr update /src/rendering/WallMesh.tsx
+5:50:32 AM [vite] (client) hmr update /src/rendering/ArenaCanopy.tsx, /src/rendering/RoofPanelSurface.tsx, /src/rendering/CrossRoofSurface.tsx
+5:50:37 AM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx
+5:52:25 AM [vite] (client) hmr update /src/rendering/GraphicsBenchmark.tsx
+5:55:39 AM [vite] (client) hmr update /src/features/inspector/SystemsInspector.tsx, /src/rendering/GraphicsBenchmark.tsx
+5:55:41 AM [vite] (client) hmr update /src/features/inspector/SystemsInspector.tsx, /src/rendering/GraphicsBenchmark.tsx
+5:55:44 AM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/features/inspector/SystemsInspector.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx, /src/features/inspector/SystemGeometryFields.tsx, /src/features/plan/PlanEditor.tsx, /src/features/plan/ElementHandles.tsx, /src/furniture/FurnitureLayer.tsx, /src/rendering/ElementGizmo.tsx, /src/rendering/SoftwareElementHandles.tsx
+5:55:47 AM [vite] (client) hmr update /src/features/plan/PlanEditor.tsx, /src/features/plan/ElementHandles.tsx, /src/furniture/FurnitureLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/ElementGizmo.tsx, /src/rendering/SoftwareElementHandles.tsx
+5:55:50 AM [vite] (client) hmr update /src/features/inspector/SystemGeometryFields.tsx
+5:56:35 AM [vite] (client) hmr update /src/rendering/BuildingSystems.tsx
+5:56:37 AM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx
+5:56:42 AM [vite] (client) hmr update /src/features/inspector/ArticulationFields.tsx
+5:58:26 AM [vite] (client) hmr update /src/rendering/BuildingSystems.tsx
+5:58:28 AM [vite] (client) hmr update /src/rendering/SpiralStairSystem.tsx
+5:58:30 AM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx
+5:58:32 AM [vite] (client) hmr update /src/rendering/SpiralStairSystem.tsx
+5:58:34 AM [vite] (client) hmr update /src/rendering/BuildingSystems.tsx
+5:58:38 AM [vite] (client) hmr update /src/rendering/WalkController.tsx
+5:58:41 AM [vite] (client) hmr update /src/rendering/WalkController.tsx
+5:58:43 AM [vite] (client) hmr update /src/rendering/BuildingScene.tsx
+5:59:06 AM [vite] (client) hmr update /src/rendering/WalkController.tsx
+5:59:08 AM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx
+5:59:48 AM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx
+5:59:50 AM [vite] (client) hmr update /src/rendering/BuildingRoofs.tsx
+5:59:52 AM [vite] (client) hmr update /src/cloud/ProposalReview.tsx
+6:00:40 AM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx, /src/rendering/BuildingRoofs.tsx
+6:00:42 AM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx
+6:00:44 AM [vite] (client) hmr update /src/rendering/Viewer.tsx
+6:03:44 AM [vite] (client) hmr update /src/rendering/SpiralStairSystem.tsx, /src/features/plan/SystemsLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx, /src/rendering/WalkController.tsx
+6:03:46 AM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx
+6:03:48 AM [vite] (client) hmr update /src/rendering/BuildingSystems.tsx
+6:03:50 AM [vite] (client) hmr update /src/rendering/SpiralStairSystem.tsx
+6:03:52 AM [vite] (client) hmr update /src/rendering/WalkController.tsx
+6:03:54 AM [vite] (client) hmr update /src/rendering/WalkController.tsx
+6:04:20 AM [vite] (client) hmr update /src/rendering/WalkController.tsx
+6:04:22 AM [vite] (client) hmr update /src/rendering/WalkController.tsx
+6:04:24 AM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx
+6:04:26 AM [vite] (client) hmr update /src/features/inspector/SystemGeometryFields.tsx
+6:04:28 AM [vite] (client) hmr update /src/features/inspector/SystemsInspector.tsx
+6:05:56 AM [vite] (client) hmr update /src/rendering/SpiralStairSystem.tsx, /src/features/plan/SystemsLayer.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx, /src/rendering/WalkController.tsx, /src/features/inspector/SystemGeometryFields.tsx
+6:05:59 AM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx, /src/features/inspector/SystemsInspector.tsx, /src/rendering/Viewer.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/BuildingSystems.tsx, /src/rendering/LinkedFloors.tsx, /src/features/inspector/SystemGeometryFields.tsx, /src/features/plan/PlanEditor.tsx, /src/features/plan/ElementHandles.tsx, /src/furniture/FurnitureLayer.tsx, /src/rendering/ElementGizmo.tsx, /src/rendering/SoftwareElementHandles.tsx
+6:07:32 AM [vite] (client) hmr update /src/rendering/GraphicsBenchmark.tsx
+6:07:37 AM [vite] (client) hmr update /src/features/plan/SystemsLayer.tsx
+6:08:34 AM [vite] (client) hmr update /src/rendering/EntityInstances.tsx
+6:08:34 AM [vite] (client) hmr invalidate /src/rendering/EntityInstances.tsx Could not Fast Refresh ("spatialBatches" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+6:08:34 AM [vite] (client) hmr update /src/rendering/BuildingSystems.tsx, /src/rendering/RailingInstances.tsx, /src/rendering/ArchitectureFacade.tsx, /src/rendering/ColumnInstances.tsx, /src/rendering/SitePropInstances.tsx, /src/rendering/ArenaSkylights.tsx, /src/rendering/ArticulationSystem.tsx, /src/rendering/WindowMesh.tsx, /src/rendering/DoorMesh.tsx, /src/rendering/SpiralStairSystem.tsx
+6:08:34 AM [vite] (client) hmr invalidate /src/rendering/ArchitectureFacade.tsx Could not Fast Refresh ("batchedFacadeIds" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+6:08:34 AM [vite] (client) hmr update /src/rendering/LevelGeometry.tsx
+6:08:38 AM [vite] (client) hmr update /src/rendering/SpiralStairSystem.tsx
+10:49:57 AM [vite] (client) hmr update /src/rendering/GraphicsBenchmark.tsx
+10:49:57 AM [vite] (client) hmr update /src/rendering/GraphicsBenchmark.tsx
+11:02:47 AM [vite] (client) hmr update /src/cloud/ReconstructionProgress.tsx, /src/cloud/ProposalReview.tsx
+11:08:52 AM [vite] (client) hmr update /src/rendering/GraphicsBenchmark.tsx
+11:14:17 AM [vite] (client) hmr update /src/rendering/GraphicsBenchmark.tsx
+11:16:59 AM [vite] (client) hmr update /src/rendering/GraphicsBenchmark.tsx

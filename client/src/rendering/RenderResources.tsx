@@ -1,5 +1,6 @@
 import {createContext,useContext,useEffect,useMemo,type ReactNode} from 'react'
-import {BoxGeometry,CylinderGeometry,ConeGeometry,SphereGeometry,MeshStandardMaterial,MeshPhysicalMaterial,type BufferGeometry,type Material} from 'three'
+import {BoxGeometry,CylinderGeometry,ConeGeometry,SphereGeometry,type BufferGeometry,type Material} from 'three'
+import {architecturalMaterial} from './architecturalMaterial'
 export type InstanceShape='box'|'column'|'tree-trunk'|'tree-crown'|'leaf-crown'|'wheel'
 export class RenderResources {
   geometries=new Map<InstanceShape,BufferGeometry>()
@@ -14,7 +15,7 @@ export class RenderResources {
   }
   material(key:string,color:string){
     const id=`${key}:${color}`
-    if(!this.materials.has(id))this.materials.set(id,key==='glass'?new MeshPhysicalMaterial({color,metalness:.08,roughness:.12,transparent:true,opacity:.65,depthWrite:false}):new MeshStandardMaterial({color,roughness:key==='metal'?.35:key==='seat'?.52:.8,metalness:key==='metal'?.6:.02}))
+    if(!this.materials.has(id))this.materials.set(id,architecturalMaterial(key,color))
     return this.materials.get(id)!
   }
   retain(material:Material){this.references.set(material,(this.references.get(material)||0)+1)}

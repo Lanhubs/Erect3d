@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { Vector3 } from 'three'
 import type { Level, SiteFence } from '../domain/types'
+import type {BuildingSystem} from '../domain/buildingSystems'
 import { nearbyDoor } from '../geometry/walk'
 import { buildWalkObstacles } from '../walkthrough/collision'
 import { buildWalkSurfaces } from '../walkthrough/grounding'
@@ -10,10 +11,10 @@ import { bindWalkInput, type WalkInput } from '../walkthrough/input'
 import { safeWalkStart } from '../walkthrough/start'
 import { playerShape, type Player, type WalkOptions, type WalkViewpoint } from '../walkthrough/types'
 import { useFurnitureReview } from '../furniture/reviewState'
-type Props = { levels: Level[]; startLevelId: string; active: boolean; openDoors: ReadonlySet<string>; siteFence?: SiteFence;
+type Props = { levels: Level[]; systems?:BuildingSystem[];startLevelId: string; active: boolean; openDoors: ReadonlySet<string>; siteFence?: SiteFence;
   onToggleDoor: (id: string) => void; onCapture: (locked: boolean, dragging?: boolean) => void; options: WalkOptions; viewpoints?: WalkViewpoint[];
   onPosition?: (x: number, z: number, yaw: number, level: Level, foot: number, pitch: number) => void }
-export function WalkController({ levels, startLevelId, active, openDoors, onToggleDoor, onPosition, siteFence, onCapture, options, viewpoints }: Props) {
+export function WalkController({ levels,systems, startLevelId, active, openDoors, onToggleDoor, onPosition, siteFence, onCapture, options, viewpoints }: Props) {
   const { camera, gl } = useThree()
   const player = useRef<Player>({ x: 0, z: 0, foot: 0, vx: 0, vz: 0, vy: 0, grounded: true })
   const input = useRef<WalkInput>({ keys: new Set(), yaw: 0, pitch: 0, captured: false, fallback: false })
@@ -21,7 +22,7 @@ export function WalkController({ levels, startLevelId, active, openDoors, onTogg
   const callbacks = useRef({ onToggleDoor, onPosition, onCapture }), settings = useRef(options), entryLevel = useRef(startLevelId)
   const furnitureShown = useFurnitureReview(state => state.shown)
   useEffect(() => { callbacks.current = { onToggleDoor, onPosition, onCapture }; settings.current = options; entryLevel.current = startLevelId }, [onToggleDoor, onPosition, onCapture, options, startLevelId])
-  const world = useMemo(() => ({ ...buildWalkSurfaces(levels), obstacles: buildWalkObstacles(levels, openDoors, siteFence, furnitureShown) }), [levels, openDoors, siteFence, furnitureShown])
+  const world = useMemo(() => ({ ...buildWalkSurfaces(levels,systems), obstacles: buildWalkObstacles(levels, openDoors, siteFence, furnitureShown,systems) }), [levels,systems, openDoors, siteFence, furnitureShown])
   const worldRef = useRef(world), levelsRef = useRef(levels), viewpointsRef = useRef(viewpoints)
   useEffect(() => { worldRef.current = world; levelsRef.current = levels.toSorted((a, b) => b.elevation - a.elevation); viewpointsRef.current = viewpoints }, [world, levels, viewpoints])
   useEffect(() => {

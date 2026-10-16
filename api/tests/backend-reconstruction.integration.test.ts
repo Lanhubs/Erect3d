@@ -86,39 +86,41 @@ test('backend reads the linked original PDF with selected page context, and refu
   await expect(analyze(h.db,h.config,store,changed.provider,changed.job,new AbortController().signal)).rejects.toMatchObject({code:'SOURCE_DOCUMENT_CHANGED'})
   expect(changed.passes).toHaveLength(0)
 },15000)
-test('default direct reconstruction makes one provider request and publishes visible progress before a valid model',async()=>{
-  const state=await setup(),payload={...state.job.payload as any,options:{...state.input.options,strategy:'direct'}}
+test('dense direct reconstruction reads the original PDF once and bounds a missing-opening source check',async()=>{
+  const state=await setup(true),payload={...state.job.payload as any,options:{...state.input.options,strategy:'direct',complex:true}}
   await h.db`UPDATE jobs SET payload=${payload}::jsonb WHERE id=${state.analysisId}`
   await h.db`UPDATE analyses SET options=${payload.options}::jsonb WHERE id=${state.analysisId}`
   const candidates=ring.map((point,index)=>({...base,id:`w${index}`,kind:'wall' as const,points:[point,ring[(index+1)%4]],thickness:.02}))
   let calls=0
-  await analyze(h.db,h.config,store,{async interpret(input){calls++;expect(input.pass).toBe('reconstruct-model');return {proposal:{coordinatesVersion:1,coordinateSystem:'normalized-image-top-left',candidates,warnings:[],understanding}}}},
+  await analyze(h.db,h.config,store,{async interpret(input){calls++;expect(input.details).toHaveLength(4)
+    if(calls===1){expect(input.pass).toBe('reconstruct-model');expect(input.document?.page).toBe(2)}
+    else{expect(input.pass).toBe('validated-model-repair');expect(input.document).toBeUndefined();expect(input.validationIssues?.some(issue=>issue.startsWith('NO_WINDOWS:'))).toBe(true)}
+    return {proposal:{coordinatesVersion:1,coordinateSystem:'normalized-image-top-left',candidates:calls===1?candidates:[],warnings:[],understanding}}}},
     {...state.job,payload},new AbortController().signal)
-  expect(calls).toBe(1)
+  expect(calls).toBe(2)
   const [row]=await h.db`SELECT status,result FROM analyses WHERE id=${state.analysisId}`
   expect(row.status).toBe('ready');expect(row.result.quality.status).not.toBe('blocked')
   const events=await h.db`SELECT payload FROM realtime_events WHERE project_id=${state.project.id} AND type='analysis.progress' ORDER BY id`
-  expect(events.map((event:{payload:{progress:{current:string}}})=>event.payload.progress.current)).toEqual(['measure-source','reconstruct-model','model-validation'])
+  expect(events.map((event:{payload:{progress:{current:string}}})=>event.payload.progress.current)).toEqual(['measure-source','reconstruct-model','model-validation','validated-model-repair-1'])
 },15000)
 
-test('dense direct reconstruction compiles the four concurrent regional proposals under one analysis job',async()=>{
+test('dense image reconstruction preserves cross-region wall spans in a single coordinated result',async()=>{
   const state=await setup(),payload={...state.job.payload as any,options:{...state.input.options,strategy:'direct',complex:true}}
   await h.db`UPDATE jobs SET payload=${payload}::jsonb WHERE id=${state.analysisId}`
   await h.db`UPDATE analyses SET options=${payload.options}::jsonb WHERE id=${state.analysisId}`
   const passes:string[]=[]
   await analyze(h.db,h.config,store,{async interpret(input){
     passes.push(input.pass)
-    if(input.pass==='global-understanding')return {proposal:{coordinatesVersion:1,coordinateSystem:'normalized-image-top-left',candidates:[],warnings:[],understanding}}
-    expect(input.pass).toMatch(/^reconstruct-region-[1-4]$/);expect(input.crop).toBeDefined();expect(input.details).toBeUndefined()
+    expect(['reconstruct-model','validated-model-repair']).toContain(input.pass);expect(input.details).toHaveLength(4)
     expect((await sharp(input.bytes).metadata()).width).toBe(1000)
-    const index=Number(input.pass.at(-1))-1,point=[ring[0],ring[1],ring[3],ring[2]][index]
-    const end=index%2?{...point,y:.5}:{...point,x:.5}
-    return {proposal:{coordinatesVersion:1,coordinateSystem:'normalized-image-top-left',candidates:[{...base,id:'regional-wall',kind:'wall',points:[point,end],thickness:.015}],warnings:[]}}
+    return {proposal:{coordinatesVersion:1,coordinateSystem:'normalized-image-top-left',candidates:input.pass==='reconstruct-model'?walls:[],warnings:[],understanding}}
   }},{...state.job,payload},new AbortController().signal)
-  expect(passes).toHaveLength(5)
+  expect(passes).toEqual(['reconstruct-model','validated-model-repair'])
   const [row]=await h.db`SELECT result FROM analyses WHERE id=${state.analysisId}`
   expect(row.result.quality.status).not.toBe('blocked')
-  expect(row.result.proposal.candidates.filter((item:Candidate)=>item.kind==='wall').map((item:Candidate)=>item.id)).toEqual(['region1_regional-wall','region2_regional-wall','region3_regional-wall','region4_regional-wall'])
+  const traced=row.result.proposal.candidates.filter((item:Candidate)=>item.kind==='wall')
+  expect(traced.map((item:Candidate)=>item.id)).toEqual(walls.map(w=>w.id))
+  expect(traced.map((item:Candidate)=>item.points)).toEqual(walls.map(w=>w.points))
 },15000)
 test('retry reuses completed reads only for the identical source, settings and model revision',async()=>{
   const state=await setup(),proposal={coordinatesVersion:1,coordinateSystem:'normalized-image-top-left',candidates:[],warnings:[],understanding}

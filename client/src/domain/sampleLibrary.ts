@@ -1,16 +1,14 @@
 import type { Project } from './types'
 import { houseSample, villaSample, apartmentSample } from './residentialSamples'
 import { officeSample, mallSample, publicBuildingSample } from './civicSamples'
-import { stadiumSample } from './stadiumSample'
-import { tableTennisSample } from './arenaSample'
 import { furnishedHouseSample } from './furnishedSample'
 
-export type SampleCategory = 'Residential' | 'Commercial' | 'Public' | 'Public / Sports'
+export type SampleCategory = 'Residential' | 'Commercial' | 'Public'
 export type ArchitecturalSample = { id: string; category: SampleCategory; title: string; description: string; project: Project }
 
 export function createSampleLibrary(): ArchitecturalSample[] {
   const house = houseSample(), villa = villaSample(), apartment = apartmentSample(), office = officeSample(),
-    mall = mallSample(), publicBuilding = publicBuildingSample(), stadium = stadiumSample(), tableTennis = tableTennisSample()
+    mall = mallSample(), publicBuilding = publicBuildingSample()
   return [
     { id: 'furnished-house', category: 'Residential', title: 'Maple House · furnished walkthrough', description: 'Furnished two-storey home with a connected stair hall, kitchen and bathroom fixtures, editable furniture and continuous first-person exploration.', project: furnishedHouseSample() },
     { id: 'house', category: 'Residential', title: 'Willow Court House', description: 'Single-storey family home with an entrance porch, timber screen, connected rooms and a fenced garden.', project: house },
@@ -19,7 +17,5 @@ export function createSampleLibrary(): ArchitecturalSample[] {
     { id: 'office', category: 'Commercial', title: 'Northline Studio Offices', description: 'Two commercial floors with open work areas, meeting suite, reception and a structural column grid.', project: office },
     { id: 'mall', category: 'Commercial', title: 'Central Walk Mall', description: 'Two retail galleries arranged around a large atrium void with independently modeled roof sections.', project: mall },
     { id: 'public', category: 'Public', title: 'Harbor Civic Forum', description: 'Irregular public complex with curved hall wall, community rooms, exhibition floor and accessible ramp.', project: publicBuilding },
-    { id: 'stadium', category: 'Public / Sports', title: 'Eastbank Championship Ground', description: 'Compact football ground with a 105 × 68 m marked pitch, four pitch-facing stand banks, aisle gaps, concourses, changing rooms, entries and partial canopies.', project: stadium },
-    { id: 'table-tennis', category: 'Public / Sports', title: 'Eastbank Indoor Arena', description: 'Indoor arena with a curved reception pavilion, entrance canopy, courtside bleachers, support rooms and a long-span hall roof.', project: tableTennis },
   ]
 }

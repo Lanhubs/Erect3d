@@ -5,9 +5,9 @@ export type IntelligenceInput = {
   calibration?: { metresPerPixel: number; method?: string }; understanding?: Intelligence['understanding'];
   currentModel?: Candidate[]; purpose?: 'interpret' | 'enhance' | 'rebuild'; engine?: 'backend' | 'hybrid';
   document?: { bytes: Uint8Array; mime: 'application/pdf'; page: number }; details?: { bytes: Uint8Array; mime: string; region: { x: number; y: number; width: number; height: number } }[];
-  validationIssues?: string[];
-  designMode?:'faithful'|'creative';
-  designReference?:{bytes:Uint8Array;mime:string};
+  validationIssues?: string[]; architecturalRequirements?: Intelligence['architecturalRequirements'];
+  designMode?: 'faithful' | 'creative';
+  designReference?: { bytes: Uint8Array; mime: string };
   crop?: { bytes: Uint8Array; mime: string }
 }
 export type IntelligenceResult = { proposal: Intelligence; usage?: Record<string, number | undefined> }
@@ -18,6 +18,7 @@ export class ProviderFailure extends Error {
   constructor(public code: string, public retryable: boolean, public upstreamStatus?: number, public schemaIssues?: string[]) { super(code) }
 }
 export function classifyFailure(error: unknown) {
+  console.log(error)
   if (error instanceof ProviderFailure) return error
   const status = error && typeof error === 'object' && 'status' in error ? Number(error.status) : 0
   if (status === 429) return new ProviderFailure('AI_QUOTA', true)
@@ -35,12 +36,12 @@ export function classifyFailure(error: unknown) {
     const causeName = cause instanceof Error ? cause.name : ''
     const causeMsg = cause instanceof Error ? cause.message : (typeof cause === 'string' ? cause : '')
     if (['AbortError', 'TimeoutError'].includes(name) || ['AbortError', 'TimeoutError'].includes(causeName) ||
-        /abort|timeout|timed\s*out/i.test(message) || /abort|timeout|timed\s*out/i.test(causeMsg)) {
+      /abort|timeout|timed\s*out/i.test(message) || /abort|timeout|timed\s*out/i.test(causeMsg)) {
       return new ProviderFailure('AI_TIMEOUT', true)
     }
     if (/fetch|network|socket|connect|enotfound|eai_again|econnreset|etimedout|ehostunreach|econnrefused|unable to connect|getaddrinfo|tls|ssl|failed to fetch/i.test(message) ||
-        /fetch|network|socket|connect|enotfound|eai_again|econnreset|etimedout|ehostunreach|econnrefused|unable to connect|getaddrinfo|tls|ssl|failed to fetch/i.test(causeMsg) ||
-        (error.stack && /node_modules[\\/]@google[\\/]genai[\\/]dist[\\/].*?index\.(?:mjs|cjs):\d+:\d+/.test(error.stack))) {
+      /fetch|network|socket|connect|enotfound|eai_again|econnreset|etimedout|ehostunreach|econnrefused|unable to connect|getaddrinfo|tls|ssl|failed to fetch/i.test(causeMsg) ||
+      (error.stack && /node_modules[\\/]@google[\\/]genai[\\/]dist[\\/].*?index\.(?:mjs|cjs):\d+:\d+/.test(error.stack))) {
       return new ProviderFailure('AI_NETWORK', true)
     }
   }

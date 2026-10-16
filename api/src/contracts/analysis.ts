@@ -1,4 +1,6 @@
 import {architecturalRequirements} from './architectural-requirements'
+import {typology} from './architecture'
+import {windowConstructionSchema} from './opening-construction'
 import { z } from 'zod'
 import { calibration, id, point } from './primitives'
 import { designSchema } from './design'
@@ -18,7 +20,7 @@ export const analysisOptions = z.object({
   cloudConsent: z.literal(true),
 }).strict()
 export const candidateSchema = z.object({
-  id, kind: z.enum(['wall', 'door', 'window', 'passage', 'room', 'column', 'stair', 'furniture', 'void', 'unknown']),
+  id, kind: z.enum(['wall', 'door', 'window', 'passage', 'room', 'column', 'stair', 'furniture', 'void', 'architectural-boundary', 'unknown']),
   points: z.array(imagePoint).min(1).max(1024),
   curve: z.object({ center: imagePoint, radius: z.number().positive().max(2),
     startAngle: z.number().finite(), endAngle: z.number().finite() }).strict().optional(),
@@ -31,7 +33,7 @@ export const candidateSchema = z.object({
   doorStyle: z.enum(['flush', 'panel', 'glazed', 'double']).optional(), hinge: z.enum(['left', 'right']).optional(),
   swing: z.enum(['in', 'out']).optional(), columnShape: z.enum(['rectangular', 'circular']).optional(),
   wallKind: z.enum(['exterior','interior','partition']).optional(), sillMetres: z.number().nonnegative().max(20).optional(),
-  windowType: z.enum(['fixed','casement','sliding']).optional(),
+  windowType: z.enum(['fixed','casement','sliding']).optional(),windowConstruction:windowConstructionSchema.optional(),doorLeafStyle:z.enum(['flush','panel','glazed']).optional(),
   targetLevelId: id.optional(), stairForm: z.enum(['straight', 'L', 'U']).optional(), reverse: z.boolean().optional(),
   confidence: fraction, evidence: z.string().min(1).max(2000), uncertainties: z.array(z.string().max(500)).max(20),
   needsReview: z.literal(true),
@@ -42,7 +44,7 @@ export const intelligenceSchema = z.object({
   candidates: z.array(candidateSchema).max(2000), warnings: z.array(z.string().max(1000)).max(100),
   vision:visionSchema.optional(),
   understanding: z.object({
-    buildingType: z.enum(['house', 'apartment', 'office', 'public', 'mall', 'stadium', 'arena', 'unknown']),
+    buildingType: typology,
     footprint: z.array(imagePoint).max(1024),
     conventions: z.array(z.string().max(500)).max(20),
     circulation: z.array(z.string().max(500)).max(20),

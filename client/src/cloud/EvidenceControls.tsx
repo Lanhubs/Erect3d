@@ -3,9 +3,9 @@ import type { Calibration, SourceDocument } from '../domain/types'
 import { useAnalysis } from '../features/import/useAnalysis'
 import { loadPrivateSource } from './sources'
 export type Region = { x: number; y: number; width: number; height: number }
-export function EvidenceControls({ source, calibration, cacheKey, projectId, disabled, region, setRegion }:
+export function EvidenceControls({ source, calibration, cacheKey, projectId, disabled, region, setRegion,measurements=true }:
   { source: SourceDocument; calibration?: Calibration; cacheKey: string; projectId: string; disabled: boolean;
-    region?: Region; setRegion: (region?: Region) => void }) {
+    region?: Region; setRegion: (region?: Region) => void;measurements?:boolean }) {
   const analysis = useAnalysis(), [url, setUrl] = useState(''), [error, setError] = useState('')
   const [start, setStart] = useState<{ x: number; y: number }>()
   useEffect(() => {
@@ -24,9 +24,9 @@ export function EvidenceControls({ source, calibration, cacheKey, projectId, dis
     return { x: Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width)),
       y: Math.max(0, Math.min(1, (event.clientY - bounds.top) / bounds.height)) }
   }
-  return <details><summary>OpenCV evidence and regional analysis</summary>
-    <button disabled={disabled || busy || !url || !calibration} onClick={analyze}>{busy ? `${analysis.status}…` : 'Measure plan with OpenCV'}</button>
-    <p>Measurements do not change the model. Drag a region below to focus cloud analysis; the full drawing is retained as context.</p>
+  return <details><summary>{measurements?'OpenCV evidence and regional analysis':'Choose a floor on a sheet'}</summary>
+    {measurements&&<button disabled={disabled || busy || !url || !calibration} onClick={analyze}>{busy ? `${analysis.status}…` : 'Measure plan with OpenCV'}</button>}
+    <p>{measurements?'Measurements do not change the model. ':''}If this sheet contains several plans, select one complete floor below. Reconstruction uses that area; the full source remains available as context.</p>
     {!region && <button disabled={disabled} onClick={() => setRegion({ x: 0, y: 0, width: 1, height: 1 })}>Specify region with keyboard</button>}
     {region && <div className="cloud-inline">{(['x', 'y', 'width', 'height'] as const).map(key => <label key={key}>{key} %
       <input type="number" min={key === 'width' || key === 'height' ? 1 : 0} max={100} step={1} disabled={disabled}

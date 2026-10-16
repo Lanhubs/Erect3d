@@ -1,6 +1,10 @@
 import type {Building,Level,Project} from './types'
 import type {TypicalFloorGroup} from './buildingSystems'
 import {duplicateLevel} from './levels'
+import {uid} from './types'
+export function repeatedDetails(building:Building,templateId:string){
+  return (building.systems?.systems||[]).filter((s):s is import('./buildingSystems').ArticulationSystem=>s.kind==='articulation'&&s.levelId===templateId&&!!s.repeatWithFloor&&s.visible!==false)
+}
 export function linkedFloorIndices(building:Building,group:TypicalFloorGroup){
   const template=building.levels.find(l=>l.id===group.templateLevelId)
   if(!template)return []
@@ -25,5 +29,7 @@ export function detachTypicalFloor(input:Project,buildingId:string,groupId:strin
   level.floorToFloorHeight=group.floorHeight;level.autoRoof=false
   delete level.roof
   building.levels.push(level);group.detached[String(index)]=level.id
+  const details=repeatedDetails(building,template.id).map(s=>({...structuredClone(s),id:uid('architecture'),levelId:level.id,repeatWithFloor:false}))
+  building.systems!.systems.push(...details)
   return project
 }

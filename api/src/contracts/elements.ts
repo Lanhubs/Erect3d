@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { color, finish, id, material, name, point, polygon, positive, scalar, slabMaterial } from './primitives'
+import {windowConstructionFields} from './opening-construction'
 
 export const wall = z.object({
   id, start: point, end: point, thickness: positive, height: positive, material,
@@ -9,11 +10,12 @@ export const wall = z.object({
 const opening = { id, wallId: id, offset: scalar, width: positive, height: positive }
 export const door = z.object({
   ...opening, hinge: z.enum(['left', 'right']), style: z.enum(['flush', 'panel', 'glazed', 'double']).optional(),
-  swing: z.enum(['in', 'out']).optional(), material: z.enum(['timber', 'metal']).optional(),
+  swing: z.enum(['in', 'out']).optional(), material: z.enum(['timber', 'metal']).optional(),leafStyle:z.enum(['flush','panel','glazed']).optional(),
   veranda: z.object({ width: positive, depth: positive, side: z.enum(['left', 'right']),
     covered: z.boolean(), railing: z.boolean(), roofShape: z.enum(['shed', 'terrace']), floorMaterial: finish }).strict().optional(),
 }).strict()
 export const windowUnit = z.object({
+  ...windowConstructionFields,
   ...opening, sill: scalar, frame: z.enum(['aluminium', 'timber']).optional(),
   type: z.enum(['fixed', 'sliding', 'casement']).optional(), glazing: z.enum(['clear', 'frosted']).optional(),
 }).strict()

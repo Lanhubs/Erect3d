@@ -11,6 +11,9 @@ export function validateLockedLevels(before: Project, after: Project) {
       if (checksum(geometry(level)) !== checksum(geometry(next))) {
         throw new ApiError(409, 'LEVEL_LOCKED', 'Unlock the level before editing its architecture')
       }
+      const nextBuilding=after.buildings.find(item=>item.id===building.id)
+      const systems=(owner:typeof building|undefined)=>owner?.systems?.systems.filter(system=>system.levelId===level.id || system.kind==='typical-floors'&&system.templateLevelId===level.id) || []
+      if(checksum(systems(building))!==checksum(systems(nextBuilding)))throw new ApiError(409,'LEVEL_LOCKED','Unlock the level before editing its architectural systems')
     }
   }
 }

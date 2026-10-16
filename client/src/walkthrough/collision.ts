@@ -5,7 +5,9 @@ import { blocksWalking } from '../furniture/entities'
 import { verandaGeometry } from '../geometry/veranda'
 import { boundsOf, SpatialIndex } from './spatial'
 import { playerShape, type Obstacle } from './types'
-export function buildWalkObstacles(levels: Level[], openDoors: ReadonlySet<string>, fence?: SiteFence, furnitureShown = true) {
+import type {BuildingSystem} from '../domain/buildingSystems'
+import {spiralStairPlan} from '../geometry/spiralStair'
+export function buildWalkObstacles(levels: Level[], openDoors: ReadonlySet<string>, fence?: SiteFence, furnitureShown = true,systems:BuildingSystem[]=[]) {
   const obstacles: Obstacle[] = []
   const segment = (a: Obstacle['a'], b: Obstacle['a'], radius: number, bottom: number, top: number) => obstacles.push({ ...boundsOf([a, b], radius), kind: 'segment', a, b, radius, bottom, top })
   const box = (a: Obstacle['a'], width: number, depth: number, angle: number, bottom: number, top: number) => {
@@ -29,6 +31,16 @@ export function buildWalkObstacles(levels: Level[], openDoors: ReadonlySet<strin
     if (furnitureShown) for (const object of level.furniture || []) if (blocksWalking(object.type)) box(object.position, object.width, object.depth, object.rotation, base, base + object.height)
     for (const door of level.doors) if (door.veranda?.railing) for (const [a, b] of verandaGeometry(level, door)?.rails || []) segment(a, b, .035, base, base + 1.1)
     for (const detail of level.details || []) if (['railing', 'screen', 'parapet'].includes(detail.kind)) segment(detail.start, detail.end, detail.depth / 2, base + detail.baseElevation, base + detail.baseElevation + detail.height)
+  }
+  for(const system of systems)if(system.kind==='spiral-stair'&&system.visible!==false){
+    const level=levels.find(l=>l.id===system.levelId);if(!level)continue
+    const base=level.elevation+system.elevation,inner=system.radius-system.width
+    obstacles.push({...boundsOf([system.center],inner),kind:'circle',a:system.center,radius:inner,bottom:base,top:base+system.height+1.05})
+    const plan=spiralStairPlan(system,undefined,levels)
+    for(const rail of plan.rails){
+      const horizontal=rail.size[0]*Math.cos(rail.slope||0)/2,dx=Math.cos(rail.rotation)*horizontal,dz=-Math.sin(rail.rotation)*horizontal,dy=Math.sin(rail.slope||0)*rail.size[0]/2
+      segment({x:rail.center[0]-dx,z:rail.center[2]-dz},{x:rail.center[0]+dx,z:rail.center[2]+dz},.025,level.elevation+rail.center[1]-Math.abs(dy)-1.05,level.elevation+rail.center[1]+Math.abs(dy)+.025)
+    }
   }
   for (const collider of siteFenceColliders(fence)) {
     const base = Math.min(...levels.map(level => level.elevation), 0)

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import {PerspectiveCamera} from 'three'
 import { zoomEvent, type ZoomDetail } from '../app/useWorkspaceZoom'
 import { manipulationEvent } from './ElementGizmo'
 
@@ -13,6 +14,11 @@ export function InspectionCamera({ walk, top, center, span, preset = 'default', 
   const previous = useRef<{ position: typeof camera.position; quaternion: typeof camera.quaternion; target: typeof camera.position } | null>(null), wasWalking = useRef(false)
   const [cx, cy, cz] = center
   const framing = useRef({ cx, cy, cz, span })
+  useEffect(()=>{
+    if(camera instanceof PerspectiveCamera){camera.far=Math.max(1000,span*8);camera.near=walk?.03:Math.max(.03,Math.min(2,span/5000));camera.updateProjectionMatrix()}
+    if(controlsRef.current)controlsRef.current.maxDistance=Math.max(160,span*4)
+    invalidate()
+  },[camera,span,walk,invalidate])
   useEffect(() => { framing.current = { cx, cy, cz, span } }, [cx, cy, cz, span])
   useFrame(() => controlsRef.current?.update())
   useEffect(() => {

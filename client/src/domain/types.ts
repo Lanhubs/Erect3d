@@ -9,8 +9,8 @@ export type WallCurve = { center: Point; radius: number; startAngle: number; end
 export type Wall = { id: string; start: Point; end: Point; thickness: number; height: number; material: MaterialKey; color?: string; kind?: 'exterior' | 'interior' | 'partition'; curve?: WallCurve }
 export type DoorStyle = 'flush' | 'panel' | 'glazed' | 'double'
 export type Veranda = { width: number; depth: number; side: 'left' | 'right'; covered: boolean; railing: boolean; roofShape: 'shed' | 'terrace'; floorMaterial: FloorFinish }
-export type Door = { id: string; wallId: string; offset: number; width: number; height: number; hinge: 'left' | 'right'; style?: DoorStyle; swing?: 'in' | 'out'; material?: 'timber' | 'metal'; veranda?: Veranda }
-export type WindowUnit = { id: string; wallId: string; offset: number; width: number; height: number; sill: number;
+export type Door = { id: string; wallId: string; offset: number; width: number; height: number; hinge: 'left' | 'right'; style?: DoorStyle; leafStyle?:'flush'|'panel'|'glazed'; swing?: 'in' | 'out'; material?: 'timber' | 'metal'; veranda?: Veranda }
+export type WindowUnit = import('./windowConstruction').WindowConstruction & { id: string; wallId: string; offset: number; width: number; height: number; sill: number;
   frame?: 'aluminium' | 'timber'; type?: 'fixed' | 'sliding' | 'casement'; glazing?: 'clear' | 'frosted' }
 export type Passage = { id: string; wallId: string; offset: number; width: number; height: number }
 export type Room = { id: string; name: string; polygon: Point[]; material: MaterialKey; ceilingHeight?: number; category?: string }
@@ -53,7 +53,7 @@ export type Building = { systems?:ArchitecturalModel; id: string; name: string; 
 export type SourceDocument = { id: string; name: string; mime: string; originalBytes: number; width: number; height: number; page?: number; pages?: number }
 export type Calibration = { a: Point; b: Point; knownMetres: number; metresPerPixel: number;
   method?: 'auto' | 'manual'; basisPixels?: number; basis?: 'door-symbols' | 'wall-thickness' }
-export type InterpretationRecord = { origin: 'detected' | 'inferred' | 'user-selected'; confirmedFields: string[]; sourceId?: string; analysisId?: string }
+export type InterpretationRecord = { origin: 'detected' | 'inferred' | 'user-selected'; confirmedFields: string[]; sourceId?: string; analysisId?: string;inferredFields?:string[];evidence?:string;assumptions?:string[] }
 export type Project = { id: string; name: string; modified: number; buildings: Building[]; sources: SourceDocument[]; calibration?: Calibration; units: 'm' | 'cm' | 'mm'; interpretation?: Record<string, InterpretationRecord> }
 export type EntityKind = 'architecture' | 'wall' | 'door' | 'window' | 'passage' | 'room' | 'slab' | 'column' | 'stair' | 'ramp' | 'seating' | 'detail' | 'fence' | 'furniture'
 export type Selection = { kind: EntityKind; id: string; floorIndex?:number } | null

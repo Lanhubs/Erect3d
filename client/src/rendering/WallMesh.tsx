@@ -1,14 +1,14 @@
-import { useMemo } from 'react'
-import { DoubleSide } from 'three'
+import { memo,useMemo } from 'react'
 import type { Door, Passage, Selection, Wall, WindowUnit } from '../domain/types'
 import { atWall, wallLength, wallTangentAngle } from '../geometry/math'
 import { wallRects, wallSolids } from '../geometry/walls'
 import { materialColor, materialRoughness } from './materials'
 import { wallTexture } from './wallTextures'
 import { DoorMesh } from './DoorMesh'
+import {WindowMesh} from './WindowMesh'
 
 type Props = { wall: Wall; doors: Door[]; windows: WindowUnit[]; passages: Passage[]; selection: Selection; select: (selection: Selection) => void; openDoors: ReadonlySet<string> }
-export function WallMesh({ wall, doors, windows, passages, selection, select, openDoors }: Props) {
+export const WallMesh=memo(function WallMesh({ wall, doors, windows, passages, selection, select, openDoors }: Props) {
   const hover = (active: boolean) => {
     const canvas = document.querySelector<HTMLCanvasElement>('.viewer canvas')
     if (canvas) canvas.style.cursor = active ? 'pointer' : ''
@@ -41,32 +41,6 @@ export function WallMesh({ wall, doors, windows, passages, selection, select, op
       <mesh position={[0, item.height / 2, 0]}><boxGeometry args={[item.width, .06, wall.thickness + .02]} />
         <meshStandardMaterial color="#a9a79e" /></mesh>
     </group>)}
-    {windows.filter(item => item.wallId === wall.id).map(item => {
-      const center = atWall(wall, item.offset + item.width / 2)
-      const windowAngle = -wallTangentAngle(wall, item.offset + item.width / 2)
-      return <group key={item.id} position={[center.x, item.sill + item.height / 2, center.z]} rotation={[0, windowAngle, 0]}
-        onClick={event => { event.stopPropagation(); select({ kind: 'window', id: item.id }) }}
-        onPointerOver={event => { event.stopPropagation(); hover(true) }} onPointerOut={() => hover(false)}>
-        {[-1, 1].map(side => <mesh key={side} position={[side * item.width / 2, 0, 0]}>
-          <boxGeometry args={[.065, item.height + .07, wall.thickness + .08]} /><meshStandardMaterial color={selection?.id === item.id ? '#b69c6d' : item.frame === 'timber' ? '#765a43' : '#555d5c'} metalness={item.frame === 'timber' ? .05 : .48} roughness={.38} /></mesh>)}
-        {[-1, 1].map(side => <mesh key={side} position={[0, side * item.height / 2, 0]}>
-          <boxGeometry args={[item.width, .065, wall.thickness + .08]} /><meshStandardMaterial color="#555d5c" metalness={.48} roughness={.38} /></mesh>)}
-        <mesh position={[0, -item.height / 2 - .045, 0]} castShadow receiveShadow>
-          <boxGeometry args={[item.width + .16, .09, wall.thickness + .18]} />
-          <meshStandardMaterial color={item.frame === 'timber' ? '#8a785f' : '#aaa89f'} roughness={.72} side={DoubleSide} />
-        </mesh>
-        <mesh position={[0, 0, -.035]}><boxGeometry args={[item.width - .14, item.height - .14, .025]} />
-          <meshPhysicalMaterial color={item.glazing === 'frosted' ? '#c3d0cf' : '#91afb7'} metalness={.02}
-            roughness={item.glazing === 'frosted' ? .55 : .08} transmission={item.glazing === 'frosted' ? .12 : .42}
-            transparent opacity={item.glazing === 'frosted' ? .84 : .62} side={DoubleSide} depthWrite={false} /></mesh>
-        <mesh position={[0, 0, -wall.thickness / 2 - .04]}>
-          <boxGeometry args={[item.width - .16, item.height - .16, .012]} />
-          <meshStandardMaterial color="#41565b" metalness={.35} roughness={.32} transparent opacity={.28} />
-        </mesh>
-        {item.type !== 'fixed' && <mesh position={[0, 0, .08]}><boxGeometry args={[.035, item.height, .035]} /><meshStandardMaterial color="#555d5c" /></mesh>}
-        {item.type === 'casement' && <mesh position={[item.width * .38, 0, .12]}>
-          <boxGeometry args={[.025, .14, .04]} /><meshStandardMaterial color="#5b615c" metalness={.65} /></mesh>}
-      </group>
-    })}
+    {windows.filter(item => item.wallId === wall.id).map(item => <WindowMesh key={item.id} wall={wall} window={item} selection={selection} select={select}/>)}
   </group>
-}
+})

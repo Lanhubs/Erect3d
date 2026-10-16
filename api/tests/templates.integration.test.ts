@@ -9,7 +9,9 @@ afterAll(async()=>{h.limits.close();await h.db.close()})
 test('backend owns the complete template catalogue; every sample instantiates a valid editable project',async()=>{
   expect((await h.app.request('/api/v1/templates')).status).toBe(401)
   const catalogue=await (await request(h.app,owner,'/templates')).json()
-  expect(catalogue.items).toHaveLength(9)
+  expect(catalogue.items).toHaveLength(7)
+  expect(catalogue.items.some((item:{id:string})=>['stadium','table-tennis'].includes(item.id))).toBe(false)
+  expect((await request(h.app,owner,'/templates/stadium/projects','POST',{duplicate:false})).status).toBe(404)
   for (const template of catalogue.items) {
     const response=await request(h.app,owner,`/templates/${template.id}/projects`,'POST',{duplicate:false})
     expect(response.status).toBe(201)

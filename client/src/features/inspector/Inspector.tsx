@@ -1,4 +1,5 @@
 import {SystemsInspector} from './SystemsInspector'
+import {EntityTitle} from './EntityTitle'
 import { useState } from 'react'
 import type { Building, Level, Selection, WallCurve } from '../../domain/types'
 import { roomArea, roomPerimeter, wallLength } from '../../geometry/math'
@@ -88,7 +89,7 @@ export function Inspector({ building, level, selection, unit, open, onClose }: {
     {mobileHead}
     <SiteControls building={building} />
     <div className="panel-title">PROPERTIES</div>
-    <div className="entity-title"><strong>{selection.kind.toUpperCase()}</strong><small>{selection.id}</small></div>
+    <EntityTitle selection={selection}/>
     {validation && <div className="inline-error" role="alert">{validation}</div>}
     {wall && <div className="fields">
       {wall.curve ? <>

@@ -13,15 +13,22 @@ import { generatedRoof } from '../../../../client/src/domain/roofDesign'
 import { defaultRoof } from '../../../../client/src/domain/types'
 import { repairGeneratedFence } from '../../../../client/src/geometry/site'
 import { validateFootprint } from './footprint-validation'
-import {createArenaArchitecture} from '../../../../client/src/domain/arenaArchitecture'
+import {inSourceRegion} from '../../workers/source-region'
 
 export function buildReconstruction(project:Project,input:AnalysisInput,analysisId:string,proposal:Intelligence,
   candidates:Candidate[],dimensions:{width:number;height:number},replaceLevel=false) {
   const rebuilding=input.options.purpose==='rebuild',document=structuredClone(project)
+  const owners=new Set(proposal.architecturalRequirements?.systems.map(s=>s.boundaryId))
+  const unowned=candidates.find(c=>c.kind==='architectural-boundary'&&!owners.has(c.id))
+  if(unowned)throw new ApiError(422,'ARCHITECTURE_OWNER_REQUIRED',`Review ${unowned.id}: this outline needs a named semantic system with boundaryId=${unowned.id}; it cannot become an unowned mesh.`)
+  const typology=proposal.architecturalRequirements?.typology||proposal.understanding?.buildingType||'unknown'
+  if(['arena','stadium'].includes(typology))throw new ApiError(422,'BUILDING_TYPE_UNSUPPORTED','Arena and stadium reconstruction is no longer supported. Use a building floor plan.')
   const building=document.buildings.find(item=>item.levels.some(level=>level.id===input.levelId))!
   const level=building?.levels.find(item=>item.id===input.levelId)
   if (!level || level.locked) throw new ApiError(409,'LEVEL_LOCKED','Target level is unavailable or locked')
   if (rebuilding) {
+    const outside=candidates.find(c=>!inSourceRegion(c,input.options.region))
+    if(outside)throw new ApiError(422,'OUTSIDE_SOURCE_REGION',`Review ${outside.id}: geometry is outside the selected floor-plan area.`)
     validateFootprint(proposal,candidates,dimensions.width,dimensions.height)
     if (!replaceLevel) throw new ApiError(422,'REBUILD_APPROVAL_REQUIRED','Approve replacement of this floor before accepting reconstruction')
     if (candidates.some(item=>item.targetId || item.action)) throw new ApiError(422,'INVALID_REBUILD','Fresh reconstruction cannot target existing entities')
@@ -44,8 +51,8 @@ export function buildReconstruction(project:Project,input:AnalysisInput,analysis
     const envelope=proposal.understanding?.footprint.map(point=>imageToWorld(point,dimensions.width,dimensions.height,effective)) || []
     const voids=(floor.slabs || []).flatMap(slab=>slab.openings.filter(opening=>opening.kind==='void').map(opening=>opening.polygon))
     const regions=roofRegions(envelope.length>=3?[envelope]:floor.rooms.map(room=>room.polygon),voids)
-    const arena=['arena','stadium'].includes(proposal.understanding?.buildingType || '')
-    const roof=next.roof || floor.roof || (arena?{...defaultRoof,shape:'hidden' as const,material:'membrane' as const,pitch:0}:defaultRoof)
+    const flatDefault=['office','office-tower','apartment','hotel','mixed-use','mall','school','hospital','public','industrial'].includes(typology)
+    const roof=next.roof || floor.roof || (flatDefault?{...defaultRoof,shape:'hidden' as const,material:'membrane' as const,pitch:0}:defaultRoof)
     if(!next.roof && !floor.roof){next.roof={...roof};floor.roof={...roof}}
     const manualRoof=next.roofSections?.some(section=>section.levelId===floor.id && !generatedRoof(section))
     if (!manualRoof) {
@@ -55,8 +62,6 @@ export function buildReconstruction(project:Project,input:AnalysisInput,analysis
       floor.autoRoof=regions.length>0
     }
     repairGeneratedFence(next)
-    if(arena && input.options.designMode!=='faithful')converted=createArenaArchitecture(converted,floor.id,proposal.vision,
-      key=>`ai_${digest(`${analysisId}:architecture:${key}`).slice(0,32)}`,Boolean(building.roof && !building.roofSections?.some(generatedRoof)))
   }
   applyArchitecturalSystems(converted,effective,analysisId,proposal,candidates,dimensions)
   const validated=parse(projectSchema,converted)

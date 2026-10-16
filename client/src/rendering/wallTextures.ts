@@ -40,10 +40,12 @@ export function wallTexture(material: MaterialKey, width = 1, height = 1) {
     ctx.strokeStyle = '#d0ceca'; ctx.lineWidth = 3
     for (const n of [0, 128, 255]) { ctx.beginPath(); ctx.moveTo(n, 0); ctx.lineTo(n, 256); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0, n); ctx.lineTo(256, n); ctx.stroke() }
   } else {
+    let seed=8129
+    const sample=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}
     for (let i = 0; i < 1400; i++) {
-      const x = (i * 181) % 256, y = (i * 97) % 256
-      ctx.fillStyle = i % 3 ? 'rgba(91,93,91,.035)' : 'rgba(255,255,255,.1)'
-      ctx.fillRect(x, y, 1 + i % 3, 1 + i % 2)
+      const x=sample()*256,y=sample()*256
+      ctx.fillStyle=i%3?'rgba(91,93,91,.025)':'rgba(255,255,255,.07)'
+      ctx.fillRect(x,y,1+sample(),1+sample())
     }
   }
   const texture = new CanvasTexture(canvas)

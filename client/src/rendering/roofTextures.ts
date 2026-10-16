@@ -38,8 +38,10 @@ export function roofTexture(material: RoofMaterial) {
       ctx.fillStyle = 'rgba(255,255,255,.25)'; ctx.fillRect(x + 4, y + 4, width - 7, 2)
     }
   } else {
+    let seed=9127
+    const sample=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}
     for (let i = 0; i < 1200; i++) {
-      const x = (i * 113) % 256, y = (i * 197) % 256
+      const x=sample()*256,y=sample()*256
       ctx.fillStyle = i % 2 ? 'rgba(80,85,85,.06)' : 'rgba(255,255,255,.12)'
       ctx.fillRect(x, y, 1 + i % 3, 1 + i % 2)
     }

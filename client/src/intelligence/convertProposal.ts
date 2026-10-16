@@ -3,7 +3,8 @@ import type { Level, Project, Point } from '../domain/types'
 import type { Wall } from '../domain/types'
 import { furnitureTypes } from '../furniture/types'
 import { ProposalError as ApiError } from './errors'
-import { wallLength } from '../geometry/math'
+import {projectOpening} from '../geometry/openingProjection'
+import {constructionAssumptions} from './constructionAssumptions'
 
 import { enclosedSpaces } from '../geometry/roomTopology'
 import { newSlab } from '../domain/levels'
@@ -25,9 +26,11 @@ export function convertProposal(project: Project, input: AnalysisInput, analysis
   const previewIds = new Map<string,string>()
   const entityId=(candidateId:string,suffix='')=>{if(makeId)return makeId(candidateId,suffix);const key=candidateId+':'+suffix;if(!previewIds.has(key))previewIds.set(key,'preview_'+previewIds.size);return previewIds.get(key)!}
   const hostMap = new Map<string, Wall[]>()
-  const record = (id: string) => {
+  const record = (id: string,candidate:Candidate) => {
     document.interpretation ||= {}
-    document.interpretation[id] = { ...(document.interpretation[id] || { origin: 'detected', confirmedFields: [] }), sourceId: input.sourceId, analysisId }
+    const previous=document.interpretation[id]
+    document.interpretation[id] = { ...(previous || { origin: 'detected', confirmedFields: [] }), sourceId: input.sourceId, analysisId,
+      inferredFields:constructionAssumptions(candidate).filter(field=>!previous?.confirmedFields.includes(field)),evidence:candidate.evidence,assumptions:candidate.uncertainties }
   }
   for (const candidate of chosen.filter(candidate => candidate.kind === 'wall')) {
     const points = candidate.points.map(world), walls: Wall[] = []
@@ -44,21 +47,21 @@ export function convertProposal(project: Project, input: AnalysisInput, analysis
           radius: candidate.curve.radius * dimensions.width * input.calibration.metresPerPixel }
       }
       walls.push(wall)
-      record(wall.id)
+      record(wall.id,candidate)
     }
     hostMap.set(candidate.id,walls)
     if (existing) level.walls[level.walls.indexOf(existing)] = walls[0]
     else level.walls.push(...walls)
   }
   for (const candidate of chosen.filter(candidate => candidate.kind !== 'wall')) {
+    if(candidate.kind==='void'||candidate.kind==='architectural-boundary')continue
     const points = candidate.points.map(world), id = candidate.targetId || entityId(candidate.id)
     if (candidate.targetId) {
       const collection = candidate.kind === 'door' ? level.doors : candidate.kind === 'window' ? level.windows
         : candidate.kind === 'passage' ? level.passages : candidate.kind === 'room' ? level.rooms : candidate.kind === 'column' ? level.columns : undefined
       if (!collection?.some(item => item.id === candidate.targetId)) throw new ApiError(422, 'INVALID_TARGET', 'Correction does not reference an existing entity of this kind')
     }
-    record(id)
-    if (candidate.kind === 'void') continue
+    record(id,candidate)
     if (candidate.kind === 'unknown' || candidate.kind === 'stair') {
       if (candidate.kind === 'stair' && points.length >= 3) {
         level.stairGuides ||= []
@@ -104,20 +107,9 @@ export function convertProposal(project: Project, input: AnalysisInput, analysis
 function appendOpening(level: Level, candidate: Candidate, points: Point[], hosts: Map<string,Wall[]>, id: string) {
   if (points.length !== 2 || !candidate.wallId) throw new ApiError(422, 'INVALID_HOST', `Review ${candidate.id}: opening needs two points and a reviewed host wall`)
   const walls = hosts.get(candidate.wallId) || level.walls.filter(wall => wall.id === candidate.wallId)
-  const middle = { x: (points[0].x + points[1].x)/2, z: (points[0].z + points[1].z)/2 }
-  const wall = walls.find(wall => {
-    const dx = wall.end.x-wall.start.x, dz = wall.end.z-wall.start.z, length = wallLength(wall)
-    const offset = ((middle.x-wall.start.x)*dx+(middle.z-wall.start.z)*dz)/length
-    return !wall.curve && offset >= 0 && offset <= length && Math.abs((middle.x-wall.start.x)*dz-(middle.z-wall.start.z)*dx)/length < wall.thickness
-  })
-  if (!wall) throw new ApiError(422, 'INVALID_HOST', `Review ${candidate.id}: opening does not fit a straight reviewed wall; review curved openings manually`)
-  const length = wallLength(wall), width = Math.hypot(points[1].x-points[0].x,points[1].z-points[0].z)
-  if (points.some(point => Math.abs((point.x-wall.start.x)*(wall.end.z-wall.start.z) -
-    (point.z-wall.start.z)*(wall.end.x-wall.start.x))/length > wall.thickness / 2 + .02)) {
-    throw new ApiError(422, 'INVALID_HOST', `Review ${candidate.id}: opening endpoints must follow the host wall gap, not the door leaf or swing`)
-  }
-  const offset = ((points[0].x-wall.start.x)*(wall.end.x-wall.start.x)+(points[0].z-wall.start.z)*(wall.end.z-wall.start.z))/length
-  const opposite = ((points[1].x-wall.start.x)*(wall.end.x-wall.start.x)+(points[1].z-wall.start.z)*(wall.end.z-wall.start.z))/length
+  const wall=walls.find(wall=>projectOpening(wall,points))
+  if(!wall)throw new ApiError(422,'INVALID_HOST',`Review ${candidate.id}: opening endpoints must follow the reviewed host wall gap, not the door leaf or swing`)
+  const {offset,width}=projectOpening(wall,points)!,opposite=offset
   if (candidate.kind === 'passage') {
     level.passages ||= []
     const existing = level.passages.find(item => item.id === id)
@@ -125,10 +117,10 @@ function appendOpening(level: Level, candidate: Candidate, points: Point[], host
   } else if (candidate.kind === 'door') {
     const existing = level.doors.find(item => item.id === id)
     upsert(level.doors, { ...existing, id, wallId: wall.id, offset: Math.min(offset,opposite), width, height: candidate.heightMetres || existing?.height || 2.1,
-      hinge: candidate.hinge || existing?.hinge || 'left', style: candidate.doorStyle || existing?.style || 'panel', swing: candidate.swing || existing?.swing })
+      hinge: candidate.hinge || existing?.hinge || 'left', style: candidate.doorStyle || existing?.style || 'panel', leafStyle:candidate.doorLeafStyle||existing?.leafStyle,swing: candidate.swing || existing?.swing })
   } else {
     const existing = level.windows.find(item => item.id === id)
-    upsert(level.windows, { ...existing, id, wallId: wall.id, offset: Math.min(offset,opposite), width, height: candidate.heightMetres || existing?.height || 1.2, sill: candidate.sillMetres ?? existing?.sill ?? .8, type:candidate.windowType || existing?.type })
+    upsert(level.windows, { ...existing,...candidate.windowConstruction, id, wallId: wall.id, offset: Math.min(offset,opposite), width, height: candidate.heightMetres || existing?.height || 1.2, sill: candidate.sillMetres ?? existing?.sill ?? .8, type:candidate.windowType || existing?.type })
   }
 }
 function upsert<T extends { id: string }>(items: T[], next: T) {

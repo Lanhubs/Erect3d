@@ -3,6 +3,7 @@ import type { Config } from '../config/env'
 import { ApiError } from '../security/errors'
 import { unpackSource } from './archive'
 import { ArchiveTickets } from './archive-ticket'
+import {readPrivateObject} from './read-object'
 export interface ObjectStore {
   uploadUrl(key: string, mime: string): string
   downloadUrl(key: string): string
@@ -27,8 +28,7 @@ export class PrivateR2 implements ObjectStore {
   downloadUrl(key: string) { return key.endsWith('.zip')?this.archives.download(key):this.storedDownloadUrl(key) }
   async stat(key: string) { const result = await this.client.stat(key); return { size: result.size } }
   async read(key: string, maximum: number) {
-    const bytes = new Uint8Array(await this.client.file(key).slice(0, maximum + 1).arrayBuffer())
-    if (bytes.length > maximum) throw new ApiError(413, 'ASSET_TOO_LARGE', 'Object exceeded its permitted size')
+    const bytes = await readPrivateObject(this.storedDownloadUrl(key),maximum)
     return unpackSource(key,bytes,maximum)
   }
   async write(key: string, bytes: Uint8Array, mime: string) { await this.client.write(key, bytes, { type: mime }) }

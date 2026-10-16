@@ -1,5 +1,5 @@
 import {memo,useEffect,useLayoutEffect,useMemo,useRef} from 'react'
-import {InstancedMesh,Object3D} from 'three'
+import {InstancedMesh,Object3D,type BufferGeometry} from 'three'
 import type {Selection} from '../domain/types'
 import {useRenderResources,type InstanceShape} from './RenderResources'
 import {pointerCursor} from './pointerCursor'
@@ -7,16 +7,16 @@ import {useInstanceVisibility} from './InstanceVisibility'
 export type InstancePart={center:[number,number,number];size:[number,number,number];rotation:number;slope?:number;selection?:NonNullable<Selection>;color?:string}
 export function spatialBatches(parts:InstancePart[],cell=24){
   const zones=new Map<string,InstancePart[]>()
-  for(const part of parts){const key=`${Math.floor(part.center[0]/cell)}:${Math.floor(part.center[2]/cell)}`;const zone=zones.get(key)||[];zone.push(part);zones.set(key,zone)}
+  for(const part of parts){const key=`${Math.floor(part.center[0]/cell)}:${Math.floor(part.center[1]/cell)}:${Math.floor(part.center[2]/cell)}`;const zone=zones.get(key)||[];zone.push(part);zones.set(key,zone)}
   return zones
 }
-export const EntityInstances=memo(function EntityInstances({parts,color,material='solid',shape='box',select,shadow=true}:{parts:InstancePart[];color:string;material?:string;shape?:InstanceShape;select?:(selection:Selection)=>void;shadow?:boolean}){
+export const EntityInstances=memo(function EntityInstances({parts,color,material='solid',shape='box',geometry:providedGeometry,select,shadow=true}:{parts:InstancePart[];color:string;material?:string;shape?:InstanceShape;geometry?:BufferGeometry;select?:(selection:Selection)=>void;shadow?:boolean}){
   const resources=useRenderResources(),mesh=useRef<InstancedMesh>(null),previous=useRef<{mesh:InstancedMesh|null;parts:InstancePart[]}>({mesh:null,parts:[]})
   useInstanceVisibility(mesh)
-  const geometry=resources.geometry(shape),surface=resources.material(material,color)
+  const geometry=providedGeometry||resources.geometry(shape),surface=resources.material(material,color)
   useEffect(()=>{resources.retain(surface);return()=>resources.release(surface)},[resources,surface])
   const capacity=useMemo(()=>2**Math.ceil(Math.log2(Math.max(1,parts.length))),[parts.length])
-  useEffect(()=>{const target=mesh.current;return()=>target?.dispose()},[capacity])
+  useEffect(()=>{const target=mesh.current;return()=>target?.dispose()},[capacity,geometry])
   useLayoutEffect(()=>{
     const target=mesh.current;if(!target)return
     const old=previous.current,transform=new Object3D(),all=old.mesh!==target

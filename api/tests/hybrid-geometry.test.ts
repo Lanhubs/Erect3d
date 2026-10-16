@@ -25,6 +25,20 @@ test('physically inconsistent candidates cannot keep high confidence', () => {
     { width: 1000, height: 800, metresPerPixel: .01 })
   expect(arc.confidence).toBeLessThanOrEqual(.35)
 })
+
+test('complete source walls retain their full span when native fragments arrive first, including all opening hosts',()=>{
+  const fragment=(id:string,left:number,right:number):Candidate=>({...wall,id,thickness:.004,points:[{x:left,y:.2},{x:right,y:.2}]})
+  const native=[fragment('native_a',.11,.14),fragment('native_b',.6,.7)],complete=fragment('ai_full',.1,.8)
+  const doors:Candidate[]=[.2,.4].map((x,i)=>({...wall,id:`door_${i}`,kind:'door',wallId:complete.id,points:[{x,y:.2},{x:x+.05,y:.2}]}))
+  const original=JSON.stringify(native),result=reconcile(native,[proposal([complete,...doors])],'structure',{width:3000,height:2000,metresPerPixel:.01})
+  const hosts=result.candidates.filter(c=>c.kind==='wall')
+  expect(hosts).toHaveLength(1);expect(hosts[0].points[0].x).toBeCloseTo(.1);expect(hosts[0].points[1].x).toBeCloseTo(.8)
+  expect(result.candidates.filter(c=>c.kind==='door').every(c=>c.wallId===hosts[0].id)).toBe(true)
+  expect(JSON.stringify(native)).toBe(original)
+  const thin={...complete,id:'fine_edge',thickness:.0003,points:[{x:.1,y:.2015},{x:.8001,y:.2015}]}
+  const body=reconcile(native,[proposal([complete,thin,...doors])],'structure',{width:3000,height:2000,metresPerPixel:.01}).candidates.find(c=>c.kind==='wall')!
+  expect(body.thickness).toBe(.004);expect(body.points[0].y).toBeCloseTo(.2)
+})
 test('fine edges inside a thick wall body share its host while parallel walls with an air gap stay separate',()=>{
  const body={...wall,thickness:.006},edge={...wall,id:'edge',thickness:.001,points:wall.points.map(point=>({...point,y:point.y+.002}))}
  const separated={...edge,id:'separate',points:edge.points.map(point=>({...point,y:point.y+.01}))}

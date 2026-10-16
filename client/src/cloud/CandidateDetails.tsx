@@ -11,9 +11,9 @@ export function CandidateDetails({ candidate, update, disabled, walls }: { candi
   return <details><summary>Evidence and editable geometry</summary>
     <p>{candidate.evidence}</p>{candidate.uncertainties.length > 0 && <ul>{candidate.uncertainties.map((text, i) => <li key={i}>{text}</li>)}</ul>}
     <label>Label<input disabled={disabled} maxLength={200} value={candidate.label || ''} onChange={e => update({ ...candidate, label: e.target.value })} /></label>
-    <label>Interpret as<select disabled={disabled || Boolean(candidate.targetId)} value={candidate.kind} onChange={e => update({ ...candidate, kind: e.target.value as Candidate['kind'], curve: e.target.value === 'wall' ? candidate.curve : undefined,
+    <label>Interpret as<select disabled={disabled || Boolean(candidate.targetId)} value={candidate.kind} onChange={e => update({ ...candidate, kind: e.target.value as Candidate['kind'], curve: ['wall','architectural-boundary'].includes(e.target.value) ? candidate.curve : undefined,
       wallId: ['door', 'window', 'passage'].includes(e.target.value) ? candidate.wallId : undefined })}>
-      {['wall', 'door', 'window', 'passage', 'room', 'column', 'stair', 'furniture', 'void', 'unknown'].map(kind => <option key={kind}>{kind}</option>)}
+      {['wall', 'door', 'window', 'passage', 'room', 'column', 'stair', 'furniture', 'void', 'architectural-boundary', 'unknown'].map(kind => <option key={kind} value={kind}>{kind==='architectural-boundary'?'Architectural outline':kind}</option>)}
     </select></label>
     <p>Points are percentages across and down the plan, measured from its top-left corner.</p>
     {candidate.points.map((point, index) => <div className="cloud-inline" key={index}>

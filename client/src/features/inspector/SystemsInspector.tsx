@@ -1,9 +1,12 @@
+import {SystemGeometryFields} from './SystemGeometryFields'
+import {ArticulationFields} from './ArticulationFields'
+import {originLabels} from '../../domain/articulation'
 import {useState} from 'react'
 import type {Building,Level,Selection} from '../../domain/types'
 import type {BuildingSystem} from '../../domain/buildingSystems'
 import {systemCapabilities} from '../../domain/systemCapabilities'
 import {createSystem} from '../../domain/createSystem'
-import {validateSystems,systemPoints} from '../../domain/systemValidation'
+import {validateSystems} from '../../domain/systemValidation'
 import {detachTypicalFloor} from '../../domain/typicalFloors'
 import {useProject} from '../../state/project'
 export function SystemsInspector({building,level,selection}:{building:Building;level:Level;selection:Selection}){
@@ -12,7 +15,7 @@ export function SystemsInspector({building,level,selection}:{building:Building;l
   const systems=building.systems?.systems || [],selected=systems.find(s=>s.id===selection?.id)
   const update=(change:(list:BuildingSystem[])=>BuildingSystem[])=>edit(project=>{
     const next=structuredClone(project),owner=next.buildings.find(b=>b.id===building.id)!
-    if(level.locked){setError('Unlock the level before editing architectural systems.');return project}
+    if(level.locked||building.levels.find(l=>l.id===selected?.levelId)?.locked){setError('Unlock the level before editing architectural systems.');return project}
     owner.systems={version:1,typology:owner.systems?.typology||'unknown',systems:change(owner.systems?.systems||[])}
     const issues=validateSystems(owner);setError(issues.join(' · '));return issues.length?project:next
   })
@@ -24,7 +27,10 @@ export function SystemsInspector({building,level,selection}:{building:Building;l
     {selected&&<>
       <label className="inspector-field"><span>Name</span><input value={selected.name} onChange={e=>patch({name:e.target.value})}/></label>
       <label className="inspector-field"><span>Level</span><select value={selected.levelId} onChange={e=>patch({levelId:e.target.value})}>{building.levels.map(l=><option key={l.id} value={l.id}>{l.name}</option>)}</select></label>
-      <small>{selected.origin} · {selected.evidence}</small>
+      <small>{originLabels[selected.origin]} · {selected.evidence}</small>
+      {selected.assumptions?.map(assumption=><small key={assumption}>{assumption}</small>)}
+      <label className="inspector-field"><span>{selected.origin==='design-proposal'?'Include proposed design':'Visible'}</span><input type="checkbox" checked={selected.visible!==false} onChange={e=>patch({visible:e.target.checked})}/></label>
+      {selected.kind==='articulation'&&<ArticulationFields system={selected} patch={patch}/>}
       <label className="inspector-field"><span>Elevation · m</span><input type="number" step=".1" value={selected.elevation} onChange={e=>{const value=Number(e.target.value);if(Number.isFinite(value))patch({elevation:value})}}/></label>
       {systemCapabilities[selected.kind].fields.map(field=><label className="inspector-field" key={field.key}><span>{field.label}{field.integer?'':' · m'}</span>
         <input type="number" min={field.min} max={field.max} step={field.integer?1:.05} value={Number((selected as unknown as Record<string,unknown>)[field.key])}
@@ -33,12 +39,7 @@ export function SystemsInspector({building,level,selection}:{building:Building;l
       <label className="inspector-field"><span>Material color</span><input type="color" value={selected.color} onChange={e=>patch({color:e.target.value})}/></label>
       {'role' in selected&&<label className="inspector-field"><span>Architectural role</span><select value={selected.role} onChange={e=>patch({role:e.target.value})}>
         {(selected.kind==='void'?['atrium','courtyard','shaft']:['podium','tower','wing','crown','mechanical']).map(role=><option key={role}>{role}</option>)}</select></label>}
-      {systemPoints(selected).map((point,index)=><label className="inspector-field" key={index}><span>Point {index+1} · X / Z m</span><span>
-        {(['x','z'] as const).map(axis=><input key={axis} type="number" aria-label={`Point ${index+1} ${axis}`} step=".1" value={point[axis]} onChange={e=>{
-          const value=Number(e.target.value);if(!Number.isFinite(value))return
-          const points=systemPoints(selected).map((p,i)=>i===index?{...p,[axis]:value}:p)
-          patch('polygon' in selected?{polygon:points}:'path' in selected?{path:points}:{start:points[0],end:points[1]})
-        }}/>)}</span></label>)}
+      <SystemGeometryFields system={selected} patch={patch} levels={building.levels}/>
       {selected.kind==='typical-floors'&&<>
         <label className="inspector-field"><span>Template level</span><select value={selected.templateLevelId} onChange={e=>patch({templateLevelId:e.target.value})}>{building.levels.map(l=><option key={l.id} value={l.id}>{l.name}</option>)}</select></label>
         <p>Edits to the template update every linked floor. Detach a floor to edit it independently.</p>

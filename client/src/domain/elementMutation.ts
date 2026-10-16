@@ -1,3 +1,4 @@
+import {mutateSystem} from './systemEditing'
 import type { Building, Point, Selection } from './types'
 import { selectedElement, pointsCenter, type ElementChange } from './elementGeometry'
 import { nearestWallOffset, wallWithEndpoint } from '../geometry/math'
@@ -7,6 +8,7 @@ import type { Project } from './types'
 import { furnitureIssues } from '../furniture/entities'
 
 export function mutateElement(project: Project, building: Building, selection: NonNullable<Selection>, change: ElementChange): string | null {
+  if(selection.kind==='architecture')return mutateSystem(building,selection.id,change)
   const target = selectedElement(building, selection)
   if (!target) return 'Select a building element first.'
   const { level, element, points } = target

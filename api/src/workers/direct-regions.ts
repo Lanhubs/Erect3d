@@ -7,18 +7,21 @@ import {classifyFailure} from '../modules/ai/provider'
 import {parse} from '../contracts/http'
 import {assertLease} from '../jobs/lease'
 import {analysisProgress} from './analysis-progress'
+import {inSourceRegion,type SourceRegion} from './source-region'
 
 // Each measured stroke has exactly one owner. Overlapping crops retain context,
 // while coordinates and stable measurement IDs always refer to the original sheet.
-export function regionOwner(candidate:Candidate) {
+export function regionOwner(candidate:Candidate,region?:SourceRegion) {
   const centre=candidate.points.reduce((sum,p)=>({x:sum.x+p.x/candidate.points.length,y:sum.y+p.y/candidate.points.length}),{x:0,y:0})
-  return Number(centre.x>=.5)+2*Number(centre.y>=.5)
+  return Number(centre.x>=(region?region.x+region.width/2:.5))+2*Number(centre.y>=(region?region.y+region.height/2:.5))
 }
-export function regionalProposal(proposal:Intelligence,index:number,measured:Candidate[]):Intelligence {
+export function regionalProposal(proposal:Intelligence,index:number,measured:Candidate[],region?:SourceRegion):Intelligence {
   const native=new Set(measured.map(item=>item.id)),prefix=`region${index+1}_`
-  const candidates=proposal.candidates.filter(item=>native.has(item.id) || regionOwner(item)===index)
+  const candidates=proposal.candidates.filter(item=>inSourceRegion(item,region)&&(native.has(item.id) || regionOwner(item,region)===index))
   const ids=new Map(candidates.map(item=>[item.id,native.has(item.id)?item.id:`${prefix}${item.id}`]))
   return {...proposal,understanding:undefined,vision:undefined,designs:[],
+    architecturalRequirements:proposal.architecturalRequirements?{...proposal.architecturalRequirements,
+      systems:proposal.architecturalRequirements.systems.filter(s=>s.boundaryId&&ids.has(s.boundaryId)).map(s=>({...s,id:`${prefix}${s.id}`,boundaryId:ids.get(s.boundaryId!)!}))}:undefined,
     candidates:candidates.map(item=>({...item,id:ids.get(item.id)!,wallId:item.wallId?ids.get(item.wallId) || item.wallId:undefined})),
     dispositions:proposal.dispositions?.filter(item=>native.has(item.candidateId))}
 }
@@ -29,20 +32,20 @@ export async function readRegions(source:IntelligenceInput,signal:AbortSignal,
   await report('global-understanding',[])
   const perimeterEvidence=source.candidates.filter(candidate=>candidate.kind==='wall').toSorted((a,b)=>
     Math.hypot(b.points[0].x-b.points.at(-1)!.x,b.points[0].y-b.points.at(-1)!.y)-Math.hypot(a.points[0].x-a.points.at(-1)!.x,a.points[0].y-a.points.at(-1)!.y)).slice(0,80)
-  const global=await invoke({...source,pass:'global-understanding',candidates:perimeterEvidence,details:undefined,crop:undefined,region:undefined},signal)
+  const global=await invoke({...source,pass:'global-understanding',candidates:perimeterEvidence,details:undefined,crop:undefined},signal)
   global.candidates=[];global.dispositions=[];global.designs=[]
   const completed=['global-understanding']
   const regions=source.details || []
   if(regions.length!==4)throw new Error('Dense reconstruction requires four native crops')
   const abort=new AbortController(),combined=AbortSignal.any([signal,abort.signal])
   const results=await Promise.allSettled(regions.map(async(crop,index)=>{
-    const pass=`reconstruct-region-${index+1}`,measured=source.candidates.filter(item=>regionOwner(item)===index)
+    const pass=`reconstruct-region-${index+1}`,measured=source.candidates.filter(item=>regionOwner(item,source.region)===index)
     combined.throwIfAborted()
     try {
       await report(pass,[...completed])
-      const proposal=await invoke({...source,pass,candidates:measured,designReference:undefined,details:undefined,crop,region:crop.region,understanding:global.understanding},combined)
+      const proposal=await invoke({...source,pass,candidates:measured,designReference:undefined,document:undefined,details:undefined,crop,region:crop.region,understanding:global.understanding},combined)
       completed.push(pass);await report('reconstruct-regions',[...completed])
-      return regionalProposal(proposal,index,measured)
+      return regionalProposal(proposal,index,measured,source.region)
     }catch(error){abort.abort(error);throw error}
   }))
   const failed=results.find(result=>result.status==='rejected')
@@ -61,7 +64,8 @@ export async function directRegions(db:Database,config:Config,job:Job,provider:P
       return call.id
     })
     try {
-      const response=await provider.interpret(input,AbortSignal.any([callSignal,AbortSignal.timeout(Math.min(config.AI_TIMEOUT_MS,input.pass==='global-understanding'?25000:40000))]))
+      const deadline=input.pass==='global-understanding'?(input.document?65000:25000):40000
+      const response=await provider.interpret(input,AbortSignal.any([callSignal,AbortSignal.timeout(Math.min(config.AI_TIMEOUT_MS,deadline))]))
       const proposal=parse(intelligenceSchema,response.proposal)
       await db.begin(async tx=>{
         await assertLease(tx,job)

@@ -71,9 +71,10 @@ export function SourcePanel({ session, available, aiAvailable, reconstructReques
       if(recent?.analysisId)task={input:undefined,key:'',analysisId:recent.analysisId}
     }
     if (task?.analysisId) {
-      const result = await api.request<{ status: string;prompt_version?:number;currentPromptVersion?:number;model_revision?:string;options?:{designMode?:string;styleReferenceAssetId?:string};result?:{quality?:{status:string}} }>(`/analysis/${task.analysisId}`)
+      const result = await api.request<{ status: string;prompt_version?:number;currentPromptVersion?:number;model_revision?:string;options?:{region?:Region;designMode?:string;styleReferenceAssetId?:string};result?:{quality?:{status:string}} }>(`/analysis/${task.analysisId}`)
       const current=(result.currentPromptVersion===undefined || result.prompt_version===result.currentPromptVersion) && (result.model_revision===undefined || Number(result.model_revision)===session.engine?.record.base.revision)
         && result.options?.styleReferenceAssetId===(designMode==='creative'?building.designReference?.assetId:undefined) && (!result.options?.designMode || result.options.designMode===designMode)
+        && (['x','y','width','height'] as const).every(key=>result.options?.region?.[key]===region?.[key])
       if (current && ['pending', 'ready'].includes(result.status) && result.result?.quality?.status!=='blocked') {
         if (result.status==='pending') await api.request(`/analysis/${task.analysisId}/resume`,'POST')
         reconstructionStarted(project.id,task.analysisId,{status:result.status,job_status:result.status==='pending'?'running':'completed'});setAnalysisId(task.analysisId);return
@@ -84,7 +85,7 @@ export function SourcePanel({ session, available, aiAvailable, reconstructReques
       const measured = useLocalEvidence.getState().evidence
       task = { input: { sourceAssetId: selectedAsset, sourceId: source.id, levelId: level.id, page: source.page,
         calibration: level.calibration, alignment: level.alignment, deterministicCandidates: engine==='hybrid' && matchingEvidence?measured?.candidates || []:[],
-        options: { mode, complex, region:purpose==='rebuild'?undefined:region, purpose,engine,strategy,designMode,styleReferenceAssetId:designMode==='creative'?building.designReference?.assetId:undefined, architectureCompletion: completion, cloudConsent: true } }, key: crypto.randomUUID() }
+        options: { mode, complex, region, purpose,engine,strategy,designMode,styleReferenceAssetId:designMode==='creative'?building.designReference?.assetId:undefined, architectureCompletion: completion, cloudConsent: true } }, key: crypto.randomUUID() }
       await putTask(taskKey, task)
     }
     let result:{ analysisId:string }
@@ -137,7 +138,7 @@ export function SourcePanel({ session, available, aiAvailable, reconstructReques
         <option value="rebuild">Reconstruct this floor from the source</option><option value="enhance">Enhance existing interpretation</option><option value="interpret">Add source geometry to this floor</option></select></label>
       <p>{purpose==='rebuild'?'The server studies the source, reads scale evidence, audits walls and openings, and builds a validated editable model. Replacement requires your approval and supports Undo.':'Enhancement preserves existing model IDs and design choices. Confirmed edits need separate approval.'}</p>
       <p>{engine==='backend'?`The server uses native-resolution OpenCV measurements and AI review. ${source.mime==='application/pdf'?'The original PDF and selected page are sent together.':'The original image and lossless detail crops are studied without resizing.'}`:matchingEvidence?`${matchingEvidence.candidates.length} optional browser measurements will accompany this plan.`:'Browser measurements are optional; use the control below to supply them.'}</p>
-      {engine==='hybrid' && <EvidenceControls source={source} calibration={level.calibration} cacheKey={record.key} projectId={project.id} disabled={busy || readOnly} region={region} setRegion={setRegion} />}
+      <EvidenceControls source={source} calibration={level.calibration} cacheKey={record.key} projectId={project.id} disabled={busy || pending || readOnly} region={region} setRegion={setRegion} measurements={engine==='hybrid'} />
       <div className="cloud-inline"><label>Detect<select value={mode} onChange={e => setMode(e.target.value)} disabled={busy}>
         <option value="structure">Structure and openings</option><option value="rooms">Rooms</option><option value="fixtures">Fixtures</option><option value="furniture">Furniture</option><option value="full">All details</option>
       </select></label><label><input type="checkbox" checked={complex} onChange={e => setComplex(e.target.checked)} disabled={busy} />Complex drawing</label></div>

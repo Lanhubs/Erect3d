@@ -1,20 +1,25 @@
 import {architecturalRequirements} from '../../contracts/architectural-requirements'
+import {typology} from '../../contracts/architecture'
+import {windowConstructionSchema} from '../../contracts/opening-construction'
 import {z} from 'zod'
 import {intelligenceSchema,type Candidate} from '../../contracts/analysis'
 import {furnitureTypes} from '../../../../client/src/furniture/types'
 import {visionSchema} from '../../contracts/vision'
+import {architecturalWireSchema} from './architectural-wire'
 const coord=z.number().min(0).max(1),point=z.tuple([coord,coord]),points=z.array(point).min(1).max(1024)
 const entity={id:z.string().min(1).max(160),points}
 const curve=z.object({center:point,radius:z.number().positive().max(2),startAngle:z.number(),endAngle:z.number()}).strict()
 export const compactReconstruction=z.object({
   architecturalRequirements:architecturalRequirements.optional(),
-  buildingType:z.enum(['house','apartment','office','public','mall','stadium','arena','unknown']),footprint:points,
+  buildingType:typology,footprint:points,
   vision:visionSchema.optional(),
+  boundaries:z.array(z.object({...entity,curve:curve.optional()}).strict()).max(200).optional(),
   scale:z.object({a:point,b:point,knownMetres:z.number().positive().max(10000),origin:z.enum(['annotated','inferred']),evidence:z.string().min(1).max(1000)}).strict().optional(),
   walls:z.array(z.object({...entity,thickness:z.number().positive().max(.1).optional(),wallKind:z.enum(['exterior','interior','partition']).optional(),curve:curve.optional()}).strict()).max(1000),
   wallRefs:z.array(z.number().int().nonnegative().max(1999)).max(1000).optional(),
   strokeLabels:z.record(z.string(),z.string().regex(/^[012]*$/)),
-  openings:z.array(z.object({...entity,kind:z.enum(['door','window','passage']),wallId:z.string().min(1).optional(),wallRef:z.number().int().nonnegative().max(1999).optional(),doorStyle:z.enum(['flush','panel','glazed','double']).optional(),hinge:z.enum(['left','right']).optional(),swing:z.enum(['in','out']).optional(),windowType:z.enum(['fixed','casement','sliding']).optional()}).strict()).max(500),
+  openings:z.array(z.object({...entity,kind:z.enum(['door','window','passage']),wallId:z.string().min(1).optional(),wallRef:z.number().int().nonnegative().max(1999).optional(),doorStyle:z.enum(['flush','panel','glazed','double']).optional(),doorLeafStyle:z.enum(['flush','panel','glazed']).optional(),hinge:z.enum(['left','right']).optional(),swing:z.enum(['in','out']).optional(),windowType:z.enum(['fixed','casement','sliding']).optional(),windowConstruction:windowConstructionSchema.optional()}).strict()).max(500),
+  windows:z.array(z.object({...entity,wallId:z.string().min(1).optional(),wallRef:z.number().int().nonnegative().max(1999).optional(),windowType:z.enum(['fixed','casement','sliding']).optional(),windowConstruction:windowConstructionSchema.optional()}).strict()).max(500).optional(),
   rooms:z.array(z.object({...entity,name:z.string().max(200),roomCategory:z.enum(['basketball-court','football-pitch','table-tennis-hall']).optional()}).strict()).max(200),
   columns:z.array(z.object({...entity,columnShape:z.enum(['rectangular','circular']).optional()}).strict()).max(200),
   stairs:z.array(z.object({...entity,stairForm:z.enum(['straight','L','U']).optional(),reverse:z.boolean().optional()}).strict()).max(100),
@@ -35,11 +40,12 @@ export function expandReconstruction(value:unknown,measurements:Candidate[]=[]) 
     const wall=measured[ref];if(!wall)throw new Error('Unknown measured wall reference')
     return {...wall,confidence:.8,needsReview:true as const,evidence:'Native source stroke classified as a building wall in the complete-plan interpretation.'}
   })
-  const candidates=[...references,...parsed.walls.map(item=>candidate(item,'wall')),
-    ...parsed.openings.map(({wallRef,...item})=>{
+  const candidates=[...references,...(parsed.boundaries||[]).map(item=>candidate(item,'architectural-boundary')),...parsed.walls.map(item=>candidate(item,'wall')),
+    ...[...parsed.openings,...(parsed.windows||[]).map(item=>({...item,kind:'window' as const}))].map(({wallRef,...item})=>{
       const wallId=wallRef===undefined?item.wallId:measured[wallRef]?.id
       if(wallRef!==undefined && !wallId)throw new Error('Unknown opening host reference')
-      return candidate({...item,wallId} as typeof parsed.walls[number],item.kind)
+      const hosted={...item,wallId}
+      return candidate(hosted,item.kind)
     }),...parsed.columns.map(item=>candidate(item,'column')),
     ...parsed.stairs.map(item=>candidate(item,'stair')),
     ...parsed.rooms.map(({name,...item})=>({...candidate(item,'room'),label:name})),
@@ -56,19 +62,34 @@ export function compactMeasurements(items:Candidate[]) {
   return items.filter(item=>item.kind==='wall').map((item,ref)=>[ref,
     ...item.points.flatMap(({x,y})=>[short(x),short(y)]),short(item.thickness || 0)])
 }
+// A bounded, spatially distributed set of native frame/leaf hints accompanies
+// the untouched image. These are evidence, never automatically erected lines.
+export function compactSourceFeatures(items:Candidate[]){
+ const features=items.filter(item=>item.id.startsWith('cv_feature_'))
+ const swings=features.filter(item=>item.evidence.includes('swing')).slice(0,128),rest=features.filter(item=>!swings.includes(item)),budget=256-swings.length
+ const selected=[...swings,...Array.from({length:Math.min(budget,rest.length)},(_,i)=>rest[Math.floor(i*rest.length/Math.min(budget,rest.length))])]
+ return selected.map(item=>[item.id,...item.points.flatMap(p=>[Number(p.x.toFixed(6)),Number(p.y.toFixed(6))]),item.evidence.includes('swing')?'swing':'thin-line'])
+}
 // Gemini accepts homogeneous numeric arrays; full tuple lengths are checked locally.
-export function compactReconstructionSchema(measurementCount?:number):Record<string,unknown> {
+export function compactReconstructionSchema(_measurementCount?:number):Record<string,unknown> {
   const schema=z.toJSONSchema(compactReconstruction) as any
   const simplify=(value:any):any=>{
     if(Array.isArray(value))return value.map(simplify)
     if(!value || typeof value!=='object')return value
     if(value.prefixItems)return {type:'array',items:{type:'number',minimum:0,maximum:1}}
-    return Object.fromEntries(Object.entries(value).filter(([key])=>!['$schema','minLength','maxLength','minItems','maxItems'].includes(key)).map(([key,item])=>[key,simplify(item)]))
+    return Object.fromEntries(Object.entries(value).filter(([key])=>!['$schema','minLength','maxLength','minItems','maxItems'].includes(key)).map(([key,item])=>[key==='const'?'enum':key==='oneOf'?'anyOf':key,key==='const'?[item]:simplify(item)]))
   }
   const result=simplify(schema)
-  if(measurementCount!==undefined){
-    const groups=Array.from({length:Math.ceil(measurementCount/25)},(_,index)=>index*25)
-    result.properties.strokeLabels={type:'object',properties:Object.fromEntries(groups.map(start=>[String(start),{type:'string',description:`Exactly ${Math.min(25,measurementCount-start)} characters for refs ${start} through ${Math.min(start+24,measurementCount-1)}. 0=other, 1=wall, 2=uncertain.`}])),required:groups.map(String),additionalProperties:false}
-  }
+  result.properties.architecturalRequirements=architecturalWireSchema(result.properties.architecturalRequirements)
+  // New requests must establish an annotated or explicitly inferred reference.
+  // The parser still accepts historical cached responses without this field.
+  result.required=[...new Set([...result.required,'scale','architecturalRequirements','boundaries','windows'])]
+  result.properties.openings.items.properties.kind.enum=['door','passage']
+  delete result.properties.vision
+  // Enumerating a property per measurement group makes Gemini's grammar exceed
+  // its complexity limit on dense drawings. Keep the wire grammar constant;
+  // expandReconstruction still checks every required key, label and group size.
+  result.properties.strokeLabels={type:'object',additionalProperties:{type:'string'},
+    description:'Classify every source measurement. Keys are starting refs 0,25,50,...; values have 25 characters (0=other,1=wall,2=uncertain), except the final remaining group. Use {} when there are zero measurements. expectedStrokeLabelsLength gives the total required characters.'}
   return result
 }

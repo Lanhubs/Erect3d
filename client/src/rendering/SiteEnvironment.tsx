@@ -121,7 +121,7 @@ function CivicPlazaLandscape({ cx, cz, width, depth, slabThickness }: { cx: numb
   </group>
 }
 
-export function SiteEnvironment({ bounds, slabThickness, siteFence, baseShown = true, onFenceSelect }: { bounds: RoofBounds; slabThickness: number; siteFence?: SiteFence; baseShown?: boolean; onFenceSelect?: () => void }) {
+export function SiteEnvironment({ bounds, slabThickness, siteFence, baseShown = true, onFenceSelect,contextShown=false }: { bounds: RoofBounds; slabThickness: number; siteFence?: SiteFence; baseShown?: boolean; onFenceSelect?: () => void;contextShown?:boolean }) {
   const native=Boolean((useThree(state=>state.gl) as unknown as {isWebGPURenderer?:boolean}).isWebGPURenderer)
   const sky = useMemo(() => {
     if(native){const value=new SkyMesh();value.scale.setScalar(10000);value.turbidity.value=4;value.rayleigh.value=1.5;value.sunPosition.value.set(-8,14,7);return value}
@@ -148,7 +148,7 @@ export function SiteEnvironment({ bounds, slabThickness, siteFence, baseShown = 
       <boxGeometry args={[groundWidth, .12, groundDepth]} />
       <meshStandardMaterial color={plot ? '#90958c' : '#898d86'} roughness={.96} />
     </mesh>}
-    <CivicPlazaLandscape cx={cx} cz={cz} width={width} depth={depth} slabThickness={slabThickness} />
+    {contextShown&&<CivicPlazaLandscape cx={cx} cz={cz} width={width} depth={depth} slabThickness={slabThickness} />}
     <mesh position={[groundCenterX, -slabThickness - (baseShown ? .15 : .015), groundCenterZ]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
       <planeGeometry args={[250, 250]} />
       <meshStandardMaterial map={siteTexture()} roughness={1} />

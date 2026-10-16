@@ -3,6 +3,7 @@ import { validateOpening } from '../../geometry/openingValidation'
 import { toDisplay, toMetres, type Unit } from '../../geometry/units'
 import { useProject } from '../../state/project'
 import { VerandaControls } from './VerandaControls'
+import {WindowConstructionFields} from './WindowConstructionFields'
 
 function NumberField({ label, value, min = 0, unit, onChange }: {
   label: string; value: number; min?: number; unit: Unit; onChange: (value: number) => void
@@ -26,6 +27,7 @@ export function OpeningInspector({ level, door, windowUnit, passage, unit, updat
         onChange={event => update('doors', { style: event.target.value })}>
         <option value="flush">Flush</option><option value="panel">Panel</option><option value="glazed">Glazed</option><option value="double">Double leaf</option>
       </select></label>
+      {door.style==='double'&&<label className="inspector-field"><span>Leaf construction</span><select aria-label="Door leaf construction" value={door.leafStyle||'panel'} onChange={e=>update('doors',{leafStyle:e.target.value})}><option value="flush">Flush</option><option value="panel">Panel</option><option value="glazed">Glazed</option></select></label>}
       <label className="inspector-field"><span>Hinge side</span><select aria-label="Hinge side" value={door.hinge}
         onChange={event => update('doors', { hinge: event.target.value })}><option value="left">Left</option><option value="right">Right</option></select></label>
       <label className="inspector-field"><span>Opening</span><select aria-label="Door opening direction" value={door.swing || 'in'}
@@ -48,6 +50,7 @@ export function OpeningInspector({ level, door, windowUnit, passage, unit, updat
           offset: door.offset, width: door.width, height: door.height }] })); select({ kind: 'passage', id }) }}>Convert to open passage</button>
     </div>}
     {windowUnit && <div className="fields">
+      {level.walls.find(w=>w.id===windowUnit.wallId)&&<WindowConstructionFields window={windowUnit} wall={level.walls.find(w=>w.id===windowUnit.wallId)!} unit={unit} update={change=>update('windows',change)}/>}
       <div className="readout"><span>Host wall</span><b>{windowUnit.wallId}</b></div>
       <label className="inspector-field"><span>Frame</span><select aria-label="Window frame" value={windowUnit.frame || 'aluminium'}
         onChange={event => update('windows', { frame: event.target.value })}><option value="aluminium">Aluminium</option><option value="timber">Timber</option></select></label>

@@ -4,6 +4,7 @@ import type { Roof } from '../domain/types'
 import type { RoofBounds, RoofFace, Vertex } from '../geometry/roof'
 import { crossRoofHeightAt } from '../geometry/crossRoof'
 import { roofTexture } from './roofTextures'
+import {roofSurfaceGeometry,roofSoffitGeometry} from '../geometry/roofSurfaceGeometry'
 
 function edgeKey(a: Vertex, b: Vertex) {
   const point = (v: Vertex) => v.map(value => value.toFixed(5)).join(',')
@@ -60,28 +61,14 @@ function endPanels(bounds: RoofBounds, roof: Roof) {
 }
 
 export function CrossRoofSurface({ faces, roof, bounds, infill = true }: { faces: RoofFace[]; roof: Roof; bounds: RoofBounds; infill?: boolean }) {
-  const geometry = useMemo(() => {
-    const positions: number[] = [], uv: number[] = []
-    for (const face of faces) {
-      const [a, b, c] = face
-      const ab = [b[0] - a[0], b[1] - a[1], b[2] - a[2]]
-      const ac = [c[0] - a[0], c[1] - a[1], c[2] - a[2]]
-      const slopeX = Math.abs(ab[1] * ac[2] - ab[2] * ac[1])
-      const slopeZ = Math.abs(ab[0] * ac[1] - ab[1] * ac[0])
-      for (const [x, y, z] of face) {
-        positions.push(x, y, z)
-        uv.push(slopeX > slopeZ ? z / 2 : x / 2, slopeX > slopeZ ? x / 2 : z / 2)
-      }
-    }
-    const mesh = new BufferGeometry()
-    mesh.setAttribute('position', new Float32BufferAttribute(positions, 3))
-    mesh.setAttribute('uv', new Float32BufferAttribute(uv, 2))
-    mesh.computeVertexNormals()
-    return mesh
-  }, [faces])
+  const geometry=useMemo(()=>roofSurfaceGeometry(faces),[faces])
+  const soffit=useMemo(()=>roofSoffitGeometry(geometry),[geometry])
   const sides = useMemo(() => shellGeometry(faces), [faces])
   const panels = useMemo(() => endPanels(bounds, roof), [bounds, roof])
-  useEffect(() => () => { geometry.dispose(); sides.dispose(); panels.dispose() }, [geometry, sides, panels])
+  useEffect(() => () => geometry.dispose(),[geometry])
+  useEffect(() => () => soffit.dispose(),[soffit])
+  useEffect(() => () => sides.dispose(),[sides])
+  useEffect(() => () => panels.dispose(),[panels])
   return <group>
     <mesh geometry={geometry} castShadow receiveShadow>
       {roof.material === 'glass'
@@ -89,8 +76,9 @@ export function CrossRoofSurface({ faces, roof, bounds, infill = true }: { faces
           transmission={.4} transparent opacity={.68} side={DoubleSide} depthWrite={false} />
         : <meshStandardMaterial map={roofTexture(roof.material)} color={roof.color}
           metalness={['standing-seam', 'long-span-metal', 'corrugated', 'stone-coated-metal'].includes(roof.material) ? .28 : .03}
-          roughness={roof.material === 'membrane' ? .78 : .56} side={DoubleSide} />}
+          roughness={roof.material === 'membrane' ? .78 : .56} shadowSide={DoubleSide} />}
     </mesh>
+    {roof.material!=='glass'&&<mesh geometry={soffit} receiveShadow><meshStandardMaterial color="#d2d1c9" roughness={.9}/></mesh>}
     <mesh geometry={sides} castShadow receiveShadow>
       <meshStandardMaterial color={roof.color} metalness={.18} roughness={.65} side={DoubleSide} />
     </mesh>

@@ -4,7 +4,9 @@ import { verandaGeometry } from '../geometry/veranda'
 import { boundsOf, SpatialIndex } from './spatial'
 import { slopeSurface, walkStairSurfaces } from './stairSurfaces'
 import { playerShape, type Surface } from './types'
-export function buildWalkSurfaces(levels: Level[]) {
+import type {BuildingSystem} from '../domain/buildingSystems'
+import {spiralSurfaces} from './spiralSurfaces'
+export function buildWalkSurfaces(levels: Level[],systems:BuildingSystem[]=[]) {
   const surfaces: Surface[] = [], ceilings: Surface[] = []
   const flat = (polygon: Point[], holes: Point[][], height: number, levelId: string): Surface => ({ ...boundsOf(polygon), levelId,
     heightAt: p => containsPoint(polygon, p) && !holes.some(hole => containsPoint(hole, p)) ? height : null })
@@ -18,6 +20,7 @@ export function buildWalkSurfaces(levels: Level[]) {
     for (const stair of level.stairs || []) surfaces.push(...walkStairSurfaces(stair, levels))
     for (const ramp of level.ramps || []) surfaces.push(slopeSurface(ramp.start, ramp.end, ramp.width, level.elevation + ramp.startElevation, level.elevation + ramp.endElevation, level.id))
   }
+  for(const system of systems)if(system.kind==='spiral-stair'&&system.visible!==false){const level=levels.find(l=>l.id===system.levelId);if(level){const flight=spiralSurfaces(system,level.elevation,levels);surfaces.push(...flight.floors);ceilings.push(...flight.ceilings)}}
   return { floors: new SpatialIndex(surfaces, 4), ceilings: new SpatialIndex(ceilings, 4), base: Math.min(...levels.map(l => l.elevation), 0) }
 }
 export type GroundWorld = ReturnType<typeof buildWalkSurfaces>

@@ -2,6 +2,7 @@ import {validateSystems} from '../../../../client/src/domain/systemValidation'
 import type { Project } from '../../contracts/project'
 import { ApiError } from '../../security/errors'
 import { wallLength } from '../../../../client/src/geometry/math'
+import {windowConstructionIssue} from '../../../../client/src/domain/windowConstruction'
 
 export function validateGeometry(project: Project) {
   const ids = new Set<string>()
@@ -40,6 +41,7 @@ export function validateGeometry(project: Project) {
           throw new ApiError(422, 'INVALID_GEOMETRY', 'Opening must fit its host wall')
         }
       }
+      for(const window of level.windows){const host=walls.get(window.wallId);if(host){const issue=windowConstructionIssue(window,host);if(issue)throw new ApiError(422,'INVALID_WINDOW_CONSTRUCTION',issue)}}
       for (const stair of level.stairs || []) {
         const target = building.levels.find(item => item.id === stair.toLevelId)
         if (stair.fromLevelId !== level.id || !target || target.elevation <= level.elevation) {

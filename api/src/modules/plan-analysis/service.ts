@@ -15,7 +15,7 @@ import { captureContext } from './model-context'
 export async function requestAnalysis(db: Database, config: Config, actor: Actor, projectId: string,
   input: AnalysisInput, key: string | undefined, requestId: string) {
   if (!config.GEMINI_API_KEY) throw new ApiError(503, 'AI_UNAVAILABLE', 'Cloud interpretation has not been configured')
-    if (input.options.purpose==='rebuild' && (input.options.engine!=='backend' || input.options.region)) throw new ApiError(422,'FULL_SOURCE_REQUIRED','Reconstruct a complete floor with the backend engine; use enhancement for regional changes')
+  if (input.options.purpose==='rebuild' && input.options.engine!=='backend') throw new ApiError(422,'FULL_SOURCE_REQUIRED','Reconstruct a complete floor with the backend engine')
   return idempotent(db, actor.id, `analysis:${projectId}`, key, input, async tx => {
     const project = await authorize(tx, actor, projectId, 'edit')
     const [asset] = await tx`SELECT * FROM assets WHERE id=${input.sourceAssetId} AND project_id=${projectId} AND state='ready'`

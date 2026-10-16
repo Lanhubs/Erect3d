@@ -328,3 +328,125 @@ Final verification: 110 API tests passed / one Redis skip / zero failures; 166 c
 tests passed / zero failures. API typecheck, source-length gate, production frontend
 build and Git whitespace checks passed. Reload retained revision 12 and the isolated
 QA account was signed out. The production build still reports its existing large chunks.
+
+## 23. Semantic systems, source hosts and multi-plan sheets (15 October 2026)
+
+Architectural systems now retain real source wall identities. Core extensions reuse
+authored wall bodies; facade entrances retain real openings. Shared architectural
+transforms carry source walls/openings and fitted boundaries. Typical floors reuse
+the full template emitters/materials instead of simplified boxes. Current-floor
+inspection isolates the selected slice, and compilation errors are visible.
+
+Regional analysis respects a selected floor drawing within a sheet. Whole-source
+coordinates are retained throughout measurement, regional ownership, merge and
+validation; neighbouring drawings cannot become part of the accepted floor.
+Backend users can select a complete floor under advanced options. Ordinary
+single-plan reconstruction retains its existing one-button flow.
+
+The supplied fourteen-sheet office PDF exposed a wall reconciliation error: a tiny
+native fragment could replace its full host wall. The corrected merger retains
+the full span and body thickness, remaps all hosts and preserves separate bands.
+Saved real Gemini responses now compile the selected ground-floor drawing with
+41 walls, 8 doors and 15 windows. Fine strokes and stair connections still require
+review. Original PDF bytes were ZIP-stored and SHA-256 verified unchanged.
+
+A fresh normal authenticated request subsequently completed in 94.0 seconds,
+including source upload, live Gemini interpretation and successful server preview.
+It produced 29 walls, 8 doors and 15 windows with no geometry errors. It remains
+needs-review for fine strokes and stair links; differing provider counts are not
+evidence of completeness. The selected floor, not all document storeys, was checked.
+
+The full document is read once globally instead of re-sent with all four regional
+requests. Office/public/commercial typologies receive a provisional hidden roof
+when no roof was chosen; explicit user roofing is retained. See the client's
+RENDERING_VALIDATION.md for exact source/run evidence and outstanding acceptance
+gates. This does not certify full multi-storey PDF assembly or reference-image realism.
+
+Final verification: 179 client tests passed, 117 API tests passed, one Redis
+integration test skipped. The production client build passed.
+Both typechecks, API source-length gate and production client build passed.
+No commit, push or deployment.
+
+### 24. Building focus, native region processing and scale correction
+
+New arena/stadium reconstruction and templates are retired; saved projects remain
+readable. The normal dense-plan path now uses one coordinated interpretation
+instead of five mandatory reads, with a conditional sparse geometry repair.
+Native measurements process only the selected drawing at full resolution.
+Scale evidence is required for new direct responses; older missing-scale results
+infer from source geometry rather than treating page width as building width.
+Manual calibration and original file bytes remain protected.
+
+The latest isolated office-PDF run completed in 75.8 seconds with a valid preview,
+37 walls, 6 doors, 15 windows and annotated scale. Seven stair connections remain
+review items. The earlier 94.0-second result is not an immediate-response target;
+provider latency is still material. Local host repairs now omit repeated full-PDF
+and design-reference payloads, retaining the native image and relevant crops;
+architectural dimension errors still receive document context.
+
+The client removes the fixed 200-floor count ceiling, pages repeated geometry,
+fits camera/shadow coverage to height and positions automatic roofs above linked
+floors. A synthetic 256-storey fixture validates those mechanisms. Full multi-sheet
+assembly and independent architectural fidelity remain acceptance work; no claim
+of perfect arbitrary-plan reconstruction or reference-image realism is made.
+
+### 25. Semantic architectural construction and opening depth
+
+Added source-anchored articulation systems and a dedicated architectural-outline
+candidate, preserving editable source geometry without fake rooms or extra wall
+extrusions. Detected, inferred and optional design-proposal origins are retained;
+proposals start hidden. The inspector exposes dimensions, profiles, surfaces,
+projection side and explicit repetition with linked floors. Detached floors retain
+independent copies. Concave and circular platforms and indexed entrance arches
+preserve actual topology.
+
+Window and double-door construction now retains real glazing apertures, frame
+depth, mullions/transoms, reveals, sills and curved hosts. Inferred construction
+fields are saved separately from source-derived positions and can be reviewed in
+the contextual inspector. Manual edits confirm only the changed properties.
+
+Live verification exposed optional-generation fields that permitted orphan
+outlines or omitted core heights. Prompt/schema version 31 retains strict semantic
+requirements through a shallow provider transport, with required spiral flight
+dimensions in a dedicated array and full per-kind canonical validation. Repair
+context retains the existing systems and names failed outline IDs. Region limits
+remain enforced; the test crop was corrected after visual inspection showed it
+cut through the source's external fire escape.
+
+The full client suite passed 198 tests; the final full API suite passed 133 tests
+with one optional Redis integration skipped. Both typechecks, the production
+build and the API source-line gate pass. Eleven authored building categories exercise the semantic
+compiler; these are geometry regressions, not a claim of complete source fidelity.
+See client/RENDERING_VALIDATION.md for viewport evidence and outstanding acceptance.
+
+Live checks exposed a spiral fire escape incorrectly represented as a 28-metre
+balcony guard and unique ground-floor geometry proposed for repetition. Dedicated
+spiral-stair semantics now preserve actual treads, landings, floor/roof holes and
+walkthrough surfaces. Guard heights above three metres are rejected. Unverified
+AI floor repetition starts hidden until matching layouts are established.
+
+Google rejected the broad per-kind generation grammar. Text-only compatibility
+probes accepted the shallow transport; a subsequent exact-PDF response omitted
+the spiral's clear flight width and was correctly rejected after 91 seconds.
+The dedicated spiral transport now makes that field mandatory. Original PDF
+bytes retained their SHA-256 throughout and storage used reversible ZIP only.
+
+Prompt 30 completed the exact selected ground-floor test in 58.2 seconds through
+an isolated local store: one interpretation, one source repair, a valid preview
+with 21 walls / 7 doors / 6 windows, and `needs-review` quality. This is not a full
+multi-sheet building. Visual review exposed missing side glazing. Prompt 31 adds
+a dedicated required window array and passes native thin frame/leaf hints into
+the compact call; these hints previously never reached that call. A single source
+repair also checks absent doors/windows. The detailed strategy already has opening
+passes and does not add coverage-only retries. Geometry diagnostics no longer
+turn an invalid boundary into a second, misleading missing-boundary error; radius
+conflicts include the exact source measurement.
+
+Prompt 31's text-only Gemini compatibility probe passed. Its two live exact-source
+attempts ended with a socket failure and Gemini DNS lookup failure, respectively.
+The final window-coverage change therefore remains unverified against the live
+provider. Separate R2 reads also failed or stalled; bounded signed reads now have
+a 30-second timeout, streamed byte limits and `STORAGE_UNAVAILABLE` errors instead
+of incorrectly blaming Gemini. The app retains its private R2 configuration.
+See client/RENDERING_VALIDATION.md for actual viewport evidence and the remaining
+multi-sheet, split-level, source-coverage and performance acceptance work.

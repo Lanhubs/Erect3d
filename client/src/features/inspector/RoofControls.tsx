@@ -12,7 +12,7 @@ const materialColors: Record<Roof['material'], string> = {
 const roofShapes: Array<[Roof['shape'], string]> = [
   ['hidden', 'Flat'], ['gable', 'Gable'], ['hip', 'Hip'], ['shed', 'Shed'],
   ['cross-gable', 'Cross-gable'], ['cross-hip', 'Cross-hip'], ['mansard', 'Mansard'],
-  ['butterfly', 'Butterfly'], ['terrace', 'Roof terrace'], ['arena-vault', 'Arena Vault'],
+  ['butterfly', 'Butterfly'], ['terrace', 'Roof terrace'],
 ]
 const roofMaterials: Array<[Roof['material'], string]> = [
   ['concrete', 'Smooth concrete'], ['membrane', 'Flat roof membrane'], ['standing-seam', 'Standing-seam aluminium'],
@@ -72,6 +72,7 @@ export function RoofControls({ level }: { level: Level }) {
           update({ shape, pitch: shape === 'shed' ? Math.min(pitch, 12) : pitch })
         }}>
           {roofShapes.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+          {roof.shape==='arena-vault'&&<option value="arena-vault" disabled>Legacy arena roof</option>}
         </select>
       </label>
       <label>Covering

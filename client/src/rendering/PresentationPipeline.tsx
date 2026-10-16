@@ -7,6 +7,7 @@ import {useGraphicsSettings} from './GraphicsRuntime'
 export function PresentationPipeline(){
   const {gl,scene,camera,invalidate}=useThree(),{tier,optimized}=useGraphicsSettings()
   const pipeline=useRef<RenderPipeline|null>(null)
+  const dispose=useRef(()=>{})
   useEffect(()=>{
     if(!optimized || tier!=='high' || !(gl as unknown as {isWebGPURenderer?:boolean}).isWebGPURenderer)return
     let cancelled=false,release=()=>{}
@@ -23,13 +24,15 @@ export function PresentationPipeline(){
       // pass or unused MRT attachments are allocated for this one effect.
       result.outputNode=output.mul(tsl.mix(1,occlusion.getTextureNode(),.35))
       pipeline.current=result;invalidate()
-      release=()=>{if(pipeline.current===result)pipeline.current=null;result.dispose();view.dispose();occlusion.dispose()}
+      let released=false
+      release=()=>{if(released)return;released=true;if(pipeline.current===result)pipeline.current=null;result.dispose();view.dispose();occlusion.dispose()}
+      dispose.current=release
     }
     void prepare().catch(()=>{pipeline.current=null;invalidate()})
-    return()=>{cancelled=true;if(native.onError===recover)native.onError=previousError;release()}
+    return()=>{cancelled=true;if(native.onError===recover)native.onError=previousError;release();dispose.current=()=>{}}
   },[gl,scene,camera,tier,optimized,invalidate])
   useFrame(()=>{
-    if(pipeline.current){try{pipeline.current.render()}catch{pipeline.current=null;gl.render(scene,camera)}}
+    if(pipeline.current){try{pipeline.current.render()}catch{dispose.current();pipeline.current=null;gl.render(scene,camera)}}
     else gl.render(scene,camera)
   },1)
   return null

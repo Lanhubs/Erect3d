@@ -1,4 +1,5 @@
 import type {CanopyBuffers} from './arenaCanopyBuffers'
+import {compactBuffers} from './compactBuffers'
 // Top, glazing, fascia and soffit keep stable slots and independent normals.
 // All coordinates and the authored 250 mm roof build-up are in project metres.
 export function canopyRegions(positions:number[],uvs:number[],top:number[],glass:number[],closure:number[]):CanopyBuffers{
@@ -27,7 +28,7 @@ export function canopyRegions(positions:number[],uvs:number[],top:number[],glass
     const d=underside(a),e=underside(b);flatTriangle(a,d,b);flatTriangle(b,d,e)
   }
   for(let i=0;i<closure.length;i+=3)flatTriangle(closure[i],closure[i+1],closure[i+2])
-  const indices=new Uint32Array([...top,...glass,...fascia,...soffit]),vertices=new Float32Array(positions),normals=new Float32Array(positions.length)
+  const {indices,vertices,uvs:texture}=compactBuffers(positions,uvs,[...top,...glass,...fascia,...soffit]),normals=new Float32Array(vertices.length)
   for(let i=0;i<indices.length;i+=3){
     const a=indices[i]*3,b=indices[i+1]*3,c=indices[i+2]*3
     const ux=vertices[b]-vertices[a],uy=vertices[b+1]-vertices[a+1],uz=vertices[b+2]-vertices[a+2]
@@ -36,6 +37,6 @@ export function canopyRegions(positions:number[],uvs:number[],top:number[],glass
     for(const v of [a,b,c]){normals[v]+=nx;normals[v+1]+=ny;normals[v+2]+=nz}
   }
   for(let i=0;i<normals.length;i+=3){const length=Math.hypot(normals[i],normals[i+1],normals[i+2]);if(length){normals[i]/=length;normals[i+1]/=length;normals[i+2]/=length}}
-  return {positions:vertices,uvs:new Float32Array(uvs),normals,indices,metalCount:top.length,
+  return {positions:vertices,uvs:texture,normals,indices,metalCount:top.length,
     regions:[top.length,glass.length,fascia.length,soffit.length]}
 }

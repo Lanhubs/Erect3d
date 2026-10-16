@@ -11,7 +11,7 @@ type Props = {
   remove: (id: string) => void
   account?:ReactNode;notice?:ReactNode;busy?:boolean;createBlocked?:boolean;samplesError?:string
 }
-const categories: SampleCategory[] = ['Residential', 'Commercial', 'Public', 'Public / Sports']
+const categories: SampleCategory[] = ['Residential', 'Commercial', 'Public']
 
 function SamplePlan({ sample }: { sample: ArchitecturalSample }) {
   const level = sample.project.buildings[0].levels[0]

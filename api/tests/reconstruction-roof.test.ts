@@ -12,7 +12,7 @@ const input:AnalysisInput={sourceAssetId:'asset',sourceId:'source',levelId:'leve
  options:{mode:'full',engine:'backend',purpose:'rebuild',complex:true,cloudConsent:true},deterministicCandidates:[]}
 const fixture=():Project=>({id:'project',name:'Arena',modified:1,units:'m',sources:[],buildings:[{id:'building',name:'Arena',levels:[
  {id:'level',name:'Floor',elevation:0,slabThickness:.2,walls:[],doors:[],windows:[],rooms:[]}]}]})
-const proposal:Intelligence={coordinatesVersion:1,coordinateSystem:'normalized-image-top-left',candidates:[...walls,...rooms],warnings:[],understanding:{buildingType:'arena',footprint:ring,conventions:[],circulation:[],uncertainties:[]}}
+const proposal:Intelligence={coordinatesVersion:1,coordinateSystem:'normalized-image-top-left',candidates:[...walls,...rooms],warnings:[],understanding:{buildingType:'office',footprint:ring,conventions:[],circulation:[],uncertainties:[]}}
 test('disconnected detected rooms receive one envelope roof and retain the user roof choice',()=>{
  const project=fixture();project.buildings[0].roof={...defaultRoof,shape:'gable',material:'corrugated'}
  const result=buildReconstruction(project,input,'analysis',proposal,proposal.candidates,{width:1000,height:1000},true)
@@ -20,10 +20,18 @@ test('disconnected detected rooms receive one envelope roof and retain the user 
  expect(sections).toHaveLength(1);expect(sections[0].footprint).toHaveLength(4);expect(sections[0].roof.shape).toBe('gable');expect(sections[0].roof.material).toBe('corrugated')
  expect(project.buildings[0].roofSections).toBeUndefined()
 })
-test('an arena without a roof selection gets a coherent provisional hidden roof, and manual roof sections remain intact',()=>{
+test('an office without a roof selection gets a coherent provisional hidden roof, and manual roof sections remain intact',()=>{
  const result=buildReconstruction(fixture(),input,'analysis',proposal,proposal.candidates,{width:1000,height:1000},true)
  expect(result.buildings[0].roofSections).toHaveLength(1);expect(result.buildings[0].roofSections![0].roof.shape).toBe('hidden')
  const project=fixture(),manual={id:'manual',name:'My roof',levelId:'level',footprint:[{x:1,z:1},{x:9,z:1},{x:9,z:9},{x:1,z:9}],roof:{...defaultRoof,shape:'shed' as const}}
  project.buildings[0].roofSections=[manual]
  expect(buildReconstruction(project,input,'analysis',proposal,proposal.candidates,{width:1000,height:1000},true).buildings[0].roofSections).toEqual([manual])
+})
+
+test('office reconstruction uses a provisional flat roof while retaining an explicit roof selection',()=>{
+ const office={...proposal,understanding:{...proposal.understanding!,buildingType:'office' as const}}
+ const result=buildReconstruction(fixture(),input,'analysis',office,office.candidates,{width:1000,height:1000},true)
+ expect(result.buildings[0].roof!.shape).toBe('hidden')
+ const project=fixture();project.buildings[0].roof={...defaultRoof,shape:'shed'}
+ expect(buildReconstruction(project,input,'analysis',office,office.candidates,{width:1000,height:1000},true).buildings[0].roof!.shape).toBe('shed')
 })

@@ -4,3 +4,5 @@
 .graphics-benchmark p{margin:0;font-size:11px;width:100%}.graphics-benchmark>.viewer{flex:1;min-height:0}
 .graphics-diagnostics{position:absolute;z-index:9;left:12px;bottom:34px;background:#fffffff0;padding:8px;max-width:310px;font-size:11px;border:1px solid #abb7aa}
 .graphics-diagnostics output{white-space:pre;display:block}.graphics-diagnostics p{max-width:280px}
+.benchmark-results{position:absolute;right:12px;bottom:34px;z-index:8;max-width:min(500px,90vw);max-height:50vh;overflow:auto;background:#fffffff0;padding:8px;font-size:11px}
+.benchmark-results output{white-space:pre;display:block}

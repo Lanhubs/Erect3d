@@ -3,7 +3,7 @@ export type ImageScale = { width: number; height: number; metresPerPixel: number
 export function checkCandidate(candidate: Candidate, scale?: ImageScale): Candidate {
   const result = structuredClone(candidate), problems: string[] = []
   if (candidate.curve) {
-    if (candidate.kind !== 'wall' || candidate.points.length !== 2) problems.push('Arc requires a wall with two endpoints')
+    if (!['wall','architectural-boundary'].includes(candidate.kind) || candidate.points.length !== 2) problems.push('Arc requires a wall or architectural span with two endpoints')
     if (scale) for (const point of candidate.points) {
       const radius = Math.hypot((point.x - candidate.curve.center.x) * scale.width,
         (point.y - candidate.curve.center.y) * scale.height)

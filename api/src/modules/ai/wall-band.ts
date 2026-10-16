@@ -13,3 +13,13 @@ export function sameWallBand(a:Candidate,b:Candidate,scale?:ImageScale) {
   const low=Math.min(along(first),along(last)),high=Math.max(along(first),along(last))
   return Math.min(length,high)-Math.max(0,low)>=Math.min(length,span)*.95
 }
+export function mergeWallBand(walls:Candidate[],id:string,scale?:ImageScale):Candidate{
+  const width=scale?.width||1,height=scale?.height||1
+  const body=walls.toSorted((a,b)=>(b.thickness||0)-(a.thickness||0))[0]
+  const a=body.points[0],b=body.points.at(-1)!,dx=(b.x-a.x)*width,dy=(b.y-a.y)*height,length=Math.hypot(dx,dy)
+  const offsets=walls.flatMap(w=>w.points.map(p=>((p.x-a.x)*width*dx+(p.y-a.y)*height*dy)/length))
+  const at=(t:number)=>({x:a.x+dx/length*t/width,y:a.y+dy/length*t/height})
+  return {...body,id,points:[at(Math.min(...offsets)),at(Math.max(...offsets))],
+    targetId:walls.find(w=>w.targetId)?.targetId,
+    uncertainties:[...body.uncertainties,'Overlapping source strokes consolidated into one full-span wall band.'].slice(0,20)}
+}

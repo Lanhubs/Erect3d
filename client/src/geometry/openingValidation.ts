@@ -1,5 +1,6 @@
 import type { Door, Level, Passage, WindowUnit } from '../domain/types'
 import { wallLength } from './math'
+import {windowConstructionIssue} from '../domain/windowConstruction'
 
 export type HostedOpening = Door | WindowUnit | Passage
 export function validateOpening(level: Level, opening: HostedOpening, ownId = opening.id): string | null {
@@ -12,6 +13,7 @@ export function validateOpening(level: Level, opening: HostedOpening, ownId = op
   if (opening.height < .3 || opening.height > wall.height) return 'The opening height must fit inside the wall.'
   if ('sill' in opening && (opening.sill < 0 || opening.sill + opening.height > wall.height))
     return 'The sill and glazing must fit inside the wall height.'
+  if('sill' in opening){const issue=windowConstructionIssue(opening,wall);if(issue)return issue}
   const others = [...level.doors, ...level.windows, ...(level.passages || [])].filter(item => item.id !== ownId && item.wallId === opening.wallId)
   if (others.some(item => opening.offset < item.offset + item.width + .05 && opening.offset + opening.width + .05 > item.offset))
     return 'This opening overlaps another opening on the wall.'

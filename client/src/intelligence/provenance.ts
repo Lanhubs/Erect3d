@@ -16,6 +16,7 @@ export function confirmManualChanges(before: Project, next: Project) {
     next.interpretation ||= {}
     const record = next.interpretation[entity.id]
     next.interpretation[entity.id] = { ...record, origin: record?.origin || 'user-selected',
+      inferredFields:record?.inferredFields?.filter(field=>!fields.includes(field)),
       confirmedFields: [...new Set([...(record?.confirmedFields || (old ? Object.keys(old).filter(field => field !== 'id') : [])), ...fields])] }
   }
 }

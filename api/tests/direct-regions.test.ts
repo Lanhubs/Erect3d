@@ -10,11 +10,13 @@ const source:IntelligenceInput={bytes,mime:'image/png',width:708,height:551,cand
 test('dense direct processing starts every region before any finishes and retains source coordinates exactly once',async()=>{
   let active=0,maximum=0;const seen:string[]=[],completed:string[][]=[]
   let release!:()=>void;const gate=new Promise<void>(resolve=>release=resolve)
-  const result=await readRegions(source,new AbortController().signal,async(input)=>{
+  const document={bytes,mime:'application/pdf' as const,page:3}
+  const result=await readRegions({...source,document},new AbortController().signal,async(input)=>{
     expect(input.bytes).toBe(bytes)
-    if(input.pass==='global-understanding')return {...empty,understanding:{buildingType:'arena',footprint:[],conventions:[],circulation:[],uncertainties:[]}}
+    if(input.pass==='global-understanding'){expect(input.document).toBe(document);return {...empty,understanding:{buildingType:'arena',footprint:[],conventions:[],circulation:[],uncertainties:[]}}}
     maximum=Math.max(maximum,++active);seen.push(...input.candidates.map(item=>item.id))
     expect(input.crop?.bytes).toBe(bytes);expect(input.understanding?.buildingType).toBe('arena')
+    expect(input.document).toBeUndefined()
     if(active===4)release();await gate;active--
     return {...empty,candidates:input.candidates}
   },async(_pass,done)=>{completed.push(done)})
@@ -26,7 +28,7 @@ test('regional identities prevent name collisions and remap opening hosts withou
   const proposal=regionalProposal({...empty,candidates:[measured[0],wall,door,other]},0,[measured[0]])
   expect(proposal.candidates.map(item=>item.id)).toEqual(['cv_wall_0','region1_w1','region1_d1'])
   expect(proposal.candidates[2].wallId).toBe('region1_w1');expect(proposal.candidates[0].points).toEqual(measured[0].points)
-  expect(measured.map(regionOwner)).toEqual([0,1,2,3])
+  expect(measured.map(c=>regionOwner(c))).toEqual([0,1,2,3])
 })
 test('a failed region cancels its siblings and never returns a partial building as complete',async()=>{
   let cancelled=0
@@ -37,4 +39,17 @@ test('a failed region cancels its siblings and never returns a partial building 
     signal.throwIfAborted();return empty
   },async()=>{})).rejects.toThrow('region failed')
   expect(cancelled).toBe(3)
+})
+
+test('a selected plan on a sheet owns its four passes without importing the neighbouring drawing',async()=>{
+  const region={x:.5,y:.1,width:.45,height:.7}
+  const selected=[candidate('right-top',.6,.2),candidate('right-bottom',.85,.65)]
+  const crops=[0,1,2,3].map(i=>({bytes,mime:'image/png',region:{x:region.x+i%2*.45*region.width,y:region.y+Math.floor(i/2)*.45*region.height,width:.55*region.width,height:.55*region.height}}))
+  const seen:string[]=[],result=await readRegions({...source,candidates:selected,region,details:crops},new AbortController().signal,async(input)=>{
+    if(input.pass==='global-understanding'){expect(input.region).toEqual(region);return empty}
+    seen.push(...input.candidates.map(c=>c.id))
+    return {...empty,candidates:[...input.candidates,candidate('other-plan',.2,.2)]}
+  },async()=>{})
+  expect(seen.sort()).toEqual(selected.map(c=>c.id).sort())
+  expect(result.flatMap(p=>p.candidates).map(c=>c.id).sort()).toEqual(seen)
 })

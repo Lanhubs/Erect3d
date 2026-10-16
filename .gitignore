@@ -1,2 +1,4 @@
 node_modules
 .env
+# Local verification output can include private source-plan rasters and credentials.
+.local/

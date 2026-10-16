@@ -60,3 +60,15 @@ test('native fine measurements retain single-pixel partitions for classification
  expect(classifiedMeasurements([selected],[proposal])[0].kind).toBe('wall')
  expect(measured.report.width).toBe(500)
 })
+
+test('a selected drawing measures only its native pixels and preserves original-sheet coordinates and thickness',async()=>{
+ const bytes=await sharp(Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="800"><rect width="1000" height="800" fill="white"/><path d="M100 100V700 M600 150V650" stroke="black" stroke-width="8"/></svg>')).png().toBuffer()
+ const before=Buffer.from(bytes),measured=await measureSource(bytes,{x:.5,y:.125,width:.5,height:.75})
+ expect(measured.report).toMatchObject({width:1000,height:800,measuredWidth:500,measuredHeight:600})
+ const walls=measured.candidates.filter(c=>c.kind==='wall')
+ expect(walls.length).toBeGreaterThan(0)
+ expect(walls.every(c=>c.points.every(p=>p.x>=.5 && p.y>=.125 && p.y<=.875))).toBe(true)
+ const wall=walls.find(c=>c.points.every(p=>Math.abs(p.x-.6)<.01))!
+ expect(wall).toBeDefined();expect(wall.thickness).toBeCloseTo(.008,2)
+ expect(bytes).toEqual(before)
+})

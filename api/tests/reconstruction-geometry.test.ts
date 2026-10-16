@@ -56,4 +56,7 @@ test('large source images supply four overlapping server crops; small plans avoi
   expect(details).toHaveLength(4);expect(details[3].region).toEqual({x:.45,y:.45,width:.55,height:.55})
   expect((await sharp(details[0].bytes).metadata()).width).toBe(1430)
   expect(await sourceDetails(bytes,1000,800)).toEqual([])
+  const selected=await sourceDetails(bytes,2600,800,true,{x:.5,y:.1,width:.4,height:.8})
+  expect(selected[0].region.x).toBe(.5);expect(selected[0].region.width).toBeCloseTo(.22);expect(selected[0].region.height).toBeCloseTo(.44)
+  expect(selected.every(c=>c.region.x>=.5&&c.region.x+c.region.width<=.900001)).toBe(true)
 })

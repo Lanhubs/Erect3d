@@ -34,7 +34,7 @@ export function validateFootprint(proposal:Intelligence,candidates:Candidate[],w
       points=[a,{x:b.x,z:a.z},b,{x:a.x,z:b.z}]
     }
     if (['room','void','column','furniture'].includes(candidate.kind) && !validRing(points)) throw new ApiError(422,'INVALID_POLYGON',`Review ${candidate.id}: its polygon crosses itself or has no area`)
-    if (!footprint.length || candidate.kind==='void' || candidate.kind==='stair' && !candidate.targetLevelId) continue
+    if (!footprint.length || candidate.kind==='void' || candidate.kind==='architectural-boundary' || candidate.kind==='stair' && !candidate.targetLevelId) continue
     const tolerance=Math.max(2,(candidate.thickness || .004)*width)
     const checked=candidate.kind==='wall' && !candidate.curve?[...points,...points.slice(1).map((p,i)=>({x:(p.x+points[i].x)/2,z:(p.z+points[i].z)/2}))]:points
     if (checked.some(p=>!within(p,tolerance))) throw new ApiError(422,'OUTSIDE_FOOTPRINT',`Review ${candidate.id}: geometry falls outside the drawn building footprint; margins must stay empty`)

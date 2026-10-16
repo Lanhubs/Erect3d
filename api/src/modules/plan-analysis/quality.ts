@@ -6,6 +6,7 @@ export function modelQuality(proposal:Intelligence,project?:Project,levelId?:str
   const issues:ModelQuality['issues']=[]
   const add=(code:string,message:string,candidateId?:string)=>issues.push({code,severity:'warning',message,candidateId})
   const unknown=proposal.candidates.filter(item=>item.kind==='unknown').length
+  for(const system of proposal.architecturalRequirements?.systems||[])if(system.kind==='typical-floors'&&(!system.layoutEvidence?.matchesTemplate||system.layoutEvidence.levelNames.length<system.parameters.count))add('REPEATED_LAYOUT_UNVERIFIED','Floor labels establish storeys, not matching layouts. This repetition stays an optional proposal until the template match is established.')
   if(unknown)add('UNCLASSIFIED',`${unknown} source measurements need interpretation before inclusion.`)
   for (const item of proposal.candidates) {
     if(item.kind==='unknown')continue
