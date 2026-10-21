@@ -450,3 +450,255 @@ a 30-second timeout, streamed byte limits and `STORAGE_UNAVAILABLE` errors inste
 of incorrectly blaming Gemini. The app retains its private R2 configuration.
 See client/RENDERING_VALIDATION.md for actual viewport evidence and the remaining
 multi-sheet, split-level, source-coverage and performance acceptance work.
+
+### 26. Dense-plan HTTP 400 correction
+
+The reported 507 × 370 PNG produced 481 native wall/edge measurements. Prompt 31
+enumerated a JSON-schema property for each group of 25 labels. The full request
+was reproducibly rejected with HTTP 400 even with a synthetic blank image;
+removing that enumerated map made the same request configuration acceptable.
+Prompt 32 uses a constant-size string map. Every group key, exact group length,
+allowed label and complete measurement coverage is still checked by the strict
+server parser. Geometry and architectural requirements remain unchanged.
+
+Regression checks cover 0, 1, 25, 400, 481 and 2,000 measurements; missing, short,
+extra and invalid labels remain rejected. The production request configuration
+with 481 measurements was accepted by Gemini after the fix.
+
+The exact reported PNG was matched to its uploaded asset by SHA-256 and tested
+through an isolated authenticated local project. It completed one interpretation
+and one repair in 53.2 seconds and compiled a valid preview: 55 walls, 4 doors,
+4 windows and 16 rooms. Quality is `needs-review` for an interior stair with no
+confirmed upper floor. This proves the request failure is corrected; it does not
+certify every detected opening or the complete architectural interpretation.
+The original PNG remained unchanged and no existing user project was replaced.
+Local evidence: `.local/png-analysis-verification.log`.
+
+## 27. Mansion source coverage and recognizable editable furniture
+
+The reported 507 × 370 mansion PNG exposed more than a transport problem.
+The previous quality check accepted four doors/windows without examining each
+room, and local envelope fitting could turn interior strokes into roof sawteeth.
+
+Changes delivered:
+
+- Validate enclosed-room access, exterior-room glazing, missing depicted fixtures,
+  dimension endpoints inside rooms, and polygon interiors as well as vertices.
+  Open-plan boundaries remain valid; warnings request source inspection, not
+  arbitrary fixture/window counts. Coverage is included in the existing bounded
+  repair, and remains visible in the preview.
+- Preserve valid source requirements and annotated scale during unrelated repairs.
+  Only a matching validation issue authorizes a repaired global reference. Fit
+  nearby parallel exterior bands without adding spikes. An explicitly identified
+  indoor foyer whose corners already lie within/on the envelope can close a false
+  notch; true courtyards and page margins remain excluded.
+- Bridge two source wall fragments only when both ends anchor a depicted opening.
+  Porch columns can belong to a source canopy outside the thermal envelope.
+  Generate one continuous structural slab, retaining voids and room finishes.
+- Keep native detail crops for small complex drawings as well as large sheets.
+  Source files are never resized or recompressed for these requests. Version 35
+  invalidates older interpretation caches.
+- Source-anchored vehicle gaps on enclosed garage boundaries support editable
+  sectional doors and overhead panel travel. Operation/height and any reconstructed
+  host are explicitly inferred. Open carports and ordinary circulation stay open.
+- Furniture now has metre-sized rounded profiles, upholstered assemblies, curved
+  chair backs, round/oval tables, recessed ceramic bowls and distinct construction
+  finishes. Preserve source rotation, variant and type-specific height. Share
+  geometry/materials with explicit ownership; software previews retain the actual
+  simplified silhouettes instead of replacing every part with a box.
+
+Applied the supplied Three.js procedural buildings, geometry, materials and visual
+validation guidance. Native canvas inspection confirmed Three.js r186 WebGPU.
+Screenshots are actual renderer captures, not generated images. The furniture
+studio is an authored geometry check and is not evidence of AI source accuracy.
+
+Verification: backend full suite 146 passed, one optional Redis check skipped;
+client 202 passed; type checks, production build and API 200-line gate passed.
+Additional focused checks cover garage inference, real basin recesses, resource
+release, opening bridges, false foyer notches and sectional panel travel.
+
+The final live interpretation used one generation and one repair, taking 74.8 s
+in this local run. That latency is not an immediate-result performance claim.
+The corrected canonical model contains 41 walls, 13 doors, 8 windows, 15 rooms,
+10 furniture/fixture objects and one structural slab. Its remaining review items
+are the unhosted closet entrance and the stair's unknown destination. This is a
+reviewable reconstruction, not a certified complete or photorealistic building.
+
+Local evidence: `.local/mansion-final-flow-live.log`,
+`.local/mansion-final-compiled-evidence.json`, and actual WebGPU screenshots under
+the repository `.local/screenshots`. A replay harness that reintroduced measured
+strokes was not counted as a successful live reconstruction. The fresh proposal
+was compiled with the same buildable-candidate filtering used by the client.
+The original PNG remained unchanged; no existing user project was replaced and
+no changes were pushed. Private QA models are imported only in development and
+are excluded from the production bundle.
+
+### 28. Source replacement and reconstruction consistency (2026-10-18)
+
+Replacing a floor source now clears all of that floor's old geometry together:
+furniture, architectural details, ramps, stair guides, roofs and level systems,
+as well as walls, rooms and structural elements. Stair connections and their
+slab openings are removed together. Other floors, shared sources, manual site
+boundaries and roof design settings are retained. The inspector selection is
+cleared, the prior raster/PDF remains cached for Undo, and replacement uses the
+latest editor document after decoding the file. First imports on manually
+designed floors do not discard their model or another floor's source.
+
+Reconstruction status, uploads, cached tasks, review subscriptions and automatic
+application are scoped to project + floor + source. Late work from a replaced
+source cannot update or apply to the new source. Source panels remount when that
+identity changes, remain mounted during collaboration navigation, and superseded
+pending jobs are cancelled where their job IDs are available. Initial cache
+restoration cannot overwrite a newly started request. The progress panel only
+marks the 3D model stage complete after acceptance; blocked results no longer
+claim that a model has been erected or that discarded geometry is preserved.
+
+The related footprint failure had a separate reproducible cause: a disposition
+could confirm a native line while its alignment was corrected elsewhere, then
+the merge restored the original outside-footprint measurement. Native-only
+measurements contradicting the interpreted envelope now remain unclassified
+review evidence. Explicit interpreted geometry still undergoes full footprint
+validation; invalid envelopes cannot suppress evidence.
+
+Verification: 150 API tests passed, one optional Redis check skipped; 212 client
+tests passed; type checks, production build and source line gate passed. Browser
+checks used the unchanged original mansion PNG with a simulated service: replacing
+cleared the old furniture and stale slab selection, a late old result was ignored,
+and the next reconstruction requested the new source ID. Screenshot:
+`.local/screenshots/source-replacement-progress.png`.
+The same browser check then applied the validated local replay, opened its actual
+3D geometry and marked the model stage complete. Delivering another old result
+did not replace its applied status. Screenshot:
+`.local/screenshots/source-replacement-applied.png`. The temporary harness logged
+development refresh warnings and a Three.Clock deprecation warning; the applied
+model and its status remained visible and consistent.
+
+A local replay of native measurements plus the previously recorded Gemini
+proposal reproduced `OUTSIDE_FOOTPRINT` before the fix and compiled after it:
+41 walls, 13 doors, 8 windows, 15 rooms and 10 furniture/fixture objects. No new
+Gemini request or R2 upload was made for these checks. The existing stair
+destination and closet entrance remain review items. Evidence:
+`.local/source-replacement-native-check.json`,
+`.local/source-replacement-api-verify.log`, and client
+`.local/source-replacement-tests.log` / `.local/source-replacement-build.log`.
+
+### 29. Asterion Tower showcase (2026-10-19; native graphics acceptance blocked)
+
+The backend catalogue now includes an authored 48-storey Commercial office
+tower. Its seven layouts comprise a three-storey podium, 21 linked lower office
+storeys, a sky lounge, 22 linked upper office storeys and an executive floor.
+Both office groups use the existing template editing and detachment controls.
+Lift shafts align through the layouts; two real U stairs connect podium levels.
+Continuous travel through linked tower stairs and animated lifts are excluded.
+
+The model includes furniture, meeting areas, washrooms, columns, a glazed
+entrance and canopy, curtain walls, mullions, fins, guarded setbacks and a
+screened crown. Three explicit roof sections close the podium, tower and crown;
+the podium roof has a tower void. Curtain walls own the repeated tower shell.
+Authored decks are independent of internal partition bounds, so editing an
+office template does not shrink its slab to the core. The sample is an authored
+showcase, not a claim about automatic reconstruction of arbitrary drawings.
+
+Optional catalogue metadata supplies a real model poster and preferred opening
+view. Open and Duplicate create independent backend projects and request model
+view; existing samples retain their defaults. Cards and the level summary count
+represented elevations separately from editable layouts. Existing seven samples
+are preserved. No database migration or deployment configuration is required.
+
+Compatible captured floor geometry is combined by finish and remains instanced
+by storey. Custom materials, reflected transforms and partial draws stay in their
+original packages. Material comparison uses texture identities without encoding
+image pixels. Walls, doors, stairs, slabs and room finishes now reuse matching
+standard materials through the existing resource scope. Tests cover ownership,
+last-reference disposal, finish isolation, transformed geometry and custom
+material preservation. Development canvases expose actual linked-package counts
+for inspection; no frame-rate or GPU-time claim is made.
+
+Visual inspection also corrected distant floor-finish depth flicker and camera
+framing for high isolated floors. Office fins now repeat with their floors, so
+isolating a template does not leave the whole tower's fins above it. Development
+hot reload preserves shared-material context identity. The preview asset is
+`client/public/samples/asterion-tower.webp` (960 x 720, lossless WebP), cropped
+from `.local/screenshots/asterion-full-building.png`, an actual Three.js r186
+WebGL render. No generated image or private source drawing was used. Original
+full-model and lobby screenshots, plus desktop/390px phone card checks, are in
+`.local/screenshots/asterion-*.png`. The phone check had no horizontal overflow;
+the poster loaded at its expected dimensions and plan preview remained available.
+
+Verification: 224 client tests passed as a complete run. API verification passed 151 tests
+with the optional Redis check skipped. Template integration checks exercise all
+eight templates, separate copies, tenant/template edits, save/reopen and a
+detached floor while preserving 48 storeys. Production build and type checks
+passed; logs are in client/API `.local/asterion-*` files.
+
+After restarting the browser, the latest code rendered cleanly with WebGL and
+no console errors. Actual canvas diagnostics recorded 20 and 21 repeated floors
+in 42 and 43 packages (182 source packages per group), with 7,820 and 6,090
+instances after the fin correction. Together with seven authored levels these
+represent all 48 storeys. No timing or speedup is inferred from these counts.
+New office-layout, entrance/podium, sky-terrace and closed crown-roof screenshots
+are saved. The corrected poster was verified on the desktop card. An earlier
+390px phone capture verified layout and no horizontal overflow; its poster crop
+predates the final asset, so a fresh phone capture is still required.
+
+**Remaining review:** a fresh native WebGPU control using the existing house
+sample initialized (`graphicsEngine=webgpu`) but screen capture timed out. Opening
+the tower successfully created a backend project, then its native renderer also
+blocked browser inspection, capture and close/navigation controls. Consequently
+native tower rendering, end-to-end Open/Duplicate visual framing and the final
+phone capture are not accepted. API tests verify both independent creation paths,
+save/reopen, template edits and detachment; these are not native visual evidence.
+Full graphics acceptance is incomplete. Nothing was pushed or deployed.
+
+
+## 30. Compact studio workspace, Projects and fixed-quality navigation
+
+The first compact toolbar was rejected in visual review. It was replaced with a
+quiet file bar, a floating labeled drawing/history dock, a separate view dock,
+left building panels and right Properties. All six groups retain their existing
+components and actions. Panels overlay by default, can be pinned on desktop,
+and become full-height sheets on phones. Search (Ctrl/Cmd+K), Escape/focus return,
+Split swap/enlarge, Walk/Exit walk and touch controls were exercised. Rejected
+editing actions keep their contextual feedback visible above the floating tools.
+
+The revised desktop canvas is 698/768px high (91%); the phone canvas is 756/844px
+(90%). Desktop, 820px tablet and 390px phone checks had no horizontal overflow.
+Main phone controls are at least 44px. Actual editor screenshots are in
+`.local/screenshots/studio-*`; earlier `compact-*` captures show the rejected shell.
+
+Projects defaults to a compact searchable/sortable list, with a persistent grid
+switch and a New project dialog. Templates load on demand. Grid previews derive
+safe SVG from saved geometry, prefer pending drafts and cache for offline use;
+a shared visible-card queue caps requests at two. The authenticated private
+preview endpoint checks permissions before revision caching, including 304s.
+The Projects route leaves the editor and Three.js in lazy chunks. Empty-state
+copy waits for project loading to finish. No source file, R2 asset, database
+migration or project-document schema was changed for these controls/previews.
+
+The viewer remains mounted through view transitions, pauses when hidden and
+uses fixed quality. Static shadows survive camera movement; geometry, visibility,
+lighting and animated doors invalidate them. Linked floor captures exclude
+unrelated UI changes. A settled 44-second check including drawer changes submitted
+no extra frames, shadows or linked captures after memoizing the viewer.
+
+A controlled tower orbit at Balanced/DPR1 recorded p95 69.8ms uncached versus
+40.3ms cached (42.3% lower); CPU submission 48.24ms versus 25.93ms. Both retained
+25,840 instances and 2,033 objects. This is WebGL evidence, not GPU timing or a
+universal speedup. Detailed measurements and control inventory are in
+`COMPACT_WORKSPACE.md` and `.local/compact-navigation-results.json`.
+
+Final client verification passed 228 tests across 54 files after removing the
+unaccepted shader-warmup prototype and its experimental coverage test.
+API verification passed 152 tests with the optional Redis check skipped. Preview
+permission/revision integration checks and production builds passed.
+
+**Open graphics gate:** native WebGPU house output was captured in the production
+editor with lighting, roof and fence. The whole-scene tower shader preparation
+reported 209,371ms. A proposed warmup reduction stalled during native verification
+and was removed. Native tower startup, visual parity and sustained navigation,
+GPU timings and sustained walking measurements remain unaccepted. Stationary Walk
+still uses a continuous loop. The compatibility renderer remains available before
+entering 3D; this does not close the native WebGPU defect. No restart was requested
+for the last stalled test; its tab was closed and a usable review page reopened.
+
+Nothing was committed, pushed or deployed; Gemini agent work remains deferred.

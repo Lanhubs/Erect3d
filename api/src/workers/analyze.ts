@@ -62,7 +62,7 @@ export async function analyze(db: Database, config: Config, store: ObjectStore |
     if (auditing && current && !auditPrepared) {
       auditPrepared = true
       const scale = reconstructionScale(input, proposals[0], asset.metadata.width, asset.metadata.height)
-      let base = reconcile(classifiedMeasurements(measurements?.candidates || [], proposals), proposals, input.options.mode,
+      let base = reconcile(classifiedMeasurements(measurements?.candidates || [], proposals,asset.metadata), proposals, input.options.mode,
         { width: asset.metadata.width, height: asset.metadata.height, metresPerPixel: scale.calibration.metresPerPixel })
       base = alignOpeningHosts(await sourceEnvelope(base, bytes), asset.metadata.width, asset.metadata.height)
       const checked = await validatedReconstruction(db, config, job, input, current.document, base, provider,
@@ -126,7 +126,7 @@ export async function analyze(db: Database, config: Config, store: ObjectStore |
     proposals.push(auditing ? guardMeasurementAudit(proposal, measured, auditBaseline) : proposal)
   }
   const effective = reconstructionScale(input, proposals[0], asset.metadata.width, asset.metadata.height)
-  const reconciled = reconcile(backend ? [...(auditBaseline?.candidates || []), ...classifiedMeasurements(measurements?.candidates || [], proposals)] : input.options.purpose === 'enhance' ? [] : input.deterministicCandidates, proposals, input.options.mode,
+  const reconciled = reconcile(backend ? [...(auditBaseline?.candidates || []), ...classifiedMeasurements(measurements?.candidates || [], proposals,asset.metadata)] : input.options.purpose === 'enhance' ? [] : input.deterministicCandidates, proposals, input.options.mode,
     { width: asset.metadata.width, height: asset.metadata.height, metresPerPixel: effective.calibration.metresPerPixel }, rebuilding ? [] : input.context?.candidates)
   let proposal = rebuilding ? { ...reconciled, candidates: reconciled.candidates.map(({ targetId, action, confirmedFields, ...item }) => item) } : enhanceProposal(reconciled, input.context?.candidates || [])
   if (backend && rebuilding) proposal = alignOpeningHosts(await sourceEnvelope(proposal, bytes), asset.metadata.width, asset.metadata.height)

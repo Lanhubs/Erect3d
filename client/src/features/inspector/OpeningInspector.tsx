@@ -24,15 +24,15 @@ export function OpeningInspector({ level, door, windowUnit, passage, unit, updat
       <VerandaControls level={level} door={door} unit={unit} />
       <div className="readout"><span>Host wall</span><b>{door.wallId}</b></div>
       <label className="inspector-field"><span>Door design</span><select aria-label="Door design" value={door.style || 'flush'}
-        onChange={event => update('doors', { style: event.target.value })}>
-        <option value="flush">Flush</option><option value="panel">Panel</option><option value="glazed">Glazed</option><option value="double">Double leaf</option>
+        onChange={event => update('doors', { style: event.target.value,...(event.target.value==='sectional'&&!door.material?{material:'metal'}:{}) })}>
+        <option value="flush">Flush</option><option value="panel">Panel</option><option value="glazed">Glazed</option><option value="double">Double leaf</option><option value="sectional">Sectional garage</option>
       </select></label>
       {door.style==='double'&&<label className="inspector-field"><span>Leaf construction</span><select aria-label="Door leaf construction" value={door.leafStyle||'panel'} onChange={e=>update('doors',{leafStyle:e.target.value})}><option value="flush">Flush</option><option value="panel">Panel</option><option value="glazed">Glazed</option></select></label>}
-      <label className="inspector-field"><span>Hinge side</span><select aria-label="Hinge side" value={door.hinge}
+      {door.style!=='sectional'&&<><label className="inspector-field"><span>Hinge side</span><select aria-label="Hinge side" value={door.hinge}
         onChange={event => update('doors', { hinge: event.target.value })}><option value="left">Left</option><option value="right">Right</option></select></label>
       <label className="inspector-field"><span>Opening</span><select aria-label="Door opening direction" value={door.swing || 'in'}
-        onChange={event => update('doors', { swing: event.target.value })}><option value="in">Into room</option><option value="out">Outward</option></select></label>
-      <label className="inspector-field"><span>Door material</span><select aria-label="Door material" value={door.material || 'timber'}
+        onChange={event => update('doors', { swing: event.target.value })}><option value="in">Into room</option><option value="out">Outward</option></select></label></>}
+      <label className="inspector-field"><span>Door material</span><select aria-label="Door material" value={door.material || (door.style==='sectional'?'metal':'timber')}
         onChange={event => update('doors', { material: event.target.value })}><option value="timber">Timber</option><option value="metal">Metal</option></select></label>
       <NumberField label="Offset" unit={unit} value={door.offset} onChange={offset => update('doors', { offset })} />
       <NumberField label="Width" unit={unit} value={door.width} min={.4} onChange={width => update('doors', { width })} />

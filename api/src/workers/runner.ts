@@ -12,12 +12,14 @@ import { exportProject,snapshotProject } from './exports'
 import { maintenance } from './maintenance'
 import type { Metrics } from '../middleware/observability'
 import { report } from '../middleware/telemetry'
+import type {EditingProvider} from '../modules/assistant/provider'
+import {runAssistant} from '../modules/assistant/run'
 export class Worker {
   private stopping = false
   private controller?: AbortController
   private lastMaintenance=0
   readonly id = crypto.randomUUID()
-  constructor(private db: Database,private config: Config,private store?: ObjectStore,private provider?: PlanIntelligenceProvider,private metrics?: Metrics) {}
+  constructor(private db: Database,private config: Config,private store?: ObjectStore,private provider?: PlanIntelligenceProvider,private metrics?: Metrics,private editingProvider?:EditingProvider) {}
   async runOnce(requestedId?: string) {
     if (this.stopping) return false
     if (!requestedId && Date.now()-this.lastMaintenance>3600000) { await maintenance(this.db);this.lastMaintenance=Date.now() }
@@ -33,6 +35,7 @@ export class Worker {
     try {
       let result: unknown
       switch (job.kind) {
+        case 'assistant.edit': result=await runAssistant(this.db,this.config,this.editingProvider,this.store,job,controller.signal);break
         case 'plan.analyze': result = await analyze(this.db,this.config,this.store,this.provider,job,controller.signal); break
         case 'asset.normalize': result = await normalizeImage(this.db,this.store,job); break
         case 'asset.purge': result = await purgeAsset(this.db,this.store,job); break

@@ -30,6 +30,7 @@ export const EntityInstances=memo(function EntityInstances({parts,color,material
     target.computeBoundingSphere();previous.current={mesh:target,parts}
     target.userData.boundsVersion=(target.userData.boundsVersion || 0)+1
     target.userData.entityIds=parts.map(part=>part.selection?.id)
+    resources.shadowEpoch++
   },[parts,capacity,geometry])
   return <instancedMesh ref={mesh} args={[geometry,undefined,capacity]} material={surface} dispose={null} castShadow={shadow} receiveShadow
     onPointerOver={select?event=>{event.stopPropagation();pointerCursor(true)}:undefined} onPointerOut={select?()=>pointerCursor(false):undefined}

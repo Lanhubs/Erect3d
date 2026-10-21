@@ -37,6 +37,6 @@ export const projectSchema: z.ZodType<Project> = z.object({
   id, name, modified: z.number().finite().nonnegative(), buildings: z.array(building).min(1).max(1000),
   sources: z.array(source).max(1000), calibration: calibration.optional(), units: z.enum(['m', 'cm', 'mm']),
   interpretation: z.record(id, z.object({ origin: z.enum(['detected','inferred','user-selected']),
-    confirmedFields: z.array(id).max(100), sourceId: id.optional(), analysisId: id.optional(),inferredFields:z.array(id).max(100).optional(),evidence:z.string().max(2000).optional(),assumptions:z.array(z.string().max(500)).max(20).optional() }).strict()).optional(),
+    confirmedFields: z.array(id).max(100), sourceId: id.optional(), analysisId: id.optional(),candidateId:id.optional(),inferredFields:z.array(id).max(100).optional(),evidence:z.string().max(2000).optional(),assumptions:z.array(z.string().max(500)).max(20).optional() }).strict()).optional(),
 }).strict()
 export const documentSchemaVersion = 1

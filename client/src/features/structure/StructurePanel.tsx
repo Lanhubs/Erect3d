@@ -11,9 +11,9 @@ import { StairGuidesPanel } from './StairGuidesPanel'
 import './structure.css'
 
 const number = (value: string, fallback: number) => Number.isFinite(Number(value)) ? Number(value) : fallback
-export function StructurePanel({ project, level, select }: { project: Project; level: Level; select: (selection: Selection) => void }) {
+export function StructurePanel({ project, level, select,embedded=false }: { project: Project; level: Level; select: (selection: Selection) => void;embedded?:boolean }) {
   const editProject = useProject(state => state.editProject)
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(embedded)
   const [targetId, setTargetId] = useState('')
   const [form, setForm] = useState<Stair['form']>('straight')
   const [voidSize, setVoidSize] = useState({ width: 2, depth: 2 })

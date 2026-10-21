@@ -14,6 +14,7 @@ import { defaultRoof } from '../../../../client/src/domain/types'
 import { repairGeneratedFence } from '../../../../client/src/geometry/site'
 import { validateFootprint } from './footprint-validation'
 import {inSourceRegion} from '../../workers/source-region'
+import {newSlab} from '../../../../client/src/domain/levels'
 
 export function buildReconstruction(project:Project,input:AnalysisInput,analysisId:string,proposal:Intelligence,
   candidates:Candidate[],dimensions:{width:number;height:number},replaceLevel=false) {
@@ -50,6 +51,12 @@ export function buildReconstruction(project:Project,input:AnalysisInput,analysis
     floor.autoSlab=false
     const envelope=proposal.understanding?.footprint.map(point=>imageToWorld(point,dimensions.width,dimensions.height,effective)) || []
     const voids=(floor.slabs || []).flatMap(slab=>slab.openings.filter(opening=>opening.kind==='void').map(opening=>opening.polygon))
+    // Room detections describe finishes. The structural floor must also carry
+    // halls and circulation that have no room label; do not leave those floating.
+    if(envelope.length>=3){
+      const openings=[...new Map((floor.slabs||[]).flatMap(s=>s.openings).map(o=>[o.id,o])).values()]
+      floor.slabs=[{...newSlab(envelope,floor.slabThickness),id:`ai_${digest(`${analysisId}:building-slab`).slice(0,32)}`,autoFromWalls:false,openings}]
+    }
     const regions=roofRegions(envelope.length>=3?[envelope]:floor.rooms.map(room=>room.polygon),voids)
     const flatDefault=['office','office-tower','apartment','hotel','mixed-use','mall','school','hospital','public','industrial'].includes(typology)
     const roof=next.roof || floor.roof || (flatDefault?{...defaultRoof,shape:'hidden' as const,material:'membrane' as const,pitch:0}:defaultRoof)

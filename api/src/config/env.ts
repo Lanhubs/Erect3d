@@ -19,7 +19,7 @@ const schema = z.object({
   STORAGE_BACKEND: z.enum(['r2', 'filesystem']).default('r2'), STORAGE_ROOT: optionalText,
   STORAGE_SIGNING_KEY: optionalText,
   PDF_OPTIMIZER_PATH: optionalText, ASSET_OPTIMIZE_TIMEOUT_MS: z.coerce.number().int().min(1000).max(120000).default(30000),
-  GEMINI_API_KEY: optionalText, GEMINI_MODEL_PLAN: z.string().default('gemini-3.8-flash'),
+  GEMINI_API_KEY: optionalText, GEMINI_MODEL_AGENT: optionalText, GEMINI_MODEL_PLAN: z.string().default('gemini-3.8-flash'),
   GEMINI_MODEL_FAST: z.string().default('gemini-3.5-flash-lite'), GEMINI_MODEL_COMPLEX: z.string().default('gemini-3.8-flash'),
   AI_DAILY_LIMIT: z.coerce.number().int().min(1).max(10000).default(25),
   AI_TIMEOUT_MS: z.coerce.number().int().min(1000).max(300000).default(90000),

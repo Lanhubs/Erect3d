@@ -8,8 +8,8 @@ import { furnitureSourceKey, useFurnitureAnalysis } from './useFurnitureAnalysis
 import { useFurnitureReview } from './reviewState'
 import { FurnitureReview } from './FurnitureReview'
 import './furniture.css'
-export function FurniturePanel({ level, levels, source, url, calibration, walls, rooms, completed, select }: {
-  level: Level; levels: Level[]; source?: SourceDocument; url?: string; calibration?: Calibration; walls: Wall[]; rooms: Point[][]; completed: boolean; select: (selection: Selection) => void
+export function FurniturePanel({ level, levels, source, url, calibration, walls, rooms, completed, select,embedded=false }: {
+  level: Level; levels: Level[]; source?: SourceDocument; url?: string; calibration?: Calibration; walls: Wall[]; rooms: Point[][]; completed: boolean; select: (selection: Selection) => void;embedded?:boolean
 }) {
   const [detect, setDetect] = useState(false), [type, setType] = useState<FurnitureType>('bed')
   const editProject = useProject(state => state.editProject)
@@ -35,7 +35,7 @@ export function FurniturePanel({ level, levels, source, url, calibration, walls,
     editProject(project => { const owner = project.buildings[0].levels.find(item => item.id === level.id)!; owner.furniture ||= []; owner.furniture.push(object); return project })
     useProject.getState().setTool('select'); select({ kind: 'furniture', id: object.id })
   }
-  return <details className="furniture-panel"><summary>Furniture & fixtures · {level.furniture?.length || 0} objects · optional</summary>
+  return <details open={embedded||undefined} className="furniture-panel"><summary>Furniture & fixtures · {level.furniture?.length || 0} objects · optional</summary>
     <div className="furniture-tools"><label><input type="checkbox" checked={detect} onChange={event => { setDetect(event.target.checked)
       if (!event.target.checked) { analysis.cancel(); clear(); started.current = '' } }} /> Interpret furniture with plan analysis</label>
       <button disabled={analysis.busy || !source || !calibration || level.locked} onClick={() => void analysis.analyze()}>{analysis.busy ? 'Analyzing…' : 'Analyze furniture from source'}</button>

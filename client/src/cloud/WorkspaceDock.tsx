@@ -5,11 +5,12 @@ import {downloadDocument} from './changes'
 import {useProject} from '../state/project'
 import {ReconstructionProgress} from './ReconstructionProgress'
 import {activeLevel} from '../domain/types'
+import {reconstructionContext} from './reconstructionContext'
 import './workspaceDock.css'
 const labels={saved:'Synced',pending:'Device draft queued',syncing:'Syncing…',offline:'Offline · draft kept on device',conflict:'Revision conflict · draft kept',blocked:'Sync needs attention · draft kept'}
 type Props={session:CloudSession;projectId:string;offlineReady:boolean;error:string;onError:(error:string)=>void;
   reviewConflict:()=>void;toolsOpen:boolean;toggleTools:()=>void;showDetails:()=>void}
-export function WorkspaceDock({session,projectId,offlineReady,error,onError,reviewConflict,toolsOpen,toggleTools,showDetails}:Props) {
+export function WorkspaceDock({session,offlineReady,error,onError,reviewConflict,toolsOpen,toggleTools,showDetails}:Props) {
   const menu=useRef<HTMLDetailsElement>(null),record=session.record!
   const project=useProject(state=>state.project),levelId=useProject(state=>state.activeLevelId)
   const level=project?activeLevel(project,levelId):undefined
@@ -23,7 +24,7 @@ export function WorkspaceDock({session,projectId,offlineReady,error,onError,revi
   },[])
   const close=()=>{if(menu.current)menu.current.open=false}
   return <div className="cloud-dock" aria-label="Project status and actions">
-    <ReconstructionProgress projectId={projectId} details={showDetails}/>
+    {project && <ReconstructionProgress context={reconstructionContext(project,levelId)} details={showDetails}/>}
     <details ref={menu} className="cloud-session-menu">
       <summary className={`cloud-sync-trigger${warning?' needs-attention':''}`} aria-label={`Project sync: ${label} · r${record.base.revision} · ${record.base.role}`}
         title={`${label} · r${record.base.revision} · ${record.base.role}${offlineReady?' · Offline ready':''}`}>

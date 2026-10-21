@@ -2,6 +2,7 @@ import type { Database } from '../db/connection'
 import type { Actor } from '../modules/auth/session'
 import { newId } from '../security/tokens'
 import {emit} from '../modules/audit/service'
+import {assistantEvent} from '../modules/assistant/events'
 export type Job = { id: string; project_id: string; actor_id: string; kind: string;
   payload: unknown; request_id: string; attempts: number; max_attempts: number; lease_owner: string }
 export async function enqueue(db: Database, actor: Actor, projectId: string, kind: string,
@@ -39,9 +40,14 @@ export async function fail(db: Database, job: Job, code: string, retry: boolean)
   if (changed.length && status === 'failed') await db`UPDATE analyses SET status='failed' WHERE id=${job.id} AND status='pending'`
   if(changed.length && job.kind==='plan.analyze')await emit(db,job.project_id,status==='failed'?'analysis.failed':'analysis.retrying',
     {analysisId:job.id,status:status==='failed'?'failed':'pending',job_status:status,failure_code:code})
+  if(changed.length&&job.kind==='assistant.edit'){
+    await db`UPDATE assistant_runs SET status='failed',failure_code=${code},progress='The request could not be completed. Your model is unchanged.' WHERE id=${job.id} AND status IN ('queued','running')`
+    await assistantEvent(db,job.project_id,job.actor_id,job.id,'The request could not be completed. Your model is unchanged.','failed')
+  }
 }
 export async function recoverExhausted(db: Database,requestedId?:string) {
   await db`UPDATE jobs SET status='failed',failure_code='LEASE_EXHAUSTED',completed_at=now()
     WHERE status='running' AND lease_expires_at<now() AND attempts>=max_attempts AND (${requestedId || null}::text IS NULL OR id=${requestedId || null})`
   await db`UPDATE analyses a SET status='failed' FROM jobs j WHERE a.id=j.id AND j.status='failed' AND a.status='pending' AND (${requestedId || null}::text IS NULL OR j.id=${requestedId || null})`
+  await db`UPDATE assistant_runs a SET status='failed',failure_code='LEASE_EXHAUSTED',progress='The request stopped. Please try again.' FROM jobs j WHERE a.id=j.id AND j.status='failed' AND a.status IN ('queued','running') AND (${requestedId||null}::text IS NULL OR j.id=${requestedId||null})`
 }

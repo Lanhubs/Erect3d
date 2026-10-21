@@ -1,6 +1,7 @@
 import { api } from './api'
 import { useProject } from '../state/project'
 import {analysisEvent} from './analysisEvents'
+import {assistantEvent} from './assistantEvents'
 export type Peer = { userId: string; connectionId: string; presence: { activeLevelId?: string; selection?: string[]; editingEntityId?: string }; time: number }
 export function connectProject(projectId: string, revision: () => number, changed: () => void, peers: (items: Peer[]) => void, error: (message: string) => void) {
   let socket: WebSocket | undefined, stopped = false, retry: ReturnType<typeof setTimeout> | undefined
@@ -31,6 +32,7 @@ export function connectProject(projectId: string, revision: () => number, change
           people.set(message.connectionId, { ...message, time: Date.now() }); peers([...people.values()])
         } else if (message.type === 'error') { error(message.error?.message || 'Collaboration request failed'); reserved = undefined; socket?.close(); changed() }
         else if (message.type?.startsWith('analysis.')) analysisEvent(projectId,message.type,message.payload)
+        else if (message.type==='assistant.progress') assistantEvent(projectId,message.payload)
         else if (['operation.accepted','revision.restored'].includes(message.type)) changed()
       } catch { socket?.close() }
     }

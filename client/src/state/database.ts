@@ -1,5 +1,5 @@
 import type { Project, SourceDocument } from '../domain/types'
-import { initialAutoScale } from '../geometry/autoScale'
+import { replaceSource } from '../domain/replaceSource'
 import { cloudPersistence } from './persistenceMode'
 
 const DB = 'erect3d-v1'
@@ -50,20 +50,7 @@ export const saveSource = (id: string, blob: Blob) => store<IDBValidKey>('source
 export const loadLocalSource = (id: string) => store<Blob | undefined>('sources', 'readonly', target => target.get(id))
 export const loadSource = (id: string) => cloudPersistence()?.loadSource(id) ?? loadLocalSource(id)
 export async function replaceProjectSource(project: Project, document: SourceDocument, blob: Blob, original?: Blob, levelId?: string): Promise<Project> {
-  const copy = structuredClone(project)
-  const level = copy.buildings[0].levels.find(item => item.id === levelId) || copy.buildings[0].levels[0]
-  const previous = level.sourceId || (level === copy.buildings[0].levels[0] ? copy.sources[0]?.id : undefined)
-  const otherUses = copy.buildings.some(building => building.levels.some(item => item !== level && item.sourceId === previous))
-  copy.sources = [...copy.sources.filter(item => item.id !== previous || otherUses), document]
-  level.sourceId = document.id
-  level.calibration = initialAutoScale(document.width, document.height)
-  if (level === copy.buildings[0].levels[0]) copy.calibration = level.calibration
-  copy.modified = Date.now()
-  if (previous) {
-    level.walls = []; level.doors = []; level.windows = []; level.passages = []; level.rooms = []
-    level.slabs = []; level.columns = []; level.stairs = []
-  }
-  const stillUsed = previous && otherUses
+  const { project: copy } = replaceSource(project, document, levelId)
   const cloud = cloudPersistence()
   if (cloud?.projectId === project.id) {
     await cloud.saveSource(document.id, blob)
@@ -79,7 +66,7 @@ export async function replaceProjectSource(project: Project, document: SourceDoc
       sources.put(blob, document.id)
       if (original) sources.put(original, `${document.id}:original`)
       tx.objectStore('projects').put(copy)
-      if (previous && !stillUsed) { sources.delete(previous); sources.delete(`${previous}:original`) }
+      // Keep the prior source available to the editor's Undo history.
       tx.oncomplete = () => resolve()
       tx.onerror = () => reject(tx.error)
       tx.onabort = () => reject(tx.error)

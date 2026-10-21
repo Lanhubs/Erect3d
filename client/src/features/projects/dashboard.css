@@ -162,6 +162,8 @@
 .sample-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(265px,1fr));gap:12px}
 .sample-card{display:flex;flex-direction:column;min-width:0;padding:14px;border:1px solid #d2dad0;background:#f8f9f6}
 .sample-card.preview-open{border-color:#aab8a9}
+.sample-model-preview{display:block;width:100%;height:220px;object-fit:contain;background:#e8ede9;border:1px solid #dce3da;margin-bottom:12px}
+.sample-card-top>span{flex:none;white-space:nowrap}
 .sample-card-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
 .sample-card-top strong{color:#35473a;font-size:14px;font-weight:600}
 .sample-card-top span,.sample-card-meta{color:#839083;font:10px 'IBM Plex Mono',monospace}

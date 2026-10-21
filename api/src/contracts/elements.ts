@@ -9,7 +9,7 @@ export const wall = z.object({
 }).strict()
 const opening = { id, wallId: id, offset: scalar, width: positive, height: positive }
 export const door = z.object({
-  ...opening, hinge: z.enum(['left', 'right']), style: z.enum(['flush', 'panel', 'glazed', 'double']).optional(),
+  ...opening, hinge: z.enum(['left', 'right']), style: z.enum(['flush', 'panel', 'glazed', 'double','sectional']).optional(),
   swing: z.enum(['in', 'out']).optional(), material: z.enum(['timber', 'metal']).optional(),leafStyle:z.enum(['flush','panel','glazed']).optional(),
   veranda: z.object({ width: positive, depth: positive, side: z.enum(['left', 'right']),
     covered: z.boolean(), railing: z.boolean(), roofShape: z.enum(['shed', 'terrace']), floorMaterial: finish }).strict().optional(),

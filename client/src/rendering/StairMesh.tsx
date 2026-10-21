@@ -1,3 +1,4 @@
+import {SharedStandardMaterial} from './SharedStandardMaterial'
 import { useMemo } from 'react'
 import type { Level, Selection, Stair } from '../domain/types'
 import { stairLanding, stairSteps, stairExitLanding } from '../geometry/stairs'
@@ -28,17 +29,17 @@ export function StairMesh({ stair, levels, selection, select }: { stair: Stair; 
       return <group key={index} position={[step.u, 0, step.v]} rotation={[0, -step.turn, 0]}>
         <mesh position={[0, step.height - .045, 0]} castShadow receiveShadow>
           <boxGeometry args={[step.depth, .09, step.width]} />
-          <meshStandardMaterial color={tread} roughness={.8} />
+          <SharedStandardMaterial color={tread} roughness={.8} />
         </mesh>
         <mesh position={[-step.depth / 2 + .018, previous + riserHeight / 2, 0]} castShadow receiveShadow>
           <boxGeometry args={[.036, riserHeight, step.width]} />
-          <meshStandardMaterial color={riser} metalness={.12} roughness={.8} />
+          <SharedStandardMaterial color={riser} metalness={.12} roughness={.8} />
         </mesh>
       </group>
     })}
     {[landing, exit].filter(item => item !== null).map((item, i) => <mesh key={`landing:${i}`} position={[item.u, item.height - .09, item.v]} castShadow receiveShadow>
       <boxGeometry args={[item.sizeU, .18, item.sizeV]} />
-      <meshStandardMaterial color={tread} roughness={.8} />
+      <SharedStandardMaterial color={tread} roughness={.8} />
     </mesh>)}
     <StairFrame stair={stair} steps={steps} selected={selected} />
   </group>

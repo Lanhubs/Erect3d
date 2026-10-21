@@ -19,5 +19,5 @@ export function reviewModel(project:Project,input:AnalysisJob,analysisId:string,
     catch (error) {if (error instanceof ProposalError) throw new ApiError(error.status,error.code,error.message);throw error}
   }
   validateGeometry(document)
-  return {document,quality:modelQuality(proposal,document,input.levelId)}
+  return {document,quality:modelQuality(proposal,document,input.levelId,input.calibration.method==='manual',dimensions,['full','fixtures','furniture'].includes(input.options.mode))}
 }

@@ -4,11 +4,11 @@ import { nearestWallOffset, wallSubpath } from '../geometry/math'
 import { stairOpening } from '../geometry/stairs'
 import type { FurnitureObject, FurnitureType } from './types'
 export const variants = (type: FurnitureType) => type === 'bed' ? ['single', 'double', 'queen', 'king']
-  : type === 'sofa' ? ['2-seat', '3-seat', 'sectional'] : type === 'dining-table' ? ['4-seat', '6-seat', '8-seat'] : ['standard']
+  : type === 'sofa' ? ['2-seat', '3-seat', 'sectional'] : type === 'dining-table' ? ['4-seat', '6-seat', '8-seat','round','oval'] : type==='coffee-table'?['standard','round','oval']:['standard']
 export function furnitureDimensions(type: FurnitureType, variant = variants(type)[0]): [number, number, number] {
   if (type === 'bed') return [({ single: 1, double: 1.4, queen: 1.6, king: 1.9 } as Record<string, number>)[variant] || 1.6, 2.05, 1]
   if (type === 'sofa') return [variant === '2-seat' ? 1.7 : 2.3, variant === 'sectional' ? 1.6 : .9, .85]
-  if (type === 'dining-table') return [variant === '4-seat' ? 1.3 : variant === '8-seat' ? 2.3 : 1.8, .9, .76]
+  if (type === 'dining-table') return variant==='round'?[1.25,1.25,.76]:[variant === '4-seat' ? 1.3 : variant === '8-seat' ? 2.3 : 1.8, variant==='oval'?1:.9, .76]
   if (['armchair', 'office-chair', 'dining-chair'].includes(type)) return [.6, .6, .85]
   if (type === 'bathtub') return [.8, 1.7, .6]
   if (type === 'toilet') return [.42, .7, .8]

@@ -59,7 +59,7 @@ export class Hub {
       ? await this.db`SELECT * FROM presence_events WHERE id=${id}::bigint AND expires_at>now()`
       : await this.db`SELECT * FROM realtime_events WHERE id=${id}::bigint`
     if (!event) return
-    await Promise.all([...this.connections.values()].filter(connection => connection.projectId===event.project_id).map(async connection => {
+    await Promise.all([...this.connections.values()].filter(connection => connection.projectId===event.project_id&&(!event.recipient_user_id||event.recipient_user_id===connection.actor.id)).map(async connection => {
       const key = `${transient?'p':'e'}:${id}`
       if (connection.seen.has(key) || transient && connection.id===event.connection_id) return
       try {

@@ -29,12 +29,12 @@ import { useElementEditing } from '../editing/useElementEditing'
 import { FurnitureLayer } from '../../furniture/FurnitureLayer'
 type Props = {
   level: Level; selection: Selection; select: (selection: Selection) => void; unit: Unit
-  source?: PlanSourceRect; underlay?: Level; fence?: SiteFence
+  source?: PlanSourceRect; underlay?: Level; fence?: SiteFence;previewOnly?:boolean
   review?: { candidates: Level['walls']; openings: OpeningCandidate[]; view: ReviewView; selected: string | null;
     setSelected: (id: string | null) => void; setCandidates: (change: (walls: Level['walls']) => Level['walls']) => void;
     rooms?: Point[][]; spaceChoices?: Record<string, boolean>; selectedSpace?: string | null; selectSpace?: (key: string) => void; details?: PlanDetail[]; detailChoices?: Record<string, boolean> }
 }
-export function PlanEditor({ level, selection, select, unit, source, underlay, review, fence }: Props) {
+export function PlanEditor({ level, selection, select, unit, source, underlay, review, fence,previewOnly=false }: Props) {
   const svg = useRef<SVGSVGElement>(null)
   const dragMatrix = useRef<DOMMatrix | null>(null)
   const [box, setBox] = useState<PlanBox>(() => fitBounds(level, source, fence))
@@ -47,7 +47,7 @@ export function PlanEditor({ level, selection, select, unit, source, underlay, r
   const [pan, setPan] = useState<Point | null>(null)
   usePlanZoom(svg, level, source, setBox, fence)
   const tool = useProject(s => s.tool), edit = useProject(s => s.edit)
-  const editing = useElementEditing(!review && tool === 'select')
+  const editing = useElementEditing(!previewOnly&&!review && tool === 'select')
   const grid = useProject(s => s.grid), setGrid = useProject(s => s.setGrid)
   const point = (event: { clientX: number; clientY: number }) => pointerPlanPoint(svg.current!, event, dragMatrix.current)
   const snap = (p: Point, start?: Point) => constrainPoint(p, level.walls, box.width * .012, grid, start)
@@ -64,6 +64,7 @@ export function PlanEditor({ level, selection, select, unit, source, underlay, r
     const p = event.shiftKey ? raw : snap(raw, tool === 'wall' && draft.length ? draft[0]
       : tool === 'curve' && curveDraft.length ? curveDraft[0] : tool === 'ramp' && rampDraft.length ? rampDraft[0] : undefined)
     if (event.button === 1 || tool === 'pan') { setPan(raw); svg.current?.setPointerCapture(event.pointerId); return }
+    if(previewOnly)return
     if (tool === 'wall') {
       if (!draft.length) setDraft([p])
       else if (distance(draft[0], p) > .08) {
@@ -130,6 +131,7 @@ export function PlanEditor({ level, selection, select, unit, source, underlay, r
     editing.move(p, event.shiftKey)
   }
   const finishRoom = () => {
+    if(previewOnly)return
     if (draft.length >= 3) edit(model => ({ ...model, rooms: [...model.rooms, { id: uid('room'), name: `Room ${model.rooms.length + 1}`, polygon: draft, material: 'oak' }] }))
     else setMessage('A room needs at least three points.')
     setDraft([])
@@ -143,7 +145,7 @@ export function PlanEditor({ level, selection, select, unit, source, underlay, r
       {(draft.length > 0 || curveDraft.length > 0 || rampDraft.length > 0) &&
         <button onClick={() => { setDraft([]); setCurveDraft([]); setRampDraft([]) }}>Cancel</button>}
     </div></div>
-    <svg ref={svg} tabIndex={0} aria-label="Editable floor plan" onKeyDown={event => { editing.keyboard(event); if (event.key === 'Escape') dragMatrix.current = null }} onPointerDownCapture={() => svg.current?.focus()} className={`plan-svg tool-${tool}${pan ? ' is-dragging' : ''}`} viewBox={`${box.x} ${box.z} ${box.width} ${box.height}`} onPointerDown={down}
+    <svg ref={svg} tabIndex={0} aria-label="Editable floor plan" onKeyDown={event => { editing.keyboard(event); if (event.key === 'Escape') dragMatrix.current = null }} onPointerDownCapture={event=>{svg.current?.focus();if(previewOnly){event.stopPropagation();down(event)}}} className={`plan-svg tool-${tool}${pan ? ' is-dragging' : ''}`} viewBox={`${box.x} ${box.z} ${box.width} ${box.height}`} onPointerDown={down}
       onPointerMove={move} onPointerLeave={() => setSnapGuide(null)} onPointerUp={finishDrag} onPointerCancel={() => { dragMatrix.current = null; editing.cancel() }} onDoubleClick={finishRoom}>
       <defs>
         <pattern id="grid-minor" width={grid.step} height={grid.step} patternUnits="userSpaceOnUse"><path d={`M ${grid.step} 0 L 0 0 0 ${grid.step}`} fill="none" stroke="#cbd5ca" strokeWidth=".008" /></pattern>
@@ -180,11 +182,11 @@ export function PlanEditor({ level, selection, select, unit, source, underlay, r
       {!review && <OpeningLayer svg={svg} level={level} selection={selection} select={select} tool={tool} />}
       <FurnitureLayer level={level} selection={selection} select={select} />
       {fence && <FencePlanLayer svg={svg} fence={fence} selected={selection?.kind === 'fence'} select={select} enabled={tool === 'select'} />}
-      {!review && <ElementHandles svg={svg} level={level} size={box.width} />}
+      {!review&&!previewOnly && <ElementHandles svg={svg} level={level} size={box.width} />}
       <PlanDraftLayer tool={tool} draft={draft} curveDraft={curveDraft} rampDraft={rampDraft}
         cursor={cursor} snapGuide={snapGuide} measure={measure} unit={unit} />
     </svg>
-    <div className="viewport-foot">{message || (tool === 'wall' ? 'Click two points to draw · Shift disables snap · Esc cancels'
+    <div className={`viewport-foot${message||editing.message?' viewport-feedback':''}`} role="status">{message || (tool === 'wall' ? 'Click two points to draw · Shift disables snap · Esc cancels'
       : tool === 'curve' ? `Click start, bulge, end · ${curveDraft.length}/2 points · Esc cancels`
         : tool === 'ramp' ? 'Click ramp start and end · Esc cancels'
       : tool === 'room' ? 'Click vertices · Double click or Close room to finish'

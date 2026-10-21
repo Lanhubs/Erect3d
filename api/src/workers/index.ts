@@ -2,7 +2,7 @@ import { readConfig } from '../config/env'
 import { createServices } from '../config/services'
 import { Worker } from './runner'
 import { log } from '../security/log'
-const services = createServices(readConfig()),worker = new Worker(services.db,services.config,services.store,services.provider,services.metrics)
+const services = createServices(readConfig()),worker = new Worker(services.db,services.config,services.store,services.provider,services.metrics,services.editingProvider)
 const controller = new AbortController()
 const stop = () => { worker.stop(); controller.abort() }
 process.on('SIGINT',stop)

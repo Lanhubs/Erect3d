@@ -1,3 +1,4 @@
+import {SharedStandardMaterial} from './SharedStandardMaterial'
 import { Quaternion, Vector3 } from 'three'
 import type { Stair } from '../domain/types'
 import type { Step } from '../geometry/stairs'
@@ -11,7 +12,7 @@ function Beam({ a, b, thickness, depth, color }: { a: Position; b: Position; thi
   const center = start.add(end).multiplyScalar(.5)
   return <mesh position={center.toArray()} quaternion={rotation} castShadow receiveShadow>
     <boxGeometry args={[length, thickness, depth]} />
-    <meshStandardMaterial color={color} metalness={.48} roughness={.48} />
+    <SharedStandardMaterial color={color} metalness={.48} roughness={.48} />
   </mesh>
 }
 

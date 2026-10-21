@@ -1,8 +1,12 @@
-import {createContext,useContext,useEffect,useMemo,type ReactNode} from 'react'
-import {BoxGeometry,CylinderGeometry,ConeGeometry,SphereGeometry,type BufferGeometry,type Material} from 'three'
+import {createContext,useContext,useEffect,useMemo,type Context,type ReactNode} from 'react'
+import {BoxGeometry,CylinderGeometry,ConeGeometry,SphereGeometry,MeshStandardMaterial,type MeshStandardMaterialParameters,type BufferGeometry,type Material} from 'three'
+import {standardMaterialKey} from './standardMaterialKey'
 import {architecturalMaterial} from './architecturalMaterial'
+import {FurnitureResources} from '../furniture/resources'
 export type InstanceShape='box'|'column'|'tree-trunk'|'tree-crown'|'leaf-crown'|'wheel'
 export class RenderResources {
+  shadowEpoch=0
+  furniture=new FurnitureResources()
   geometries=new Map<InstanceShape,BufferGeometry>()
   materials=new Map<string,Material>()
   references=new Map<Material,number>()
@@ -18,6 +22,11 @@ export class RenderResources {
     if(!this.materials.has(id))this.materials.set(id,architecturalMaterial(key,color))
     return this.materials.get(id)!
   }
+  standard(parameters:MeshStandardMaterialParameters){
+    const key=`standard:${standardMaterialKey(parameters)}`
+    if(!this.materials.has(key))this.materials.set(key,new MeshStandardMaterial(parameters))
+    return this.materials.get(key)!
+  }
   retain(material:Material){this.references.set(material,(this.references.get(material)||0)+1)}
   release(material:Material){
     this.references.set(material,Math.max(0,(this.references.get(material)||0)-1))
@@ -27,11 +36,13 @@ export class RenderResources {
       for(const [key,value] of this.materials)if(value===material){this.materials.delete(key);material.dispose();break}
     })
   }
-  dispose(){this.geometries.forEach(value=>value.dispose());this.materials.forEach(value=>value.dispose());this.geometries.clear();this.materials.clear()}
+  dispose(){this.furniture.dispose();this.geometries.forEach(value=>value.dispose());this.materials.forEach(value=>value.dispose());this.geometries.clear();this.materials.clear()}
 }
-const Resources=createContext<RenderResources|null>(null)
+// Keep provider/consumer identity together through development hot reloads.
+const Resources:Context<RenderResources|null>=import.meta.hot?.data.renderResourceContext??createContext<RenderResources|null>(null)
+if(import.meta.hot)import.meta.hot.data.renderResourceContext=Resources
 export function RenderResourceScope({children}:{children:ReactNode}){
-  const library=useMemo(()=>new RenderResources(),[])
+  const library=useMemo(()=>new RenderResources(),[RenderResources])
   useEffect(()=>()=>library.dispose(),[library])
   return <Resources.Provider value={library}>{children}</Resources.Provider>
 }

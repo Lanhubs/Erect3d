@@ -2,6 +2,7 @@ import sharp from 'sharp'
 import type {Intelligence} from '../contracts/analysis'
 import {containsPoint} from '../../../client/src/geometry/polygons'
 import {roofRegions} from '../../../client/src/geometry/roofRegions'
+import {validRing} from '../modules/plan-analysis/footprint-validation'
 type Point={x:number;z:number}
 function closest(ring:Point[],point:Point) {
   let best={index:0,distance:Infinity}
@@ -35,24 +36,42 @@ export async function sourceEnvelope(proposal:Intelligence,bytes:Uint8Array) {
     return hits/(count+1)>=.55
   }
   let changed=false
+  // A concave outline sometimes walks up both sides of an interior foyer and
+  // leaves its whole floor outside. Fill only an identified indoor source room
+  // whose vertices already lie inside/on the envelope; never expand to margins.
+  for(const room of proposal.candidates.filter(c=>c.kind==='room'&&c.confidence>=.7&&/kitchen|living|dining|foyer|hall|lobby|entry|bed|bath|closet|pantry|utility|office|store|laundry|wine|garage|corridor/i.test(c.label||'')&&!/court|atrium|outdoor|patio|terrace|garden|parking/i.test(c.label||''))){
+    const points=room.points.map(p=>({x:p.x*info.width,z:p.y*info.height}))
+    if(points.length<3||!points.every(p=>containsPoint(ring,p)||closest(ring,p).distance<=2))continue
+    const union=roofRegions([ring,points])
+    if(union.length!==1||union[0].voids.length||!validRing(union[0].footprint))continue
+    const next=union[0].footprint
+    if(next.length!==ring.length||next.some((p,i)=>Math.hypot(p.x-ring[i].x,p.z-ring[i].z)>.01)){ring.splice(0,ring.length,...next);changed=true}
+  }
   for(const wall of proposal.candidates.filter(item=>(item.kind==='wall' && !item.curve || item.kind==='column') && item.confidence>=.5)) {
     const points=wall.points.map(p=>({x:p.x*info.width,z:p.y*info.height}))
     if(wall.kind==='column'){
       if(points.length<3 || points.every(p=>containsPoint(ring,p)) || points.some(p=>!containsPoint(ring,p) && closest(ring,p).distance>Math.min(info.width,info.height)*.05))continue
       if(!points.every((p,index)=>supported(p,points[(index+1)%points.length])))continue
       const union=roofRegions([ring,points])
-      if(union.length===1 && !union[0].voids.length){ring.splice(0,ring.length,...union[0].footprint);changed=true}
+      if(union.length===1 && !union[0].voids.length&&validRing(union[0].footprint)){ring.splice(0,ring.length,...union[0].footprint);changed=true}
       continue
     }
+    if(wall.wallKind==='interior'||wall.wallKind==='partition')continue
     for(let index=1;index<points.length;index++) {
       const a=points[index-1],b=points[index]
       if(!supported(a,b))continue
-      for(const point of [0,.25,.5,.75,1].map(t=>({x:a.x+(b.x-a.x)*t,z:a.z+(b.z-a.z)*t}))) {
-        if(containsPoint(ring,point))continue
-        const near=closest(ring,point)
-        if(near.distance<1 || near.distance>Math.min(info.width,info.height)*.05)continue
-        ring.splice(near.index+1,0,point);changed=true
-      }
+      const point={x:(a.x+b.x)/2,z:(a.z+b.z)/2}
+      if(containsPoint(ring,point))continue
+      const near=closest(ring,point),i=near.index,j=(i+1)%ring.length,p=ring[i],q=ring[j]
+      if(near.distance<1||near.distance>Math.max(3,(wall.thickness||0)*info.width*.75))continue
+      const dx=q.x-p.x,dz=q.z-p.z,length=Math.hypot(dx,dz),wl=Math.hypot(b.x-a.x,b.z-a.z)
+      if(Math.abs(dx*(b.x-a.x)+dz*(b.z-a.z))/(length*wl||1)<.99)continue
+      // Snap a nearby parallel edge outward as one span. Never insert every
+      // interior stroke endpoint into a roof outline: that produced sawteeth.
+      const t=((point.x-p.x)*dx+(point.z-p.z)*dz)/(length*length||1),shift={x:point.x-p.x-t*dx,z:point.z-p.z-t*dz}
+      const fitted=ring.map((v,k)=>k===i||k===j?{x:v.x+shift.x,z:v.z+shift.z}:v)
+      if(!validRing(fitted))continue
+      ring.splice(0,ring.length,...fitted);changed=true
     }
   }
   if(!changed)return proposal

@@ -1,8 +1,8 @@
-import { useEffect,useState } from 'react'
+import { lazy,Suspense,useEffect,useState } from 'react'
 import { refreshAccount,useAccount } from './account'
 import { AccountPanel } from './AccountPanel'
 import { CloudDashboard } from './CloudDashboard'
-import { CloudWorkspace } from './CloudWorkspace'
+const CloudWorkspace=lazy(()=>import('./CloudWorkspace').then(module=>({default:module.CloudWorkspace})))
 import { loadProject } from '../state/database'
 import { createRemote } from './projectActions'
 import './cloud.css'
@@ -27,7 +27,7 @@ export function CloudRoute({route,navigate}:{route:string;navigate:(path:string)
     }).catch(error=>{if(alive)setError(error.message)}).finally(()=>{if(alive)setRecovering(false)})
     return()=>{alive=false}
   },[user?.id,projectId,legacyId])
-  if (user && projectId) return <CloudWorkspace key={`${user.id}:${generation}:${projectId}`} user={user} projectId={decodeURIComponent(projectId)} navigate={navigate}/>
+  if (user && projectId) return <Suspense fallback={<main className="cloud-page"><p role="status">Opening project…</p></main>}><CloudWorkspace key={`${user.id}:${generation}:${projectId}`} user={user} projectId={decodeURIComponent(projectId)} navigate={navigate}/></Suspense>
   if (user && !recovering && !legacyId && !sessionStorage.getItem('erect-backend-copy')) return <CloudDashboard key={`${user.id}:${generation}`} navigate={navigate}/>
   return <main className="cloud-page"><header className="cloud-page-header"><a href="/">Erect3D</a><h1>Projects</h1></header>
     <AccountPanel/>{recovering && <p role="status">Recovering your saved draft into your account…</p>}

@@ -1,3 +1,4 @@
+import {SharedStandardMaterial} from './SharedStandardMaterial'
 import { memo,useMemo } from 'react'
 import type { Door, Passage, Selection, Wall, WindowUnit } from '../domain/types'
 import { atWall, wallLength, wallTangentAngle } from '../geometry/math'
@@ -22,12 +23,12 @@ export const WallMesh=memo(function WallMesh({ wall, doors, windows, passages, s
         onPointerOver={event => { event.stopPropagation(); hover(true) }} onPointerOut={() => hover(false)}>
         <mesh position={rect.center} rotation={[0, rect.rotation, 0]} castShadow receiveShadow>
           <boxGeometry args={rect.size} />
-          <meshStandardMaterial map={wallTexture(wall.material, rect.size[0], rect.size[1])} color={selected ? '#b6a276' : wall.color || materialColor[wall.material]}
+          <SharedStandardMaterial map={wallTexture(wall.material, rect.size[0], rect.size[1])} color={selected ? '#b6a276' : wall.color || materialColor[wall.material]}
             roughness={materialRoughness[wall.material]} />
         </mesh>
         {solid.bottom === 0 && <mesh position={[rect.center[0], .045, rect.center[2]]} rotation={[0, rect.rotation, 0]} castShadow>
           <boxGeometry args={[rect.size[0], .09, wall.thickness + .018]} />
-          <meshStandardMaterial color="#a4a299" roughness={.76} />
+          <SharedStandardMaterial color="#a4a299" roughness={.76} />
         </mesh>}
       </group>)
     })}
@@ -37,9 +38,9 @@ export const WallMesh=memo(function WallMesh({ wall, doors, windows, passages, s
       position={[atWall(wall, item.offset + item.width / 2).x, item.height / 2, atWall(wall, item.offset + item.width / 2).z]}
       rotation={[0, -wallTangentAngle(wall, item.offset + item.width / 2), 0]} onClick={event => { event.stopPropagation(); select({ kind: 'passage', id: item.id }) }}>
       {[-1, 1].map(side => <mesh key={side} position={[side * item.width / 2, 0, 0]}><boxGeometry args={[.06, item.height, wall.thickness + .02]} />
-        <meshStandardMaterial color={selection?.id === item.id ? '#b69c6d' : '#a9a79e'} /></mesh>)}
+        <SharedStandardMaterial color={selection?.id === item.id ? '#b69c6d' : '#a9a79e'} /></mesh>)}
       <mesh position={[0, item.height / 2, 0]}><boxGeometry args={[item.width, .06, wall.thickness + .02]} />
-        <meshStandardMaterial color="#a9a79e" /></mesh>
+        <SharedStandardMaterial color="#a9a79e" /></mesh>
     </group>)}
     {windows.filter(item => item.wallId === wall.id).map(item => <WindowMesh key={item.id} wall={wall} window={item} selection={selection} select={select}/>)}
   </group>

@@ -14,9 +14,10 @@ import { analysisStatus } from './analysisStatus'
 import { buildableCandidates } from '../../../api/src/modules/plan-analysis/quality'
 import {watchAnalysis} from './watchAnalysis'
 import {reconstructionUpdate} from './reconstructionState'
+import {useSourceScope} from './useSourceScope'
 type Analysis = { status: string; job_status: string;created_at?:string; options?:{engine?:string;purpose?:string}; failure_code?: string; progress?: { completed: string[]; stages: string[]; current: string }; result?: { proposal: Intelligence; provenance?: unknown;quality?:{status:string;issues:{code:string;message:string;severity:string}[]} } }
 type Acceptance = { operationId: string; baseRevision: number; candidateIds: string[]; edits: Candidate[]; allowConfirmedIds?: string[]; designIds?: string[]; replaceLevel?:boolean; rejected?: boolean; before?: Project; historyRecorded?: boolean }
-export function ProposalReview({ analysisId, session, source,autoApply=false }: { analysisId: string; session: CloudSession; source: SourceDocument;autoApply?:boolean }) {
+export function ProposalReview({ analysisId, session, source,levelId,autoApply=false }: { analysisId: string; session: CloudSession; source: SourceDocument;levelId:string;autoApply?:boolean }) {
   const [analysis, setAnalysis] = useState<Analysis>(), [candidates, setCandidates] = useState<Candidate[]>([])
   const [selected, setSelected] = useState<Set<string>>(new Set()), [acceptance, setAcceptance] = useState<Acceptance>()
   const [allowConfirmed, setAllowConfirmed] = useState<Set<string>>(new Set()), [selectedDesigns, setSelectedDesigns] = useState<Set<string>>(new Set())
@@ -26,10 +27,12 @@ export function ProposalReview({ analysisId, session, source,autoApply=false }: 
   const candidatesLoaded=useRef(false)
   const autoApplied=useRef(false)
   const readOnly = useProject(state => state.readOnly), record = session.record!, taskKey = `${record.key}/accept/${analysisId}`
+  const context={projectId:record.base.projectId,sourceId:source.id,levelId},scope=useSourceScope(context)
   const receive = (result:Analysis) => {
+    if(!scope.current())return
     const regression=result.result?.quality?.issues.find(issue=>['DETAIL_REGRESSION','SOURCE_DETAIL_INCOMPLETE'].includes(issue.code))
     const blocking=result.result?.quality?.issues.find(issue=>issue.severity==='error')
-    setAnalysis(result);reconstructionUpdate(record.base.projectId,result,analysisId,result.status==='ready' && blocking?`Needs correction: ${blocking.message}. Your model is preserved.`:result.status==='ready' && regression?'Review needed: this reconstruction omits detail from the current model. Your model is preserved.':undefined)
+    setAnalysis(result);reconstructionUpdate(context,result,analysisId,result.status==='ready' && blocking?`Needs correction: ${blocking.message}. Nothing from this result has been applied.`:result.status==='ready' && regression?'Review needed: this reconstruction omits detail from the current model. Nothing from this result has been applied.':undefined)
     const next=result.result?.proposal.candidates || []
     if (!candidatesLoaded.current && next.length) {
       candidatesLoaded.current=true;setCandidates(next)
@@ -48,17 +51,19 @@ export function ProposalReview({ analysisId, session, source,autoApply=false }: 
   }, [analysisId, taskKey])
   const run = async (action: () => Promise<unknown>) => {
     setBusy(true); setError('')
-    try { await action(); await refresh();return true } catch (error) {
+    try { scope.assertCurrent();await action();scope.assertCurrent();await refresh();return true } catch (error) {
+      if(!scope.current())return false
       const message=(error as Error).message;setError(message)
-      if(analysis?.status==='ready')reconstructionUpdate(record.base.projectId,analysis,analysisId,`Could not apply the reconstruction: ${message}. Your model is preserved.`)
+      if(analysis?.status==='ready')reconstructionUpdate(context,analysis,analysisId,`Could not apply the reconstruction: ${message}. Nothing from this result has been applied.`)
       return false
-    } finally { setBusy(false) }
+    } finally { if(scope.current())setBusy(false) }
   }
   const accept = async () => {
-    reconstructionUpdate(record.base.projectId,{status:'pending',job_status:'running'},analysisId,'Erecting the editable 3D model…')
+    scope.assertCurrent();reconstructionUpdate(context,{status:'pending',job_status:'running'},analysisId,'Erecting the editable 3D model…')
     const engine = session.engine
     if (!engine) throw new Error('This tab is read only.')
     await engine.sync()
+    scope.assertCurrent()
     if (engine.state !== 'saved') throw new Error('Resolve pending edits before accepting a proposal.')
     let input = acceptance
     if (!input) {
@@ -66,6 +71,7 @@ export function ProposalReview({ analysisId, session, source,autoApply=false }: 
         edits: candidates.filter(candidate => selected.has(candidate.id)), allowConfirmedIds: [...allowConfirmed], designIds: [...selectedDesigns], before: structuredClone(useProject.getState().project!) }
       await putTask(taskKey, input); setAcceptance(input)
     }
+    scope.assertCurrent()
     try { await api.request(`/analysis/${analysisId}/accept`, 'POST', { operationId: input.operationId, baseRevision: input.baseRevision, candidateIds: input.candidateIds, edits: input.edits, allowConfirmedIds: input.allowConfirmedIds || [], designIds: input.designIds || [],replaceLevel:input.replaceLevel || false }) }
     catch (error) {
       if (error instanceof RemoteError && error.status >= 400 && error.status < 500) {
@@ -73,7 +79,8 @@ export function ProposalReview({ analysisId, session, source,autoApply=false }: 
       }
       throw error
     }
-    await engine.refresh(() => !useProject.getState().previewBase)
+    scope.assertCurrent();await engine.refresh(() => scope.current() && !useProject.getState().previewBase)
+    scope.assertCurrent()
     if (analysis?.options?.engine==='backend' && engine.state==='saved') useProject.getState().setView('model')
     if (engine.state === 'saved' && input.before && !input.historyRecorded) {
       useProject.getState().rememberAccepted(input.before)

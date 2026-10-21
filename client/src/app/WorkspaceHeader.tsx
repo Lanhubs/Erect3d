@@ -1,82 +1,49 @@
-import { useEffect, useRef, useState } from 'react'
-import { FiArrowLeft, FiColumns, FiEdit3, FiLayers, FiMaximize2, FiMousePointer, FiMove,
-  FiPenTool, FiRotateCcw, FiRotateCw, FiSave, FiSquare, FiTrendingUp } from 'react-icons/fi'
-import type { Selection } from '../domain/types'
-import type { Tool, View } from '../state/project'
-import { useProject } from '../state/project'
-import { cloudPersistence } from '../state/persistenceMode'
-
-export type WorkspaceMode = 'edit' | 'analyze' | 'present'
-const tools = [
-  { id: 'select', label: 'Select', icon: FiMousePointer }, { id: 'pan', label: 'Pan', icon: FiMove },
-  { id: 'wall', label: 'Wall', icon: FiEdit3 }, { id: 'curve', label: 'Curve', icon: FiPenTool },
-  { id: 'ramp', label: 'Ramp', icon: FiTrendingUp }, { id: 'door', label: 'Door', icon: FiSquare },
-  { id: 'window', label: 'Window', icon: FiMaximize2 }, { id: 'room', label: 'Room', icon: FiLayers },
-  { id: 'measure', label: 'Measure', icon: FiColumns },
+import {FiArrowLeft,FiCheck,FiChevronDown,FiColumns,FiEdit3,FiHelpCircle,FiLayers,FiMaximize2,FiMessageSquare,FiMoreHorizontal,FiMousePointer,FiMove,FiNavigation,FiPenTool,FiRotateCcw,FiRotateCw,FiSave,FiSearch,FiSliders,FiSquare,FiTrendingUp} from 'react-icons/fi'
+import type {MouseEvent} from 'react'
+import type {Selection} from '../domain/types'
+import type {Tool,View} from '../state/project'
+import {useProject} from '../state/project'
+import {panels,type PanelId} from './WorkspacePanels'
+export type WorkspaceMode='edit'|'analyze'|'present'
+export const drawingTools=[
+  {id:'select',label:'Select',icon:FiMousePointer},{id:'pan',label:'Pan',icon:FiMove},
+  {id:'wall',label:'Wall',icon:FiEdit3},{id:'curve',label:'Curve',icon:FiPenTool},
+  {id:'ramp',label:'Ramp',icon:FiTrendingUp},{id:'door',label:'Door',icon:FiSquare},
+  {id:'window',label:'Window',icon:FiMaximize2},{id:'room',label:'Room',icon:FiLayers},{id:'measure',label:'Measure',icon:FiColumns},
 ] as const
-type Props = {
-  projectName: string; dirty: boolean; back: () => void; undo: () => void; redo: () => void; save: () => void
-  tool: Tool; setTool: (tool: Tool) => void; view: View; setView: (view: View) => void
-  mode: WorkspaceMode; setMode: (mode: WorkspaceMode) => void; walk: () => void
-  selection: Selection; inspectorOpen: boolean; toggleInspector: () => void; inspectorAvailable: boolean
+type Props={projectName:string;dirty:boolean;back:()=>void;undo:()=>void;redo:()=>void;save:()=>void;tool:Tool;setTool:(tool:Tool)=>void;
+  view:View;setView:(view:View)=>void;mode:WorkspaceMode;setMode:(mode:WorkspaceMode)=>void;walk:()=>void;selection:Selection;
+  inspectorOpen:boolean;toggleInspector:()=>void;inspectorAvailable:boolean;search:()=>void;openPanel:(id:PanelId)=>void;walking:boolean;assistant?:()=>void;assistantOpen?:boolean;previewing?:boolean}
+function choose(event:MouseEvent<HTMLButtonElement>,action:()=>void){
+  const menu=event.currentTarget.closest('details');if(menu){menu.open=false;menu.querySelector('summary')?.focus()}action()
 }
-
-export function WorkspaceHeader({ projectName, dirty, back, undo, redo, save, tool, setTool, view, setView,
-  mode, setMode, walk, selection, inspectorOpen, toggleInspector, inspectorAvailable }: Props) {
-  const [toolsOpen, setToolsOpen] = useState(false)
-  const readOnly = useProject(state => state.readOnly)
-  const toolsButton = useRef<HTMLButtonElement>(null)
-  const closeTools = () => { setToolsOpen(false); requestAnimationFrame(() => toolsButton.current?.focus()) }
-  useEffect(() => {
-    if (!toolsOpen) return
-    const key = (event: KeyboardEvent) => { if (event.key === 'Escape') closeTools() }
-    window.addEventListener('keydown', key)
-    return () => window.removeEventListener('keydown', key)
-  }, [toolsOpen])
-  const chooseView = (next: View) => { setMode('edit'); setView(next) }
+const shortcuts='Arrow keys move; Shift gives finer steps. [ / ] rotate; comma / period resize; Page Up / Down adjust height. Ctrl/Cmd Z undoes. Scroll or pinch zooms 3D; Ctrl + / - zooms; Ctrl 0 fits.'
+export function WorkspaceHeader({projectName,dirty,back,undo,redo,save,tool,setTool,view,setView,mode,setMode,walk,selection,inspectorOpen,toggleInspector,inspectorAvailable,search,openPanel,walking,assistant,assistantOpen,previewing}:Props){
+  const permissionReadOnly=useProject(s=>s.readOnly),readOnly=permissionReadOnly||previewing,drawing=drawingTools.find(item=>item.id===tool)!
+  const draw=(next:Tool)=>{setMode('edit');setTool(next)}
+  const toolButton=(item:typeof drawingTools[number],mobile=false)=><button key={item.id} className={`${mobile?'mobile-tool':'desktop-tool'} ${['select','pan'].includes(item.id)?'navigation-tool':''}`} disabled={readOnly&&!['select','pan','measure'].includes(item.id)} title={item.label} aria-label={item.label} aria-pressed={tool===item.id} onClick={event=>choose(event,()=>draw(item.id))}><item.icon/><span>{item.label}</span></button>
   return <>
-    <header className="appbar">
-      <button className="back" title="Projects" aria-label="Projects" onClick={back}><FiArrowLeft /></button>
-      <div className="app-name">
-        <strong>ERECT</strong>
-        <img className="app-logo" src="/favicon.svg" alt="Erect3D logo" />
-        <span>/</span>
-        <b>{projectName}</b>
-      </div>
-      <div className="app-actions">
-        <span className="save-state">{dirty ? 'Saving edits…' : cloudPersistence() ? 'Offline copy saved' : 'Draft saved'}</span>
-        <button disabled={readOnly} title="Undo" aria-label="Undo" onClick={undo}><FiRotateCcw /></button>
-        <button disabled={readOnly} title="Redo" aria-label="Redo" onClick={redo}><FiRotateCw /></button>
-        <button disabled={readOnly} title="Save" aria-label="Save" onClick={save}><FiSave /><span>Save</span></button>
+    <header className="studio-filebar">
+      <button className="studio-home" aria-label="Projects" title="Back to projects" onClick={back}><img src="/favicon.svg" alt=""/><FiArrowLeft/></button>
+      <div className="studio-document"><span>Workspace</span><b title={projectName}>{projectName}</b></div>
+      <span className={`studio-save-state${dirty?' saving':''}`} title={readOnly?'Read only':dirty?'Saving device draft':'Device draft saved'}><FiCheck/><span>{readOnly?'Read only':dirty?'Saving…':'Saved'}</span></span>
+      <div className="studio-file-actions"><button aria-label="Find a control" title="Find a control · Ctrl/Cmd K" onClick={search}><FiSearch/><kbd>Ctrl K</kbd></button>
+        <details className="studio-menu studio-help"><summary aria-label="Workspace help" title="Workspace help"><FiHelpCircle/></summary><div><strong>Working with your building</strong><p>Choose a drawing tool below. Select an element to edit its properties. Levels and source plans live in the left panel.</p><p>{shortcuts}</p></div></details>
       </div>
     </header>
-    <div className="workspace-top">
-      <div className="toolset">{tools.map(item => <button disabled={readOnly && !['select','pan','measure'].includes(item.id)} key={item.id} title={item.label}
-        aria-label={item.label} aria-pressed={tool === item.id} className={tool === item.id ? 'active' : ''}
-        onClick={() => { setMode('edit'); setTool(item.id) }}><item.icon /><span>{item.label}</span></button>)}</div>
-      <button ref={toolsButton} className="more-tools" aria-expanded={toolsOpen} onClick={() => setToolsOpen(true)}>Tools</button>
-      <div className="viewset">
-        <button aria-pressed={mode === 'edit' && view === 'plan'} className={mode === 'edit' && view === 'plan' ? 'active' : ''} onClick={() => chooseView('plan')}>2D</button>
-        <button aria-pressed={mode === 'edit' && view === 'split'} className={mode === 'edit' && view === 'split' ? 'active' : ''} onClick={() => chooseView('split')}>Split</button>
-        <button aria-pressed={mode === 'edit' && view === 'model'} className={mode === 'edit' && view === 'model' ? 'active' : ''} onClick={() => chooseView('model')}>3D</button>
-      </div>
-      <div className="mode-actions">
-        <button onClick={walk}>Walk</button>
-        <button aria-pressed={mode === 'analyze'} className={mode === 'analyze' ? 'active' : ''} onClick={() => setMode('analyze')}>Analyze</button>
-        <button aria-pressed={mode === 'present'} className={mode === 'present' ? 'active' : ''} onClick={() => setMode('present')}>Present</button>
-      </div>
-      {inspectorAvailable && <button className={`inspector-toggle${inspectorOpen ? ' active' : ''}`} type="button"
-        aria-label="Toggle properties" aria-expanded={inspectorOpen} onClick={toggleInspector}>
-        Properties{selection ? ' · Selected' : ''}</button>}
+    <div className="studio-tool-dock" role="toolbar" aria-label="Drawing tools">
+      {assistant&&<button className="studio-assistant" aria-label="Assistant" title="Design assistant" aria-pressed={assistantOpen} onClick={assistant}><FiMessageSquare/><span>Assistant</span></button>}
+      <div className="studio-drawing-tools">{drawingTools.map(item=>toolButton(item))}</div>
+      <details className="studio-menu studio-draw-menu"><summary aria-label="Drawing tools menu" aria-pressed={!['select','pan'].includes(tool)}><drawing.icon/><span>{['select','pan'].includes(tool)?'Build':drawing.label}</span><FiChevronDown/></summary><div>{drawingTools.filter(item=>!['select','pan'].includes(item.id)).map(item=>toolButton(item,true))}</div></details>
+      <details className="studio-menu studio-panels-menu"><summary aria-label="Building panels menu"><FiLayers/><span>Panels</span></summary><div>{panels.map(panel=><button key={panel.id} onClick={event=>choose(event,()=>openPanel(panel.id))}><panel.icon/><span>{panel.label}</span></button>)}</div></details>
+      <div className="studio-history"><button disabled={readOnly} title="Undo · Ctrl/Cmd Z" aria-label="Undo" onClick={undo}><FiRotateCcw/><span>Undo</span></button><button className="studio-redo" disabled={readOnly} title="Redo · Ctrl/Cmd Shift Z" aria-label="Redo" onClick={redo}><FiRotateCw/><span>Redo</span></button><button disabled={readOnly} title="Save" aria-label="Save" onClick={save}><FiSave/><span>Save</span></button></div>
+      <details className="studio-menu studio-mobile-more"><summary aria-label="More workspace controls"><FiMoreHorizontal/><span>More</span></summary><div><button disabled={readOnly} onClick={event=>choose(event,redo)}><FiRotateCw/>Redo</button><button onClick={event=>choose(event,search)}><FiSearch/>Find a control</button>{panels.map(panel=><button key={panel.id} onClick={event=>choose(event,()=>openPanel(panel.id))}><panel.icon/>{panel.label}</button>)}<button onClick={event=>choose(event,()=>setMode('analyze'))}>Analyze building</button><button onClick={event=>choose(event,()=>setMode('present'))}>Present building</button><p>{shortcuts}</p></div></details>
     </div>
-    {toolsOpen && <>
-      <button className="tool-sheet-scrim" aria-label="Close tools" onClick={closeTools} />
-      <div className="tool-sheet" role="dialog" aria-label="Drawing tools">
-        <div><strong>TOOLS</strong><button onClick={closeTools} aria-label="Close tools">×</button></div>
-        <nav>{tools.map(item => <button disabled={readOnly && !['select','pan','measure'].includes(item.id)} key={item.id} aria-pressed={tool === item.id}
-          onClick={() => { setMode('edit'); setTool(item.id); closeTools() }}>
-          <item.icon />{item.label}</button>)}</nav>
-      </div>
-    </>}
+    <div className="studio-view-dock" aria-label="Workspace view">
+      <div className="studio-view-switch">{(['plan','split','model'] as const).map((next,i)=><button key={next} aria-pressed={mode==='edit'&&view===next} onClick={()=>{setMode('edit');setView(next)}}>{['2D','Split','3D'][i]}</button>)}</div>
+      <button className="studio-walk" aria-pressed={walking} onClick={walk} title={walking?'Exit walkthrough':'Walk through the building'}><FiNavigation/><span>{walking?'Exit walk':'Walk'}</span></button>
+      <details className="studio-menu studio-view-menu"><summary aria-label="More view modes"><FiMoreHorizontal/></summary><div><button aria-pressed={mode==='analyze'} onClick={event=>choose(event,()=>setMode('analyze'))}>Analyze building</button><button aria-pressed={mode==='present'} onClick={event=>choose(event,()=>setMode('present'))}>Present building</button></div></details>
+      {inspectorAvailable&&<button className="studio-properties-trigger" aria-label="Toggle properties" title={selection?'Selected element properties':'Properties'} aria-pressed={inspectorOpen} onClick={toggleInspector}><FiSliders/></button>}
+    </div>
   </>
 }

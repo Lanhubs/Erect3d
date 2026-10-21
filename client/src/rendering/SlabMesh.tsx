@@ -1,3 +1,4 @@
+import {SharedStandardMaterial} from './SharedStandardMaterial'
 import { useEffect, useMemo } from 'react'
 import { ExtrudeGeometry, Path, Shape } from 'three'
 import type { Selection, Slab } from '../domain/types'
@@ -24,9 +25,9 @@ export function SlabMesh({ slab, selection, select }: { slab: Slab; selection: S
   return <mesh geometry={geometry} rotation={[Math.PI / 2, 0, 0]} position={[0, slab.elevation, 0]}
     castShadow receiveShadow onPointerOver={() => pointerCursor(true)} onPointerOut={() => pointerCursor(false)}
     onClick={event => { event.stopPropagation(); select({ kind: 'slab', id: slab.id }) }}>
-    <meshStandardMaterial attach="material-0" color={selection?.id === slab.id ? '#c3a874' : slab.color || '#ffffff'}
+    <SharedStandardMaterial attach="material-0" color={selection?.id === slab.id ? '#c3a874' : slab.color || '#ffffff'}
       map={floorTexture(slab.finishMaterial)} roughness={materialRoughness[slab.finishMaterial]} />
-    <meshStandardMaterial attach="material-1" color={selection?.id === slab.id ? '#c3a874' : color}
+    <SharedStandardMaterial attach="material-1" color={selection?.id === slab.id ? '#c3a874' : color}
       roughness={slab.structuralMaterial === 'steel-deck' ? .54 : .88} />
   </mesh>
 }

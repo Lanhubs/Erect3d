@@ -4,6 +4,7 @@ import { analyzePlan } from '../../../client/src/workers/analyze'
 import { scanWallEdges } from '../../../client/src/workers/outlineWalls'
 import type {SourceRegion} from './source-region'
 import {coveredStroke} from './covered-stroke'
+import {respectMeasurementFootprint} from './measurement-footprint'
 export async function measureSource(bytes:Uint8Array,region?:SourceRegion) {
   const image=sharp(bytes,{limitInputPixels:100_000_000}),metadata=region?await image.metadata():undefined
   const width=metadata?.width,height=metadata?.height
@@ -47,10 +48,10 @@ export async function measureSource(bytes:Uint8Array,region?:SourceRegion) {
   return {candidates:candidates.slice(0,2000),complex:result.features.length>600 || result.candidates.length>100,
     report:{width:sourceWidth,height:sourceHeight,measuredWidth:info.width,measuredHeight:info.height,walls:result.candidates.length,fineEdges:edges.length,features:result.features.length,details:result.details.length}}
 }
-export function classifiedMeasurements(measured:Candidate[],proposals:Intelligence[]) {
+export function classifiedMeasurements(measured:Candidate[],proposals:Intelligence[],dimensions?:{width:number;height:number}) {
   const decisions=new Map(proposals.flatMap(item=>item.dispositions || []).map(item=>[item.candidateId,item.decision]))
   const classified=new Set(proposals.flatMap(item=>item.candidates).map(item=>item.id))
-  return measured.filter(item=>!item.id.startsWith('cv_edge_') || classified.has(item.id) || decisions.has(item.id))
+  return respectMeasurementFootprint(measured.filter(item=>!item.id.startsWith('cv_edge_') || classified.has(item.id) || decisions.has(item.id))
     .filter(item=>item.kind!=='unknown' || classified.has(item.id) || decisions.get(item.id)==='confirm').map(item=>item.kind==='wall' && decisions.get(item.id)!=='confirm' && !classified.has(item.id)
-    ? {...item,kind:'unknown' as const,confidence:.35,uncertainties:['Measured line was not established as a building wall']} : decisions.get(item.id)==='confirm'?{...item,confidence:Math.max(.65,item.confidence)}:item)
+    ? {...item,kind:'unknown' as const,confidence:.35,uncertainties:['Measured line was not established as a building wall']} : decisions.get(item.id)==='confirm'?{...item,confidence:Math.max(.65,item.confidence)}:item),proposals,dimensions)
 }

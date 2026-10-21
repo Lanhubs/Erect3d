@@ -190,3 +190,16 @@
 11:08:52 AM [vite] (client) hmr update /src/rendering/GraphicsBenchmark.tsx
 11:14:17 AM [vite] (client) hmr update /src/rendering/GraphicsBenchmark.tsx
 11:16:59 AM [vite] (client) hmr update /src/rendering/GraphicsBenchmark.tsx
+6:36:55 PM [vite] (client) page reload src/domain/types.ts
+6:37:01 PM [vite] (client) hmr update /src/cloud/ProposalModelPreview.tsx
+6:37:08 PM [vite] (client) hmr update /src/cloud/ProposalReview.tsx
+6:38:17 PM [vite] (client) hmr update /src/cloud/ProposalModelPreview.tsx
+6:38:20 PM [vite] (client) hmr update /src/cloud/ProposalModelPreview.tsx
+6:38:23 PM [vite] (client) hmr update /src/app/Workspace.tsx, /src/furniture/FurniturePanel.tsx, /src/furniture/FurnitureLayer.tsx, /src/furniture/FurnitureInspector.tsx, /src/furniture/FurnitureReview.tsx, /src/features/plan/PlanEditor.tsx, /src/features/plan/FencePlanLayer.tsx, /src/features/plan/ElementHandles.tsx, /src/rendering/BuildingScene.tsx, /src/rendering/Viewer.tsx, /src/rendering/ElementGizmo.tsx, /src/rendering/SoftwareElementHandles.tsx, /src/rendering/GraphicsBenchmark.tsx, /src/rendering/WalkController.tsx
+6:40:02 PM [vite] (client) hmr update /src/rendering/SoftwarePreview.tsx, /src/furniture/FurnitureMeshes.tsx
+6:40:08 PM [vite] (client) hmr update /src/rendering/SoftwarePreview.tsx, /src/furniture/FurnitureMeshes.tsx
+6:41:07 PM [vite] (client) hmr update /src/furniture/FurnitureMeshes.tsx
+6:41:47 PM [vite] (client) hmr update /src/rendering/RenderResources.tsx
+6:41:50 PM [vite] (client) hmr update /src/furniture/FurnitureMeshes.tsx
+6:41:55 PM [vite] (client) hmr update /src/rendering/SoftwarePreview.tsx
+6:41:57 PM [vite] (client) hmr update /src/rendering/SoftwarePreview.tsx

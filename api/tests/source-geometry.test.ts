@@ -9,17 +9,21 @@ const base={confidence:.9,evidence:'Actual visible source band',uncertainties:[]
 const ring=[{x:.1,y:.1},{x:.5,y:.1},{x:.5,y:.9},{x:.1,y:.9}]
 const proposal=(candidates:Candidate[]):Intelligence=>({coordinatesVersion:1,coordinateSystem:'normalized-image-top-left',candidates,warnings:[],
  understanding:{buildingType:'public',footprint:ring,conventions:[],circulation:[],uncertainties:[]}})
-test('an estimated envelope fits nearby source-supported walls and cannot expand into blank margins or distant page marks',async()=>{
- const wall:Candidate={...base,id:'wall',kind:'wall',points:[{x:.4,y:.3},{x:.53,y:.3}],thickness:.01}
- const drawing=await sharp(Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="white"/><path d="M160 90H212" stroke="black" stroke-width="4"/></svg>')).png().toBuffer()
+test('nearby parallel source bands fit the envelope without adding roof spikes, white margins or distant page marks',async()=>{
+ const wall:Candidate={...base,id:'wall',kind:'wall',points:[{x:.506,y:.2},{x:.506,y:.8}],thickness:.01}
+ const drawing=await sharp(Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="white"/><path d="M202.4 60V240" stroke="black" stroke-width="4"/></svg>')).png().toBuffer()
  const corrected=await sourceEnvelope(proposal([wall]),drawing)
- expect(corrected.understanding!.footprint.length).toBeGreaterThan(4)
+ expect(corrected.understanding!.footprint).toHaveLength(4)
+ expect(Math.max(...corrected.understanding!.footprint.map(p=>p.x))).toBeCloseTo(.506)
  expect(()=>validateFootprint(corrected,[wall],400,300)).not.toThrow()
  const blank=await sharp({create:{width:400,height:300,channels:3,background:'white'}}).png().toBuffer()
  expect((await sourceEnvelope(proposal([wall]),blank)).understanding!.footprint).toEqual(ring)
  const far:Candidate={...wall,points:[{x:.8,y:.3},{x:.95,y:.3}]}
  const border=await sharp(Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><path d="M320 90H380" stroke="black" stroke-width="4"/></svg>')).png().toBuffer()
  expect((await sourceEnvelope(proposal([far]),border)).understanding!.footprint).toEqual(ring)
+ const spur:Candidate={...wall,points:[{x:.4,y:.3},{x:.53,y:.3}]}
+ const spurred=await sharp(Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="white"/><path d="M160 90H212" stroke="black" stroke-width="4"/></svg>')).png().toBuffer()
+ expect((await sourceEnvelope(proposal([spur]),spurred)).understanding!.footprint).toEqual(ring)
 })
 test('opening hosts are repaired within pixel tolerance without converting swung leaves or open routes into fabricated walls',()=>{
  const wall:Candidate={...base,id:'host',kind:'wall',points:[{x:.1,y:.3},{x:.8,y:.3}],thickness:.002}
@@ -28,6 +32,16 @@ test('opening hosts are repaired within pixel tolerance without converting swung
  const result=alignOpeningHosts(proposal([wall,door,leaf]),1000,800)
  expect(result.candidates[1].wallId).toBe('host');expect(result.candidates[1].points.map(point=>point.y)).toEqual([.3,.3])
  expect(result.candidates[2].wallId).toBeUndefined();expect(door.wallId).toBeUndefined()
+})
+test('an indoor foyer closes a false exterior notch, while an actual courtyard stays open',async()=>{
+ const footprint=[{x:.1,y:.1},{x:.9,y:.1},{x:.9,y:.9},{x:.6,y:.9},{x:.6,y:.6},{x:.4,y:.6},{x:.4,y:.9},{x:.1,y:.9}]
+ const room:Candidate={...base,id:'foyer',kind:'room',label:'Foyer',points:[{x:.4,y:.6},{x:.6,y:.6},{x:.6,y:.9},{x:.4,y:.9}]}
+ const plan={...proposal([room]),understanding:{...proposal([]).understanding!,footprint}}
+ const bytes=await sharp({create:{width:400,height:300,channels:3,background:'white'}}).png().toBuffer()
+ const fixed=await sourceEnvelope(plan,bytes)
+ expect(()=>validateFootprint(fixed,[room],400,300)).not.toThrow()
+ expect((await sourceEnvelope({...plan,candidates:[{...room,label:'Courtyard'}]},bytes)).understanding!.footprint).toEqual(footprint)
+ expect(plan.understanding.footprint).toEqual(footprint)
 })
 test('an open vomitory never creates a gap across the endpoint of a diagonal wall',()=>{
  const host:Candidate={...base,id:'diagonal',kind:'wall',points:[{x:.245,y:.732},{x:.34,y:.65}]}

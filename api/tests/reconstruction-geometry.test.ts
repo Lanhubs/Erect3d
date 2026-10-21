@@ -16,6 +16,11 @@ test('source footprint rejects page-margin structures and crossed room polygons,
   expect(()=>validateFootprint(proposal,[{...base,id:'margin',points:[{x:.1,y:0},{x:.9,y:0},{x:.9,y:.1},{x:.1,y:.1}]}],1000,800)).toThrow('margins must stay empty')
   expect(()=>validateFootprint(proposal,[{...base,points:[ring[0],ring[2],ring[1],ring[3]]}],1000,800)).toThrow('polygon crosses')
 })
+test('a room lying inside an exterior notch fails even when every corner touches the envelope',()=>{
+ const footprint=[{x:.1,y:.1},{x:.9,y:.1},{x:.9,y:.9},{x:.6,y:.9},{x:.6,y:.6},{x:.4,y:.6},{x:.4,y:.9},{x:.1,y:.9}]
+ const room={...base,points:[{x:.4,y:.6},{x:.6,y:.6},{x:.6,y:.9},{x:.4,y:.9}]}
+ expect(()=>validateFootprint({...proposal,understanding:{...proposal.understanding!,footprint}},[room],1000,800)).toThrow('outside the drawn building footprint')
+})
 test('source-only stairs outside the envelope do not block walls; connected structures still enforce the footprint',()=>{
   const guide:Candidate={...base,id:'stair',kind:'stair',points:[{x:.01,y:.01},{x:.08,y:.01},{x:.08,y:.08},{x:.01,y:.08}]}
   expect(()=>validateFootprint(proposal,[guide],1000,800)).not.toThrow()

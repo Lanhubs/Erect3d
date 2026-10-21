@@ -27,7 +27,7 @@ export function CandidateDetails({ candidate, update, disabled, walls }: { candi
     </select></label>}
     {candidate.kind === 'door' && <>
       <label>Door design<select disabled={disabled} value={candidate.doorStyle || 'panel'} onChange={e => update({ ...candidate, doorStyle: e.target.value as Candidate['doorStyle'] })}>
-        {['flush', 'panel', 'glazed', 'double'].map(style => <option key={style}>{style}</option>)}</select></label>
+        {['flush', 'panel', 'glazed', 'double','sectional'].map(style => <option key={style}>{style}</option>)}</select></label>
       <label>Hinge<select disabled={disabled} value={candidate.hinge || 'left'} onChange={e => update({ ...candidate, hinge: e.target.value as Candidate['hinge'] })}><option>left</option><option>right</option></select></label>
       <label>Swing<select disabled={disabled} value={candidate.swing || 'in'} onChange={e => update({ ...candidate, swing: e.target.value as Candidate['swing'] })}><option>in</option><option>out</option></select></label>
     </>}

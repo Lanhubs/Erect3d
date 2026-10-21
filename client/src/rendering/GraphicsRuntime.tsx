@@ -1,33 +1,31 @@
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, useMemo, type ReactNode } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { InstancedMesh, Mesh } from 'three'
-import { nextResolution, qualityProfiles, type QualityMode, type QualityTier } from './graphicsQuality'
+import { qualityProfiles, type QualityMode, type QualityTier } from './graphicsQuality'
 import {RenderResourceScope} from './RenderResources'
-import {CachedEnvironment} from './CachedEnvironment'
+import {GraphicsPreparation} from './GraphicsPreparation'
 import {PresentationPipeline} from './PresentationPipeline'
-import {ShaderWarmup} from './ShaderWarmup'
 
-export const GraphicsSettings = createContext({ tier: 'balanced' as QualityTier, optimized: true })
+export const GraphicsSettings = createContext({ tier: 'balanced' as QualityTier, optimized: true,shadows:true })
 export const useGraphicsSettings = () => useContext(GraphicsSettings)
 export type GraphicsSnapshot = { backend: string; fps: number; frameMS: number; p95: number; cpuMS: number;
   dpr: number; calls: number; triangles: number; instances: number; objects: number; textures: number;
   geometries: number; targets: number | null; memoryMB: number | null; tier: QualityTier;drawingWidth?:number;drawingHeight?:number }
 type ExtraInfo = { render: { calls: number; drawCalls?: number; triangles: number }; memory: {
   geometries: number; textures: number; renderTargets?: number; total?: number } }
-export function GraphicsRuntime({ mode, optimized = true, report,onResolution,fixedDpr, children }: {
-  mode: QualityMode; optimized?: boolean; report?: (snapshot: GraphicsSnapshot) => void;onResolution?:(dpr:number)=>void;fixedDpr?:number; children: ReactNode }) {
+export function GraphicsRuntime({ mode, optimized = true, report,onResolution,onPrepared,onFailure,fixedDpr,sampleAll=false, children }: {
+  mode: QualityMode; optimized?: boolean; report?: (snapshot: GraphicsSnapshot) => void;onResolution?:(dpr:number)=>void;onPrepared?:()=>void;onFailure?:()=>void;fixedDpr?:number;sampleAll?:boolean; children: ReactNode }) {
   const { gl, scene, setDpr, invalidate } = useThree()
-  const [tier, setTier] = useState<QualityTier>(mode === 'auto' ? 'balanced' : mode)
+  const tier:QualityTier=mode==='auto'?'balanced':mode
+  const skip=useMemo(()=>new Set(import.meta.env.DEV?new URLSearchParams(location.search).get('skip')?.split(','):[]),[])
+  const settings=useMemo(()=>({tier,optimized,shadows:!skip.has('shadows')}),[tier,optimized,skip])
   const sample = useRef({ frames: [] as number[], started: 0, evaluated: 0, adapted: 0, cpu: 0, submissions: 0 })
   const latest = useRef(report); latest.current = report
   const resolution=useRef(onResolution);resolution.current=onResolution
-  const applyDpr=(value:number)=>{setDpr(value);resolution.current?.(value)}
   const drawStats=useRef({calls:0,triangles:0})
-  const qualityChange=useRef(0)
   useEffect(() => {
     const target = mode === 'auto' ? 'balanced' : mode
-    setTier(target);const value=fixedDpr??(target==='high'?2:Math.min(window.devicePixelRatio || 1, qualityProfiles[target].maxDpr));setDpr(value);resolution.current?.(value)
-    qualityChange.current=performance.now()
+    const value=fixedDpr??(target==='high'?2:Math.min(window.devicePixelRatio || 1, qualityProfiles[target].maxDpr));setDpr(value);resolution.current?.(value)
     sample.current = { frames: [], started: performance.now(), evaluated: 0, adapted: 0, cpu: 0, submissions: 0 }
     invalidate()
   }, [mode, gl, setDpr, invalidate,fixedDpr])
@@ -47,23 +45,12 @@ export function GraphicsRuntime({ mode, optimized = true, report,onResolution,fi
   useFrame((_, delta) => {
     const now = performance.now(), state = sample.current
     // Idle gaps and background-tab suspension are not rendering pressure.
-    if (document.hidden || delta > .15) { state.frames = []; state.cpu=0;state.submissions=0;state.evaluated = now; return }
+    if (document.hidden || (!sampleAll&&delta > .15)) { state.frames = []; state.cpu=0;state.submissions=0;state.evaluated = now; return }
     state.frames.push(delta * 1000)
-    if (now - state.evaluated < 2000 || state.frames.length < 45) return
+    if (now - state.evaluated < 2000 || state.frames.length < (sampleAll?12:45)) return
     const sorted = state.frames.toSorted((a, b) => a - b)
     const mean = sorted.reduce((sum, value) => sum + value, 0) / sorted.length
     const info = gl.info as unknown as ExtraInfo, memory = info.memory.total
-    if (optimized && fixedDpr===undefined && now - state.started > 5000 && now - state.adapted > 4000) {
-      const dpr = gl.getPixelRatio(), next = nextResolution(dpr, mean, (memory || 0) / 1048576, tier)
-      if (Math.abs(next - dpr) > .025) applyDpr(tier==='high'?next:Math.min(next, window.devicePixelRatio || 1))
-      if (mode === 'auto' && now-qualityChange.current>12000) {
-        let target=tier
-        if (mean > 29 || (memory || 0)/1048576>qualityProfiles[tier].memoryMB)target=tier==='high'?'balanced':'performance'
-        else if(mean<18 && sorted[Math.floor(sorted.length*.95)]<23)target=tier==='performance'?'balanced':memory!==undefined && memory/1048576<180?'high':tier
-        if(target!==tier){setTier(target);qualityChange.current=now}
-      }
-      state.adapted = now
-    }
     if (import.meta.env.DEV && latest.current) {
       let instances = 0, objects = 0
       scene.traverseVisible(object => { if (object instanceof Mesh) objects++; if (object instanceof InstancedMesh) instances += object.count })
@@ -75,5 +62,5 @@ export function GraphicsRuntime({ mode, optimized = true, report,onResolution,fi
     }
     state.frames = []; state.evaluated = now; state.cpu = 0; state.submissions = 0
   }, -100)
-  return <GraphicsSettings.Provider value={{ tier, optimized }}><RenderResourceScope><CachedEnvironment/><PresentationPipeline/>{children}<ShaderWarmup/></RenderResourceScope></GraphicsSettings.Provider>
+  return <GraphicsSettings.Provider value={settings}><RenderResourceScope><GraphicsPreparation tier={tier} optimized={optimized} skip={skip} onPrepared={onPrepared} onFailure={onFailure}><PresentationPipeline enabled={!skip.has('presentation')} onFailure={onFailure}/>{children}</GraphicsPreparation></RenderResourceScope></GraphicsSettings.Provider>
 }

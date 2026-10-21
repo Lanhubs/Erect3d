@@ -16,10 +16,19 @@ import { commitOperation } from './operations'
 import { ApiError } from '../../security/errors'
 import { readOperations } from './history'
 import { validateDocumentSize } from './size'
+import {planPreviews} from './plan-preview'
 export const createProjectSchema = z.object({ document: projectSchema, teamId: id.optional() }).strict()
 
 export function projectRoutes(db: Database, config: Config) {
   const routes = new Hono<ApiEnv>()
+  const preview=planPreviews(db)
+  routes.get('/:projectId/plan-preview',async context=>{
+    const projectId=param(context,'projectId'),result=await preview(context.get('actor'),projectId)
+    const etag=`"plan-${projectId}-${result.revision}"`
+    context.header('Cache-Control','private, no-cache');context.header('ETag',etag)
+    if(context.req.header('If-None-Match')===etag)return context.body(null,304)
+    return context.json(result)
+  })
   routes.post('/', async context => {
     const input = await body(context, createProjectSchema)
     validateDocumentSize(input.document, config.MAX_PROJECT_BYTES)

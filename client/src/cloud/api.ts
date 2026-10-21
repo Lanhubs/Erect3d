@@ -13,7 +13,7 @@ export const api = new SessionApi(origin, { lock: browserLock, actor: () => expe
 export async function capabilities() {
   const response = await fetch(`${origin}/ready`, { credentials: 'omit' })
   if (!response.ok) throw new Error('The cloud service is not ready.')
-  return (await response.json()).capabilities as { privateAssets: boolean; cloudAnalysis: boolean; realtime: boolean }
+  return (await response.json()).capabilities as { privateAssets: boolean; cloudAnalysis: boolean; assistant?:boolean; realtime: boolean }
 }
 export async function paginated<T>(path: string): Promise<T[]> {
   const items: T[] = []; let cursor: string | null = null

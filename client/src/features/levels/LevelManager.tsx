@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import type { Level, Project } from '../../domain/types'
 import { blankLevel, connectAdjacentLevels, duplicateLevel, translateLevel } from '../../domain/levels'
+import {buildingLevelLabel} from '../../domain/storeys'
 import { useProject } from '../../state/project'
 import './levels.css'
 
 type Props = { project: Project; activeId: string; isolateId: string | null; setIsolateId: (id: string | null) => void;
-  underlayId: string | null; setUnderlayId: (id: string | null) => void }
+  underlayId: string | null; setUnderlayId: (id: string | null) => void;embedded?:boolean }
 function LevelRow({ level, active, select, change, remove, duplicate, isolate, isolated }: {
   level: Level; active: boolean; select: () => void; change: (changes: Partial<Level>) => void;
   remove: () => void; duplicate: () => void; isolate: () => void; isolated: boolean
@@ -35,7 +36,7 @@ function LevelRow({ level, active, select, change, remove, duplicate, isolate, i
   </div>
 }
 
-export function LevelManager({ project, activeId, isolateId, setIsolateId, underlayId, setUnderlayId }: Props) {
+export function LevelManager({ project, activeId, isolateId, setIsolateId, underlayId, setUnderlayId,embedded=false }: Props) {
   const readOnly = useProject(state => state.readOnly)
   const building = project.buildings[0], levels = [...building.levels].sort((a, b) => b.elevation - a.elevation)
   const top = building.levels.reduce((highest, level) => level.elevation > highest.elevation ? level : highest)
@@ -78,7 +79,7 @@ export function LevelManager({ project, activeId, isolateId, setIsolateId, under
     if (isolateId === id) setIsolateId(null)
     if (underlayId === id) setUnderlayId(null)
   }
-  return <details className="level-manager"><summary>LEVELS <b>{active.name}</b><span>{active.elevation.toFixed(2)} m · {levels.length} floor{levels.length === 1 ? '' : 's'}</span></summary>
+  return <details open={embedded||undefined} className="level-manager"><summary>LEVELS <b>{active.name}</b><span>{active.elevation.toFixed(2)} m · {buildingLevelLabel(building)}</span></summary>
     <div className="level-manager-body">
       <div className="level-manager-head"><strong>Building levels</strong><button disabled={readOnly} onClick={() => { setIsolateId(null); editProject(copy => {
         copy.buildings[0].levels.forEach(level => { level.visible = true }); return copy }) }}>Show all</button></div>

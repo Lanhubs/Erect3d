@@ -24,6 +24,7 @@ import { realtimeRoutes } from './realtime/routes'
 import { sessionGuard } from './middleware/auth'
 import { memberTraffic } from './middleware/traffic'
 import { templateRoutes } from './modules/templates/routes'
+import {assistantRoutes} from './modules/assistant/routes'
 export function mountRoutes(app:Hono<ApiEnv>,services:Services) {
   const { db,config,limits,store,hub } = services
   app.route('/api/v1/auth',authRoutes(db,config,limits))
@@ -33,6 +34,7 @@ export function mountRoutes(app:Hono<ApiEnv>,services:Services) {
   app.route('/api/v1/users',userRoutes(db))
   app.route('/api/v1/teams',teamRoutes(db))
   app.route('/api/v1/projects',projectRoutes(db,config))
+  app.route('/api/v1/projects',assistantRoutes(services))
   app.route('/api/v1/templates',templateRoutes(db,config))
   app.route('/api/v1/projects',collaborationRoutes(db))
   app.route('/api/v1/projects',versionRoutes(db,config.MAX_PROJECT_BYTES))

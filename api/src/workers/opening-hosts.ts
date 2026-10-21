@@ -1,7 +1,9 @@
 import type {Intelligence,Candidate} from '../contracts/analysis'
+import {bridgeOpeningHosts} from './opening-bridges'
+import {completeGarageOpenings} from './garage-openings'
 type Point={x:number;y:number}
 export function alignOpeningHosts(proposal:Intelligence,width:number,height:number) {
-  const result=structuredClone(proposal),walls=result.candidates.filter(item=>item.kind==='wall' && !item.curve)
+  const result=bridgeOpeningHosts(completeGarageOpenings(proposal,width,height),width,height),walls=result.candidates.filter(item=>item.kind==='wall' && !item.curve)
   const pixel=(p:Point)=>({x:p.x*width,y:p.y*height})
   for(const opening of result.candidates.filter(item=>['door','window','passage'].includes(item.kind) && item.points.length===2)) {
     const points=opening.points.map(pixel),ox=points[1].x-points[0].x,oy=points[1].y-points[0].y,span=Math.hypot(ox,oy)

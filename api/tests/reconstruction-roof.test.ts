@@ -19,6 +19,10 @@ test('disconnected detected rooms receive one envelope roof and retain the user 
  const sections=result.buildings[0].roofSections!
  expect(sections).toHaveLength(1);expect(sections[0].footprint).toHaveLength(4);expect(sections[0].roof.shape).toBe('gable');expect(sections[0].roof.material).toBe('corrugated')
  expect(project.buildings[0].roofSections).toBeUndefined()
+ const level=result.buildings[0].levels[0]
+ expect(level.slabs).toHaveLength(1)
+ expect(level.slabs![0].polygon).toEqual(sections[0].footprint)
+ expect(level.slabs![0].polygon.some(p=>p.x===9&&p.z===1)).toBe(true)
 })
 test('an office without a roof selection gets a coherent provisional hidden roof, and manual roof sections remain intact',()=>{
  const result=buildReconstruction(fixture(),input,'analysis',proposal,proposal.candidates,{width:1000,height:1000},true)

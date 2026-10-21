@@ -3,6 +3,7 @@ import { api, paginated } from './api'
 import { useAccount } from './account'
 import { useProject } from '../state/project'
 import type { CloudSession } from './useCloudProject'
+import {confirmAction} from '../app/ConfirmationHost'
 type Member = { id: string; name: string; role: string }
 type Comment = { id: string; text: string; actor_id: string; resolved_at?: string; anchor: { entityId?: string; levelId?: string } }
 export function CollaborationPanel({ session }: { session: CloudSession }) {
@@ -34,7 +35,7 @@ export function CollaborationPanel({ session }: { session: CloudSession }) {
     <ul>{members.map(member => <li key={member.id}>{member.name} · {member.role}
       {manage && <><select aria-label={`Role for ${member.name}`} value={member.role} disabled={busy} onChange={e => void run(() => api.request(`${path}/members/${member.id}`, 'PUT', { role: e.target.value }))}>
         {['EDITOR','REVIEWER','CLIENT','VIEWER'].map(role => <option key={role}>{role}</option>)}
-      </select><button disabled={busy} onClick={() => { if (confirm(`Remove ${member.name}'s direct project access?`)) void run(() => api.request(`${path}/members/${member.id}`, 'DELETE')) }}>Remove</button></>}
+      </select><button disabled={busy} onClick={() => { void confirmAction(`Remove ${member.name}'s direct project access?`,'Remove access').then(yes=>{if(yes)void run(() => api.request(`${path}/members/${member.id}`, 'DELETE'))}) }}>Remove</button></>}
     </li>)}</ul>
     {manage && <div className="cloud-inline"><label>Existing account ID<input value={accountId} maxLength={128} onChange={e => setAccountId(e.target.value)} /></label>
       <select aria-label="New collaborator role" value={role} onChange={e => setRole(e.target.value)}>{['EDITOR','REVIEWER','CLIENT','VIEWER'].map(role => <option key={role}>{role}</option>)}</select>

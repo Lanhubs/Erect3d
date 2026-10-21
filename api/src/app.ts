@@ -39,7 +39,7 @@ export function createApp(services:Services) {
   app.get('/ready',async context => {
     try {
       await services.readiness.check()
-      return context.json({ status:'ready',capabilities:{ privateAssets:!!store,cloudAnalysis:!!services.provider,realtime:true } })
+      return context.json({ status:'ready',capabilities:{ privateAssets:!!store,cloudAnalysis:!!services.provider,assistant:!!services.editingProvider,realtime:true } })
     } catch { return context.json({ status:'unavailable' },503) }
   })
   mountRoutes(app,services)

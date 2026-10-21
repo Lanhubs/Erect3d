@@ -12,10 +12,13 @@ import { EvidenceControls, type Region } from './EvidenceControls'
 import { RemoteError } from '../../../api/client'
 import {useReconstruction,reconstructionUpdate,reconstructionStarted} from './reconstructionState'
 import {DesignReference} from './DesignReference'
+import {reconstructionContext,sameReconstructionSource} from './reconstructionContext'
+import {useSourceScope} from './useSourceScope'
 export function SourcePanel({ session, available, aiAvailable, reconstructRequest=0 }: { session: CloudSession; available: boolean; aiAvailable: boolean; reconstructRequest?:number }) {
   const project = useProject(state => state.project)!, activeId = useProject(state => state.activeLevelId)
   const readOnly = useProject(state => state.readOnly), record = session.record!, level = activeLevel(project, activeId)
   const source = project.sources.find(source => source.id === level.sourceId)
+  const context=reconstructionContext(project,activeId),scope=useSourceScope(context)
   const building=project.buildings.find(item=>item.levels.some(floor=>floor.id===level.id))!
   const evidence = useLocalEvidence(state => state.evidence)
   const matchingEvidence = evidence?.sourceId === source?.id && sameEvidenceScale(evidence?.calibration, level.calibration) ? evidence : undefined
@@ -26,11 +29,12 @@ export function SourcePanel({ session, available, aiAvailable, reconstructReques
   const [designMode,setDesignMode]=useState<'creative'|'faithful'>('creative')
   const startedRequest=useRef(0)
   const operationRunning=useRef(false)
+  const userStarted=useRef(false)
   const [region, setRegion] = useState<Region>()
   const [savings, setSavings] = useState<StorageSavings[]>([])
   const [autoApply,setAutoApply]=useState(false),[strategy,setStrategy]=useState<'direct'|'detailed'>('direct')
-  const progress=useReconstruction(state=>state.current),pending=progress?.projectId===project.id && progress.status==='pending'
-  const taskKey = `${record.key}/analysis/${source?.id}`
+  const progress=useReconstruction(state=>state.current),pending=sameReconstructionSource(progress,context) && progress?.status==='pending'
+  const taskKey = `${record.key}/analysis/${level.id}/${source?.id}`
   useEffect(() => {
     let alive = true; setAssetId(''); setAnalysisId(''); setError(''); setRegion(undefined); setSavings([])
     setPurpose('rebuild')
@@ -38,7 +42,8 @@ export function SourcePanel({ session, available, aiAvailable, reconstructReques
       sourceLinks(project.id).then(links => { if (alive) setAssetId(links.find(link => link.source_id === source.id)?.raster_asset_id || '') }).catch(error => { if (alive) setError(error.message) })
       getTask<{ analysisId?: string }>(taskKey).then(async task => {
         const recent=await api.request<{analysisId:string}|null>(`/projects/${project.id}/analysis?${new URLSearchParams({sourceId:source.id,levelId:level.id})}`).catch(()=>null) || task
-        if(alive)setAnalysisId(recent?.analysisId || '')
+        if(!alive || userStarted.current)return
+        setAnalysisId(recent?.analysisId || '')
         if(recent?.analysisId && recent.analysisId!==task?.analysisId)await putTask(taskKey,{analysisId:recent.analysisId})
       }).catch(error => { if (alive) setError(error.message) })
       getTask<{ savings?: StorageSavings[] }>(`${record.key}/upload/${source.id}`).then(task => { if (alive) setSavings(task?.savings || []) }).catch(error => { if (alive) setError(error.message) })
@@ -55,29 +60,33 @@ export function SourcePanel({ session, available, aiAvailable, reconstructReques
   const ensureSynced = async () => {
     if (!session.engine) throw new Error('This tab is read only.')
     await session.engine.sync()
+    scope.assertCurrent()
     if (session.engine.state !== 'saved') throw new Error('Sync pending edits or review their conflict first.')
   }
   const run = async (action: () => Promise<void>) => {
     if(operationRunning.current)return 'A source operation is already in progress.'
     operationRunning.current=true
     setBusy(true); setError('')
-    try { await ensureSynced(); await action() } catch (error) {const message=(error as Error).message;setError(message);return message} finally {operationRunning.current=false; setBusy(false) }
+    try { scope.assertCurrent(); await ensureSynced(); await action() } catch (error) {if(scope.current()){const message=(error as Error).message;setError(message);return message}} finally {operationRunning.current=false; if(scope.current())setBusy(false) }
   }
   const analyze = async (selectedAsset=assetId) => {
     if (!source || !level.calibration) throw new Error('Import a plan with automatic or manual scale first.')
     let task = await getTask<{ input: unknown; key: string; analysisId?: string }>(taskKey)
+    scope.assertCurrent()
     if(!task?.analysisId) {
       const recent=await api.request<{analysisId:string}|null>(`/projects/${project.id}/analysis?${new URLSearchParams({sourceId:source.id,levelId:level.id})}`)
+      scope.assertCurrent()
       if(recent?.analysisId)task={input:undefined,key:'',analysisId:recent.analysisId}
     }
     if (task?.analysisId) {
       const result = await api.request<{ status: string;prompt_version?:number;currentPromptVersion?:number;model_revision?:string;options?:{region?:Region;designMode?:string;styleReferenceAssetId?:string};result?:{quality?:{status:string}} }>(`/analysis/${task.analysisId}`)
+      scope.assertCurrent()
       const current=(result.currentPromptVersion===undefined || result.prompt_version===result.currentPromptVersion) && (result.model_revision===undefined || Number(result.model_revision)===session.engine?.record.base.revision)
         && result.options?.styleReferenceAssetId===(designMode==='creative'?building.designReference?.assetId:undefined) && (!result.options?.designMode || result.options.designMode===designMode)
         && (['x','y','width','height'] as const).every(key=>result.options?.region?.[key]===region?.[key])
       if (current && ['pending', 'ready'].includes(result.status) && result.result?.quality?.status!=='blocked') {
         if (result.status==='pending') await api.request(`/analysis/${task.analysisId}/resume`,'POST')
-        reconstructionStarted(project.id,task.analysisId,{status:result.status,job_status:result.status==='pending'?'running':'completed'});setAnalysisId(task.analysisId);return
+        scope.assertCurrent();reconstructionStarted(context,task.analysisId,{status:result.status,job_status:result.status==='pending'?'running':'completed'});setAnalysisId(task.analysisId);return
       }
       task = undefined
     }
@@ -89,13 +98,15 @@ export function SourcePanel({ session, available, aiAvailable, reconstructReques
       await putTask(taskKey, task)
     }
     let result:{ analysisId:string }
+    scope.assertCurrent()
     try { result=await api.request(`/projects/${project.id}/analysis`,'POST',task.input,task.key) }
     catch (error) {
       // A definite validation rejection creates no job. Rebuild the request on retry.
       if (error instanceof RemoteError && error.status>=400 && error.status<500 && error.status!==429) await putTask(taskKey,undefined)
       throw error
     }
-    await putTask(taskKey, { ...task, analysisId: result.analysisId });reconstructionStarted(project.id,result.analysisId,{status:'pending',job_status:'queued'}); setAnalysisId(result.analysisId)
+    if(!scope.current()){await api.request(`/analysis/${result.analysisId}/cancel`,'POST').catch(()=>{});return}
+    await putTask(taskKey, { ...task, analysisId: result.analysisId });scope.assertCurrent();reconstructionStarted(context,result.analysisId,{status:'pending',job_status:'queued'}); setAnalysisId(result.analysisId)
   }
   const freshReview = async () => {
     const result = await api.request<{ status: string }>(`/analysis/${analysisId}`)
@@ -105,17 +116,17 @@ export function SourcePanel({ session, available, aiAvailable, reconstructReques
   }
   const reconstruct=(requested=false)=>{
     if(operationRunning.current || !requested && pending)return
-    setAutoApply(true);useReconstruction.getState().update({projectId:project.id,status:'pending',job_status:'queued',startedAt:Date.now(),message:assetId?'Preparing the reconstruction…':'Uploading the original floor plan…'})
+    scope.assertCurrent();userStarted.current=true;setAutoApply(true);useReconstruction.getState().update({...context,status:'pending',job_status:'queued',startedAt:Date.now(),message:assetId?'Preparing the reconstruction…':'Uploading the original floor plan…'})
     return run(async()=>{
     if (!source) throw new Error('Import a floor plan first.')
     const uploaded=assetId || (await sourceLinks(project.id)).find(link=>link.source_id===source.id)?.raster_asset_id || await uploadPrivateSource(record.key,project.id,source,setSavings)
-    setAssetId(uploaded);reconstructionUpdate(project.id,{status:'pending',job_status:'queued'},undefined,'Reading the original drawing…');await analyze(uploaded)
-    }).then(message=>{if(message)reconstructionUpdate(project.id,{status:'failed',job_status:'failed'},undefined,message)})
+    scope.assertCurrent();setAssetId(uploaded);reconstructionUpdate(context,{status:'pending',job_status:'queued'},undefined,'Reading the original drawing…');await analyze(uploaded)
+    }).then(message=>{if(message)reconstructionUpdate(context,{status:'failed',job_status:'failed'},undefined,message)})
   }
   useEffect(()=>{
     if (!reconstructRequest || startedRequest.current===reconstructRequest) return
     startedRequest.current=reconstructRequest
-    if (!available || !aiAvailable) {const message='Reconstruction needs private storage and a configured Gemini provider.';setError(message);reconstructionUpdate(project.id,{status:'failed',job_status:'failed'},undefined,message);return}
+    if (!available || !aiAvailable) {const message='Reconstruction needs private storage and a configured Gemini provider.';setError(message);reconstructionUpdate(context,{status:'failed',job_status:'failed'},undefined,message);return}
     void reconstruct(true)
   },[reconstructRequest])
   return <section aria-label="Private source and cloud interpretation">
@@ -146,7 +157,7 @@ export function SourcePanel({ session, available, aiAvailable, reconstructReques
       </details><small>Reconstruction sends the plan and any chosen design reference to the configured Gemini provider.</small>
       {analysisId && <details><summary>Start another reconstruction</summary><p>Use changed settings or model edits in a new request.</p>
         <button disabled={busy || readOnly} onClick={() => void run(freshReview)}>Start a fresh review</button></details>}
-      {analysisId && <ProposalReview key={analysisId} analysisId={analysisId} session={session} source={source} autoApply={autoApply} />}
+      {analysisId && <ProposalReview key={analysisId} analysisId={analysisId} session={session} source={source} levelId={level.id} autoApply={autoApply} />}
     </> : <p>Import a plan on this level using the editor’s Import level plan control.</p>}
     {error && <p role="alert" className="error">{error}</p>}
   </section>

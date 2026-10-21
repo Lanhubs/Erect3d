@@ -9,7 +9,7 @@ import {ProviderFailure} from '../modules/ai/provider'
 import {parse} from '../contracts/http'
 import {ApiError} from '../security/errors'
 import {assertLease} from '../jobs/lease'
-import {reconcile} from '../modules/ai/reconcile'
+import {mergeModelRepair} from './merge-model-repair'
 import {buildReconstruction} from '../modules/plan-analysis/reconstruction'
 import {reconstructionScale} from '../modules/plan-analysis/reconstruction-scale'
 import {buildableCandidates,modelQuality,type ModelQuality} from '../modules/plan-analysis/quality'
@@ -28,7 +28,7 @@ export function inspectReconstruction(project:Project,input:AnalysisJob,id:strin
   for(let check=0;check<20;check++){
     try {
       const compiled=buildReconstruction(project,input,id,diagnostic,candidates,dimensions,true)
-      const quality=modelQuality(proposal,compiled,input.levelId)
+      const quality=modelQuality(proposal,compiled,input.levelId,input.calibration.method==='manual',dimensions,['full','fixtures','furniture'].includes(input.options.mode))
       return errors.length?{status:'blocked',issues:[...errors,...quality.issues].slice(0,100)}:quality
     }catch(error){
       const candidate=error instanceof ApiError?candidates.find(item=>error.message.includes(`Review ${item.id}:`)):undefined
@@ -78,10 +78,8 @@ export async function validatedReconstruction(db:Database,config:Config,job:Job,
         await tx`UPDATE ai_calls SET usage=${response.usage || {}}::jsonb WHERE id=${callId}`
       })
     }
-    // The original envelope remains authoritative during validation repair.
     const scale=reconstructionScale(input,proposal,source.width,source.height)
-    proposal=reconcile([],[proposal,{...repaired,designs:[]}],input.options.mode,
-      {...dimensions,metresPerPixel:scale.calibration.metresPerPixel},[])
+    proposal=mergeModelRepair(proposal,repaired,quality,input.options.mode,{...dimensions,metresPerPixel:scale.calibration.metresPerPixel})
     proposal=alignOpeningHosts(await sourceEnvelope(proposal,source.bytes),source.width,source.height)
     quality=inspectReconstruction(project,input,job.id,proposal,dimensions)
   }

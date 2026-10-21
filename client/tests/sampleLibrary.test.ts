@@ -4,7 +4,7 @@ import { createSampleLibrary } from '../src/domain/sampleLibrary'
 
 test('sample library offers building projects without retired sports templates', () => {
   const samples = createSampleLibrary()
-  expect(samples.map(sample => sample.id)).toEqual(['furnished-house', 'house', 'villa', 'apartment', 'office', 'mall', 'public'])
+  expect(samples.map(sample => sample.id)).toEqual(['furnished-house', 'house', 'villa', 'apartment', 'office', 'asterion-tower', 'mall', 'public'])
   expect(new Set(samples.map(sample => sample.category))).toEqual(new Set(['Residential', 'Commercial', 'Public']))
   for (const sample of samples) {
     const project = normalizeProject(sample.project)

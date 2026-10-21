@@ -3,8 +3,8 @@ import { uid, type ArchitecturalDetail, type Level, type Selection } from '../..
 import { useProject } from '../../state/project'
 
 const kinds: ArchitecturalDetail['kind'][] = ['railing', 'screen', 'fin', 'canopy', 'parapet', 'pergola', 'arch']
-export function ArchitecturalDetailsPanel({ level, select }: { level: Level; select: (selection: Selection) => void }) {
-  const [open, setOpen] = useState(false), [kind, setKind] = useState<ArchitecturalDetail['kind']>('railing')
+export function ArchitecturalDetailsPanel({ level, select,embedded=false }: { level: Level; select: (selection: Selection) => void;embedded?:boolean }) {
+  const [open, setOpen] = useState(embedded), [kind, setKind] = useState<ArchitecturalDetail['kind']>('railing')
   const editProject = useProject(state => state.editProject)
   const add = () => {
     const wall = level.walls.find(item => item.kind === 'exterior') || level.walls[0]

@@ -1,15 +1,22 @@
-import type { Level } from '../domain/types'
-import { furnitureParts } from './assets'
-import type { SoftwareFace } from '../rendering/softwareDetails'
-import type { Vertex } from '../geometry/roof'
-export function softwareFurniture(level: Level): SoftwareFace[] {
-  return (level.furniture || []).flatMap(object => furnitureParts(object).flatMap((part, index) => {
-    const angle = object.rotation * Math.PI / 180
-    const vertex = (x: number, y: number, z: number): Vertex => [object.position.x + x * Math.cos(angle) - z * Math.sin(angle), y, object.position.z + x * Math.sin(angle) + z * Math.cos(angle)]
-    const [x, y, z] = part.at, [w, h, d] = part.size
-    const corners = [-1, 1].flatMap(a => [-1, 1].flatMap(b => [-1, 1].map(c => vertex(x + a * w / 2, y + b * h / 2, z + c * d / 2))))
-    return [[0, 1, 3, 2], [1, 3, 7, 5], [2, 3, 7, 6]].map((face, i) => { const vertices = face.map(j => corners[j])
-      return { key: `${object.id}:${index}:${i}`, vertices, fill: part.color, stroke: '#827e72', depth: vertices.reduce((sum, p) => sum + p[0] + p[2], 0) / 4,
-        select: { kind: 'furniture' as const, id: object.id } } })
-  }))
+import {Vector3,type BufferGeometry} from 'three'
+import type {Level} from '../domain/types'
+import {furnitureParts} from './assets'
+import {furnitureGeometry,geometryKey} from './geometry'
+import {partTransform} from './partTransform'
+import type {SoftwareFace} from '../rendering/softwareDetails'
+import type {Vertex} from '../geometry/roof'
+export function softwareFurniture(level:Level):SoftwareFace[]{
+ const cache=new Map<string,BufferGeometry>(),faces:SoftwareFace[]=[]
+ for(const object of level.furniture||[])for(const [partIndex,part] of furnitureParts(object).entries()){
+  const key=geometryKey(part)
+  if(!cache.has(key))cache.set(key,furnitureGeometry(part.shape,part.size,part.finish==='fabric',true))
+  const geometry=cache.get(key)!,positions=geometry.getAttribute('position'),indices=geometry.index,matrix=partTransform(object,part)
+  const vertex=(i:number):Vertex=>new Vector3().fromBufferAttribute(positions,indices?indices.getX(i):i).applyMatrix4(matrix).toArray() as Vertex
+  for(let i=0;i<(indices?.count||positions.count);i+=3){
+   const vertices=[vertex(i),vertex(i+1),vertex(i+2)]
+   faces.push({key:`${object.id}:${partIndex}:${i}`,vertices,fill:part.color,depth:vertices.reduce((sum,p)=>sum+p[0]+p[2],0)/3,select:{kind:'furniture',id:object.id}})
+  }
+ }
+ cache.forEach(g=>g.dispose())
+ return faces
 }

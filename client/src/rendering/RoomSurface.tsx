@@ -1,3 +1,4 @@
+import {SharedStandardMaterial} from './SharedStandardMaterial'
 import { useMemo } from 'react'
 import { DoubleSide } from 'three'
 import type { Point, Room, Selection } from '../domain/types'
@@ -44,10 +45,10 @@ function SportsFloorDetails({ room }: { room: Room }) {
         <Marking start={p(boxMaxX, centerZ + depth * .24)} end={p(boxMinX, centerZ + depth * .24)} thickness={.09} />
         <Marking start={p(x, centerZ - 3.66)} end={p(x, centerZ + 3.66)} thickness={.1} />
         {[-3.66, 3.66].map(z => <mesh key={z} position={[goalX, .4, centerZ + z]}>
-          <boxGeometry args={[.12, .8, .12]} /><meshStandardMaterial color="#d7ded0" metalness={.42} roughness={.45} />
+          <boxGeometry args={[.12, .8, .12]} /><SharedStandardMaterial color="#d7ded0" metalness={.42} roughness={.45} />
         </mesh>)}
         <mesh position={[goalX, .8, centerZ]}><boxGeometry args={[.12, .12, 7.32]} />
-          <meshStandardMaterial color="#d7ded0" metalness={.42} roughness={.45} /></mesh>
+          <SharedStandardMaterial color="#d7ded0" metalness={.42} roughness={.45} /></mesh>
         <mesh position={[innerX, .07, centerZ]}><cylinderGeometry args={[.12, .12, .025, 12]} />
           <meshBasicMaterial color={marking} /></mesh>
       </group>
@@ -60,9 +61,9 @@ function SportsFloorDetails({ room }: { room: Room }) {
       <Marking start={p(x + 2.9, centerZ + 1.7)} end={p(x - 2.9, centerZ + 1.7)} thickness={.06} />
       <Marking start={p(x - 2.9, centerZ + 1.7)} end={p(x - 2.9, centerZ - 1.7)} thickness={.06} />
       <mesh position={[x, .79, centerZ]} castShadow><boxGeometry args={[2.74, .08, 1.525]} />
-        <meshStandardMaterial color="#286c78" roughness={.62} /></mesh>
+        <SharedStandardMaterial color="#286c78" roughness={.62} /></mesh>
       <mesh position={[x, .84, centerZ]}><boxGeometry args={[2.74, .015, .035]} /><meshBasicMaterial color="#f8f5ec" /></mesh>
-      <mesh position={[x, .91, centerZ]}><boxGeometry args={[.025, .14, 1.55]} /><meshStandardMaterial color="#ddd9cb" /></mesh>
+      <mesh position={[x, .91, centerZ]}><boxGeometry args={[.025, .14, 1.55]} /><SharedStandardMaterial color="#ddd9cb" /></mesh>
     </group>)}
     <mesh position={[centerX, .065, minZ + .65]}><boxGeometry args={[width * .72, .025, .08]} /><meshBasicMaterial color="#f5f2e7" /></mesh>
   </group>
@@ -79,8 +80,9 @@ export function RoomSurface({ room, ceiling, select, openings = [] }: { room: Ro
     onPointerOut={() => { if (!ceiling) { const canvas = document.querySelector<HTMLCanvasElement>('.viewer canvas'); if (canvas) canvas.style.cursor = '' } }}
     onClick={event => { if (!ceiling && select) { event.stopPropagation(); select({ kind: 'room', id: room.id }) } }}>
     <shapeGeometry args={[shapes]} />
-    {ceiling ? <meshStandardMaterial color="#e8e5dd" roughness={.96} side={DoubleSide} />
-      : <meshStandardMaterial color={basketball?'#e4c797':specialFloor ? room.category === 'football-pitch' ? '#4c8850' : '#72866a' : '#ffffff'}
+    {ceiling ? <SharedStandardMaterial color="#e8e5dd" roughness={.96} side={DoubleSide} />
+      : <SharedStandardMaterial color={basketball?'#e4c797':specialFloor ? room.category === 'football-pitch' ? '#4c8850' : '#72866a' : '#ffffff'}
+        polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-4}
         map={basketball?floorTexture('timber'):specialFloor ? undefined : floorTexture(room.material)} roughness={basketball ? .48 : specialFloor ? .94 : materialRoughness[room.material]}
         side={DoubleSide} />}
   </mesh>{!ceiling && specialFloor && <SportsFloorDetails room={room} />}</group>

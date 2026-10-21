@@ -1,19 +1,22 @@
-import { useState } from 'react'
+import { useRef,useState } from 'react'
+import {useOverlay} from '../app/useOverlay'
+import {confirmAction} from '../app/ConfirmationHost'
 import { documentChanges } from '../../../api/client'
 import { atPath, downloadDocument } from './changes'
 import type { SyncEngine } from './engine'
 export function ConflictReview({ engine, close }: { engine: SyncEngine; close: () => void }) {
+  const ref=useRef<HTMLDivElement>(null);useOverlay(ref,true,close)
   const { base, draft, conflict } = engine.record
   const changes = documentChanges(base.document, draft)
   const [selected, setSelected] = useState(() => changes.map(change => JSON.stringify(atPath(base.document, change.path)) === JSON.stringify(atPath(conflict!.document, change.path))))
   const [busy, setBusy] = useState(false), [error, setError] = useState('')
   const apply = async (discard = false) => {
-    if (discard && !confirm('Discard this device draft and load the server version? Export a copy first if you need it.')) return
+    if (discard && !await confirmAction('Discard this device draft and load the server version? Export a copy first if you need it.','Use server version')) return
     setBusy(true); setError('')
     try { await engine.resolve(discard ? [] : changes.filter((_, index) => selected[index])); if (!engine.record.conflict) close() }
     catch (error) { setError((error as Error).message) } finally { setBusy(false) }
   }
-  return <div className="cloud-modal" role="dialog" aria-modal="true" aria-labelledby="conflict-title">
+  return <div ref={ref} className="cloud-modal" role="dialog" aria-modal="true" aria-labelledby="conflict-title">
     <div className="cloud-dialog"><header><h2 id="conflict-title">Review revision conflict</h2><button onClick={close} aria-label="Close conflict review">×</button></header>
       <p>Your device started at revision {base.revision}; the server is at {conflict?.revision}. Unchanged server fields are selected below. Select an overlapping field only if you intend to replace it.</p>
       <button onClick={() => downloadDocument(draft)}>Export full device draft</button>

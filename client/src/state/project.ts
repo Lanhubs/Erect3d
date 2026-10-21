@@ -41,7 +41,11 @@ export const useProject = create<State>((set, get) => ({
     if (JSON.stringify(state.project)!==JSON.stringify(project)) state.setProject(input)
     else set({snapshotFingerprint:fingerprint})
   },
-  replaceDocument: project => { if (!get().readOnly) get().editProject(() => project) },
+  replaceDocument: project => {
+    if (get().readOnly) return
+    get().editProject(() => project)
+    set({ selection: null, tool: 'select' })
+  },
   rememberAccepted: before => {
     const state = get()
     if (!state.readOnly && state.project?.id === before.id && !state.previewBase) {

@@ -2,11 +2,13 @@ import {useEffect,useState,useRef,useId} from 'react'
 import {FiCheckCircle,FiClock,FiMoreHorizontal,FiX,FiAlertCircle} from 'react-icons/fi'
 import {api} from './api'
 import {analysisStatus} from './analysisStatus'
-import {useReconstruction,reconstructionUpdate} from './reconstructionState'
-export function ReconstructionProgress({projectId,details}:{projectId:string;details:()=>void}) {
+import {useReconstruction,reconstructionUpdate,reconstructionPhase} from './reconstructionState'
+import {currentReconstructionSource,sameReconstructionSource,type ReconstructionContext} from './reconstructionContext'
+export function ReconstructionProgress({context,details}:{context:ReconstructionContext;details:()=>void}) {
   const current=useReconstruction(state=>state.current),[,tick]=useState(0),[error,setError]=useState('')
   const [expanded,setExpanded]=useState(false),element=useRef<HTMLElement>(null),panelId=useId()
-  const state=current?.projectId===projectId?current:undefined,pending=state?.status==='pending'
+  const state=sameReconstructionSource(current,context)?current:undefined,pending=state?.status==='pending'
+  useEffect(()=>{setExpanded(false);setError('')},[context.projectId,context.levelId,context.sourceId])
   useEffect(()=>{if(!pending)return;const timer=setInterval(()=>tick(value=>value+1),1000);return()=>clearInterval(timer)},[pending])
   useEffect(()=>{
     if(!expanded)return
@@ -15,8 +17,8 @@ export function ReconstructionProgress({projectId,details}:{projectId:string;det
     return()=>{document.removeEventListener('pointerdown',dismiss);document.removeEventListener('keydown',dismiss)}
   },[expanded])
   if(!state)return null
-  const phase=state.message?.startsWith('Uploading')?0:pending?1:state.status==='accepted'?3:2
-  const cancel=async()=>{try{await api.request(`/analysis/${state.analysisId}/cancel`,'POST');reconstructionUpdate(projectId,{status:'cancelled',job_status:'cancelled'},state.analysisId)}catch(cause){setError((cause as Error).message)}}
+  const phase=reconstructionPhase(state,state.message)
+  const cancel=async()=>{try{await api.request(`/analysis/${state.analysisId}/cancel`,'POST');reconstructionUpdate(context,{status:'cancelled',job_status:'cancelled'},state.analysisId)}catch(cause){if(currentReconstructionSource(context))setError((cause as Error).message)}}
   const message=state.message || analysisStatus(state),elapsed=Math.floor((Date.now()-state.startedAt)/1000)
   const Icon=pending?FiClock:state.status==='accepted'?FiCheckCircle:FiAlertCircle
   const action=pending?'Show details':state.status==='accepted'?'Model details':'Review result'

@@ -18,12 +18,12 @@ export const compactReconstruction=z.object({
   walls:z.array(z.object({...entity,thickness:z.number().positive().max(.1).optional(),wallKind:z.enum(['exterior','interior','partition']).optional(),curve:curve.optional()}).strict()).max(1000),
   wallRefs:z.array(z.number().int().nonnegative().max(1999)).max(1000).optional(),
   strokeLabels:z.record(z.string(),z.string().regex(/^[012]*$/)),
-  openings:z.array(z.object({...entity,kind:z.enum(['door','window','passage']),wallId:z.string().min(1).optional(),wallRef:z.number().int().nonnegative().max(1999).optional(),doorStyle:z.enum(['flush','panel','glazed','double']).optional(),doorLeafStyle:z.enum(['flush','panel','glazed']).optional(),hinge:z.enum(['left','right']).optional(),swing:z.enum(['in','out']).optional(),windowType:z.enum(['fixed','casement','sliding']).optional(),windowConstruction:windowConstructionSchema.optional()}).strict()).max(500),
+  openings:z.array(z.object({...entity,kind:z.enum(['door','window','passage']),wallId:z.string().min(1).optional(),wallRef:z.number().int().nonnegative().max(1999).optional(),doorStyle:z.enum(['flush','panel','glazed','double','sectional']).optional(),doorLeafStyle:z.enum(['flush','panel','glazed']).optional(),hinge:z.enum(['left','right']).optional(),swing:z.enum(['in','out']).optional(),windowType:z.enum(['fixed','casement','sliding']).optional(),windowConstruction:windowConstructionSchema.optional()}).strict()).max(500),
   windows:z.array(z.object({...entity,wallId:z.string().min(1).optional(),wallRef:z.number().int().nonnegative().max(1999).optional(),windowType:z.enum(['fixed','casement','sliding']).optional(),windowConstruction:windowConstructionSchema.optional()}).strict()).max(500).optional(),
   rooms:z.array(z.object({...entity,name:z.string().max(200),roomCategory:z.enum(['basketball-court','football-pitch','table-tennis-hall']).optional()}).strict()).max(200),
   columns:z.array(z.object({...entity,columnShape:z.enum(['rectangular','circular']).optional()}).strict()).max(200),
   stairs:z.array(z.object({...entity,stairForm:z.enum(['straight','L','U']).optional(),reverse:z.boolean().optional()}).strict()).max(100),
-  fixtures:z.array(z.object({...entity,type:z.enum(furnitureTypes)}).strict()).max(200),warnings:z.array(z.string().max(1000)).max(40),
+  fixtures:z.array(z.object({...entity,type:z.enum(furnitureTypes),furnitureRotation:z.number().min(-360).max(360).optional(),furnitureVariant:z.string().max(80).optional(),heightMetres:z.number().positive().max(10).optional()}).strict()).max(200),warnings:z.array(z.string().max(1000)).max(40),
 }).strict()
 const imagePoint=([x,y]:[number,number])=>({x,y})
 export function expandReconstruction(value:unknown,measurements:Candidate[]=[]) {

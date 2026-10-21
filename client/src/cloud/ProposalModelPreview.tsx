@@ -6,6 +6,8 @@ import { activeLevel } from '../domain/types'
 import { convertProposal } from '../intelligence/convertProposal'
 import { applyDesigns } from '../intelligence/designCompletion'
 import { api } from './api'
+import {createPortal} from 'react-dom'
+import {useOverlay} from '../app/useOverlay'
 type ServerRequest={analysisId:string;baseRevision:number;candidateIds:string[];edits:Candidate[];allowConfirmedIds:string[];designIds:string[];replaceLevel:boolean}
 const Viewer = lazy(() => import('../rendering/Viewer').then(module => ({ default: module.Viewer })))
 export function ProposalModelPreview({ project, levelId, source, candidates, designs,serverRequest,serverOnly,acceptedModel,apply,canApply,applying,applyError,onValidated,autoOpen=true }: { project: Project; levelId: string;
@@ -13,6 +15,7 @@ export function ProposalModelPreview({ project, levelId, source, candidates, des
   apply?:()=>Promise<boolean>;canApply?:boolean;applying?:boolean;applyError?:string;onValidated?:(valid:boolean)=>void;autoOpen?:boolean }) {
   const [open, setOpen] = useState(Boolean(serverOnly && serverRequest && autoOpen)), [enhanced, setEnhanced] = useState(true), [roof, setRoof] = useState(!serverOnly || designs.length>0)
   const dialog = useRef<HTMLElement>(null), trigger = useRef<HTMLButtonElement>(null)
+  useOverlay(dialog,open,()=>setOpen(false))
   const [serverModel,setServerModel]=useState<Project>(),[serverError,setServerError]=useState('')
   const requestKey=serverRequest?JSON.stringify(serverRequest):''
   useEffect(()=>{
@@ -24,11 +27,6 @@ export function ProposalModelPreview({ project, levelId, source, candidates, des
       .then(result=>{if(alive){setServerModel(result.document);onValidated?.(true)}}).catch(error=>{if(alive){setServerError(error.message);onValidated?.(false)}})
     return ()=>{alive=false}
   },[open,requestKey])
-  useEffect(() => {
-    if (!open) return
-    dialog.current?.querySelector<HTMLButtonElement>('button')?.focus()
-    return () => { trigger.current?.focus() }
-  }, [open])
   const preview = useMemo(() => {
     const level = activeLevel(project, levelId)
     if (!open || !level.calibration || serverOnly) return { project, issue: '' }
@@ -42,7 +40,7 @@ export function ProposalModelPreview({ project, levelId, source, candidates, des
   const displayed = enhanced ? serverOnly?acceptedModel || serverModel || project:preview.project : project
   const building = displayed.buildings.find(building => building.levels.some(level => level.id === levelId))!
   return <><button ref={trigger} onClick={() => setOpen(true)}>Compare current / proposed 3D</button>
-    {open && <div className="cloud-modal"><section ref={dialog} className="cloud-dialog cloud-model-dialog" role="dialog" aria-modal="true" aria-label="Current and proposed model preview"
+    {open && createPortal(<div className="cloud-modal"><section ref={dialog} className="cloud-dialog cloud-model-dialog" role="dialog" aria-modal="true" aria-label="Current and proposed model preview"
       onKeyDown={event => {
         if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); setOpen(false) }
         if (event.key === 'Tab') {
@@ -62,6 +60,6 @@ export function ProposalModelPreview({ project, levelId, source, candidates, des
         selection={null} select={() => {}} roofShown={roof} setRoofShown={setRoof} presentation /></Suspense></div>
       }
       {apply && <button className="primary" disabled={!canApply || applying || Boolean(serverError) || serverOnly && !serverModel} onClick={()=>void apply().then(applied=>{if(applied)setOpen(false)})}>{applying?'Applying reconstruction…':'Apply reconstruction to this floor'}</button>}
-    </section></div>}
+    </section></div>,document.body)}
   </>
 }

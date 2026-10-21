@@ -8,7 +8,8 @@ import type { RendererChoice } from './graphicsRenderer'
 import type {GraphicsSnapshot} from './GraphicsRuntime'
 import './graphicsBenchmark.css'
 import type {Project} from '../domain/types'
-const qaModels=(import.meta.env.DEV?import.meta.glob('../../.local/five-storey-reconstruction.json',{eager:true,import:'default'}):{}) as Record<string,Project>
+import {furnitureValidationScene} from '../furniture/validationScene'
+const qaModels=(import.meta.env.DEV?import.meta.glob(['../../.local/five-storey-reconstruction.json','../../.local/png-analysis-verification.json'],{eager:true,import:'default'}):{}) as Record<string,Project>
 const comparisonScenes=['house','villa','apartment','office','mall','tower-32','tower-256']
 
 export default function GraphicsBenchmark() {
@@ -16,10 +17,13 @@ export default function GraphicsBenchmark() {
   const scenes = useMemo(() => {
     return [...createSampleLibrary(),...buildingValidationSamples(),{id:'tower-32',title:'32-storey linked office tower',project:towerValidationSample()},
       {id:'tower-256',title:'256-storey linked office stress fixture',project:towerValidationSample(256)},
-      ...Object.values(qaModels).map(project=>({id:'source-office',title:'Original office PDF · ground-floor reconstruction',project}))]
+      {id:'furniture-study',title:'Authored furniture studio · geometry check',project:furnitureValidationScene()},
+      ...Object.entries(qaModels).map(([path,project])=>({id:path.includes('png-analysis')?'source-mansion':'source-office',title:path.includes('png-analysis')?'Original mansion PNG · reconstruction check':'Original office PDF · ground-floor reconstruction',project}))]
   }, [])
   const [sceneId, setSceneId] = useState(query.get('scene') || 'house'), [renderer, setRenderer] = useState<RendererChoice>(query.get('renderer')==='auto'?'auto':'webgl')
   const [optimized, setOptimized] = useState(query.get('optimized')==='1'), [roof, setRoof] = useState(true)
+  const [tracing,setTracing]=useState(query.get('trace')==='orbit'),[traceSamples,setTraceSamples]=useState<GraphicsSnapshot[]>([])
+  const traceStart=useRef(performance.now())
   const [run,setRun]=useState(-1),[results,setResults]=useState<{scene:string;variant:string;stats:GraphicsSnapshot|null;status:string}[]>([])
   const timing=useRef({started:0,samples:[] as GraphicsSnapshot[],finished:false})
   const [caseScenes,setCaseScenes]=useState(comparisonScenes)
@@ -28,7 +32,9 @@ export default function GraphicsBenchmark() {
   const selectedScene = scenes.find(scene => scene.id === sceneId) || scenes.find(scene=>scene.id==='house')!
   const project = useProject(state => state.project), selection = useProject(state => state.selection)
   const select = useProject(state => state.setSelection), activeLevel = useProject(state => state.activeLevelId)
-  useEffect(() => { useProject.getState().setProject(structuredClone(selectedScene.project)) }, [selectedScene])
+  useEffect(() => {
+    useProject.getState().setProject(structuredClone(selectedScene.project))
+  }, [selectedScene])
   useEffect(()=>{
     if(run<0 || run>=cases.length)return
     const item=cases[run];setSceneId(item.scene);setRenderer(item.renderer);setOptimized(item.optimized)
@@ -42,6 +48,7 @@ export default function GraphicsBenchmark() {
     return()=>clearTimeout(timer)
   },[run,cases])
   const report=(stats:GraphicsSnapshot)=>{
+    if(tracing&&performance.now()-traceStart.current>5000){setTraceSamples(samples=>[...samples,stats]);if(traceSamples.length>=5)setTracing(false)}
     if(run<0 || run>=cases.length || timing.current.finished || performance.now()-timing.current.started<5000)return
     const samples=timing.current.samples;samples.push(stats)
     if(samples.length<3)return
@@ -59,14 +66,18 @@ export default function GraphicsBenchmark() {
       <label>Renderer<select aria-label="Benchmark renderer" value={renderer} onChange={event => setRenderer(event.target.value as RendererChoice)}>
         <option value="webgl">Existing WebGL baseline</option><option value="auto">WebGPU preferred</option><option value="webgl2">Modern WebGL2 fallback</option></select></label>
       <label><input type="checkbox" checked={optimized} onChange={event => setOptimized(event.target.checked)}/> Optimized batches</label>
+      {project.buildings[0].levels.length>1&&<label>Level<select aria-label="Benchmark level" value={activeLevel||project.buildings[0].levels[0].id}
+        onChange={event=>useProject.getState().setActiveLevel(event.target.value)}>{project.buildings[0].levels.map(level=><option key={level.id} value={level.id}>{level.name}</option>)}</select></label>}
       <button onClick={()=>{setCaseScenes(comparisonScenes);setResults([]);setRun(0)}} disabled={run>=0 && run<cases.length}>Run scene comparison</button>
       <button onClick={()=>{setCaseScenes([sceneId]);setResults([]);setRun(0)}} disabled={run>=0&&run<cases.length}>Compare current scene</button>
       <button onClick={()=>setRun(-1)} disabled={run<0 || run>=cases.length}>Stop benchmark</button>
+      <button onClick={()=>{traceStart.current=performance.now();setTraceSamples([]);setTracing(value=>!value)}}>{tracing?'Stop navigation trace':'Record navigation trace'}</button>
       <span>{run>=0?`${Math.min(run, cases.length)} / ${cases.length} comparisons`:''}</span>
       <p>Identical scene, camera and viewport. Continuous frames during comparisons; idle previews rest. CPU measures submission time, not GPU time.</p>
     </header>
     <Viewer key={project.id} building={project.buildings[0]} activeLevelId={activeLevel || project.buildings[0].levels[0].id}
-      selection={selection} select={select} roofShown={roof} setRoofShown={setRoof} benchmark={{renderer,optimized,report,continuous:run>=0 && run<cases.length}}/>
+      selection={selection} select={select} roofShown={roof} setRoofShown={setRoof} benchmark={{renderer,optimized,report,minimal:query.get('minimal')==='1',probe:tracing,continuous:tracing||run>=0 && run<cases.length}}/>
+    {!!traceSamples.length&&<details open className="benchmark-results"><summary>Fixed-quality navigation trace</summary><output aria-label="Navigation trace">{JSON.stringify(traceSamples)}</output></details>}
     {!!results.length && <details className="benchmark-results"><summary>Benchmark results ({results.length})</summary><output aria-label="Benchmark results">{JSON.stringify(results,null,2)}</output></details>}
   </main>
 }

@@ -7,11 +7,30 @@ import { CloudTools } from './CloudTools'
 import { ConflictReview } from './ConflictReview'
 import {WorkspaceDock} from './WorkspaceDock'
 import {useReconstruction} from './reconstructionState'
+import {reconstructionContext,sameReconstructionSource} from './reconstructionContext'
+import {api} from './api'
+import {useAssistant} from './useAssistant'
+import {AssistantDialog,AssistantPreviewBar} from './AssistantDialog'
 export function CloudWorkspace({ user, projectId, navigate }: { user: User; projectId: string; navigate: (path: string) => void }) {
   const session = useCloudProject(user, projectId), project = useProject(state => state.project)
   const [tools, setTools] = useState(false), [conflict, setConflict] = useState(false), [error, setError] = useState('')
-  const [reconstructRequest,setReconstructRequest]=useState(0)
-  const reconstruction=useReconstruction(state=>state.current),reconstructing=reconstruction?.projectId===projectId && reconstruction.status==='pending'
+  const [chat,setChat]=useState(false),[preview,setPreview]=useState(false),[proposed,setProposed]=useState(true)
+  const assistant=useAssistant(user.id,projectId,session,chat)
+  const previewDocument=preview&&!assistant.stale&&assistant.thread.run?.status==='ready'?assistant.thread.run.proposal?.document:undefined
+  useEffect(()=>{if(preview&&!previewDocument)setPreview(false)},[preview,previewDocument])
+  const [request,setRequest]=useState({token:0,projectId:'',levelId:'',sourceId:''})
+  const activeId=useProject(state=>state.activeLevelId),context=project?reconstructionContext(project,activeId):undefined
+  const reconstructRequest=sameReconstructionSource(context,request)?request.token:0
+  const reconstruction=useReconstruction(state=>state.current),reconstructing=sameReconstructionSource(reconstruction,context) && reconstruction?.status==='pending'
+  useEffect(()=>{
+    if(!context || !reconstruction || sameReconstructionSource(reconstruction,context))return
+    const floor=project?.buildings.flatMap(building=>building.levels).find(level=>level.id===reconstruction.levelId)
+    if(project?.id===reconstruction.projectId && floor?.sourceId!==reconstruction.sourceId && reconstruction.status==='pending' && reconstruction.analysisId) {
+      void api.request(`/analysis/${reconstruction.analysisId}/cancel`,'POST').catch(()=>{})
+    }
+    if(useReconstruction.getState().current===reconstruction)useReconstruction.getState().clear()
+  },[context?.projectId,context?.levelId,context?.sourceId,reconstruction])
+  const resetRequest=()=>setRequest(previous=>({...previous,token:0}))
   const generation = useAccount(state => state.generation)
   const [offlineReady,setOfflineReady]=useState(false)
   useEffect(()=>{
@@ -25,15 +44,19 @@ export function CloudWorkspace({ user, projectId, navigate }: { user: User; proj
   }
   if (!project || !session.record) return <main className="cloud-page"><button onClick={() => navigate('/projects')}>Projects</button><p role={session.error ? 'alert' : 'status'}>{session.error || 'Opening project…'}</p><button onClick={() => window.location.reload()}>Retry</button></main>
   return <div className="cloud-workspace" key={generation}>
-    <Workspace project={project} back={() => { void back() }} reconstructing={reconstructing}
+    <Workspace project={previewDocument&&proposed?previewDocument:project} back={() => { void back() }} reconstructing={reconstructing}
+      assistant={()=>setChat(value=>!value)} assistantOpen={chat} previewing={!!previewDocument}
+      previewControls={previewDocument&&<AssistantPreviewBar assistant={assistant} proposed={proposed} toggle={setProposed} close={()=>setPreview(false)} chat={()=>setChat(true)}/>}
       statusContent={<WorkspaceDock session={session} projectId={projectId} offlineReady={offlineReady} error={error || session.error}
         onError={setError} reviewConflict={()=>setConflict(true)} toolsOpen={tools}
-        toggleTools={()=>{setReconstructRequest(0);setTools(value=>!value)}} showDetails={()=>setTools(true)}/>}
+        toggleTools={()=>{resetRequest();setTools(value=>!value)}} showDetails={()=>setTools(true)}/>}
       onBackendAnalysis={()=>{
-      const current=useReconstruction.getState().current;if(current?.projectId===projectId && current.status==='pending')return
-      useReconstruction.getState().update({projectId,status:'pending',job_status:'queued',startedAt:Date.now(),message:'Preparing your floor plan…'});setReconstructRequest(value=>value+1)
+      if(!context?.sourceId)return
+      const current=useReconstruction.getState().current;if(sameReconstructionSource(current,context) && current?.status==='pending')return
+      useReconstruction.getState().update({...context,status:'pending',job_status:'queued',startedAt:Date.now(),message:'Preparing your floor plan…'});setRequest(previous=>({...context,token:previous.token+1}))
     }} />
-    <CloudTools session={session} open={tools} reconstructRequest={reconstructRequest} close={() => {setReconstructRequest(0);setTools(false)}} />
+    <CloudTools session={session} open={tools} reconstructRequest={reconstructRequest} close={() => {resetRequest();setTools(false)}} />
+    <AssistantDialog assistant={assistant} open={chat} close={()=>setChat(false)} preview={()=>{useProject.getState().setTool('select');setChat(false);setProposed(true);setPreview(true)}}/>
     {conflict && session.engine && session.record.conflict && <ConflictReview key={session.record.conflict.revision} engine={session.engine} close={() => setConflict(false)} />}
   </div>
 }

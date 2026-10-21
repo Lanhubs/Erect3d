@@ -5,6 +5,8 @@ import { furnitureTypes } from '../furniture/types'
 import { ProposalError as ApiError } from './errors'
 import {projectOpening} from '../geometry/openingProjection'
 import {constructionAssumptions} from './constructionAssumptions'
+import {candidateFurniture} from './candidateFurniture'
+import {roomFinish} from './roomFinish'
 
 import { enclosedSpaces } from '../geometry/roomTopology'
 import { newSlab } from '../domain/levels'
@@ -29,7 +31,7 @@ export function convertProposal(project: Project, input: AnalysisInput, analysis
   const record = (id: string,candidate:Candidate) => {
     document.interpretation ||= {}
     const previous=document.interpretation[id]
-    document.interpretation[id] = { ...(previous || { origin: 'detected', confirmedFields: [] }), sourceId: input.sourceId, analysisId,
+    document.interpretation[id] = { ...(previous || { origin: candidate.origin||'detected', confirmedFields: [] }), sourceId: input.sourceId, analysisId,candidateId:candidate.id,
       inferredFields:constructionAssumptions(candidate).filter(field=>!previous?.confirmedFields.includes(field)),evidence:candidate.evidence,assumptions:candidate.uncertainties }
   }
   for (const candidate of chosen.filter(candidate => candidate.kind === 'wall')) {
@@ -74,7 +76,7 @@ export function convertProposal(project: Project, input: AnalysisInput, analysis
       appendOpening(level, candidate, points, hostMap, id)
     } else if (candidate.kind === 'room') {
       const existing = level.rooms.find(room => room.id === id)
-      const room = { material: candidate.roomCategory==='basketball-court'?'timber' as const:'tile' as const, ...existing, id, name: candidate.label || existing?.name || 'Reviewed space', polygon: points,
+      const room = { material: candidate.roomCategory==='basketball-court'?'timber' as const:roomFinish(candidate.label), ...existing, id, name: candidate.label || existing?.name || 'Reviewed space', polygon: points,
         ...(candidate.roomCategory?{category:candidate.roomCategory}:{}) }
       if (existing) level.rooms[level.rooms.indexOf(existing)] = room; else level.rooms.push(room)
     } else if (candidate.kind === 'column' || candidate.kind === 'furniture') {
@@ -90,8 +92,7 @@ export function convertProposal(project: Project, input: AnalysisInput, analysis
         const type = furnitureTypes.find(type => type === candidate.furnitureType)
         if (!type || type === 'unknown') throw new ApiError(422, 'MANUAL_REVIEW_REQUIRED', 'Choose a known furniture type')
         level.furniture ||= []
-        level.furniture.push({ id, type, levelId: level.id, position, rotation: 0, width, depth,
-          height: candidate.heightMetres || .8, assetId: `builtin:${type}`, sourceDetectionId: `${analysisId}:${candidate.id}` })
+        level.furniture.push({ id, type, levelId: level.id,...candidateFurniture(candidate,points,type),sourceDetectionId: `${analysisId}:${candidate.id}` })
       }
     }
   }
@@ -117,7 +118,7 @@ function appendOpening(level: Level, candidate: Candidate, points: Point[], host
   } else if (candidate.kind === 'door') {
     const existing = level.doors.find(item => item.id === id)
     upsert(level.doors, { ...existing, id, wallId: wall.id, offset: Math.min(offset,opposite), width, height: candidate.heightMetres || existing?.height || 2.1,
-      hinge: candidate.hinge || existing?.hinge || 'left', style: candidate.doorStyle || existing?.style || 'panel', leafStyle:candidate.doorLeafStyle||existing?.leafStyle,swing: candidate.swing || existing?.swing })
+      hinge: candidate.hinge || existing?.hinge || 'left', style: candidate.doorStyle || existing?.style || 'panel',...(candidate.doorStyle==='sectional'?{material:'metal' as const}:{}), leafStyle:candidate.doorLeafStyle||existing?.leafStyle,swing: candidate.swing || existing?.swing })
   } else {
     const existing = level.windows.find(item => item.id === id)
     upsert(level.windows, { ...existing,...candidate.windowConstruction, id, wallId: wall.id, offset: Math.min(offset,opposite), width, height: candidate.heightMetres || existing?.height || 1.2, sill: candidate.sillMetres ?? existing?.sill ?? .8, type:candidate.windowType || existing?.type })

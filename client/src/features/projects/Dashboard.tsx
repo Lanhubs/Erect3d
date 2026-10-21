@@ -1,137 +1,51 @@
-import { useState,type ReactNode } from 'react'
-import type { Project } from '../../domain/types'
-import type { ArchitecturalSample, SampleCategory } from '../../domain/sampleLibrary'
-import { wallBoundsPoints, wallSubpath } from '../../geometry/math'
-export type DashboardProject = Pick<Project,'id'|'name'|'modified'|'sources'> & {pending?:boolean;revision?:number}
-
-type Props = {
-  projects: DashboardProject[]; open: (project: DashboardProject) => void
-  samples:ArchitecturalSample[]; openSample: (sample: ArchitecturalSample, duplicate: boolean) => void
-  create: (name: string, sample: boolean, building: string, units: Project['units']) => void
-  remove: (id: string) => void
-  account?:ReactNode;notice?:ReactNode;busy?:boolean;createBlocked?:boolean;samplesError?:string
+import {useEffect,useMemo,useState,type ReactNode} from 'react'
+import {dismissMenu} from '../../app/useOverlay'
+import {confirmAction} from '../../app/ConfirmationHost'
+import type {Project} from '../../domain/types'
+import type {ArchitecturalSample} from '../../domain/sampleLibrary'
+import type {PlanPreview} from '../../domain/planPreview'
+import {useRenderPreference} from '../../state/renderPreference'
+import {NewProjectDialog} from './NewProjectDialog'
+import {ProjectPreview} from './ProjectPreview'
+import {SampleLibrary} from './SampleLibrary'
+import './projectBrowser.css'
+export type DashboardProject=Pick<Project,'id'|'name'|'modified'|'sources'>&{pending?:boolean;revision?:number;offline?:boolean}
+type Props={projects:DashboardProject[];open:(project:DashboardProject)=>void;samples:ArchitecturalSample[];
+  openSample:(sample:ArchitecturalSample,duplicate:boolean)=>void;create:(name:string,sample:boolean,building:string,units:Project['units'])=>void;
+  remove:(id:string)=>void;account?:ReactNode;notice?:ReactNode;busy?:boolean;createBlocked?:boolean;samplesError?:string;
+  createError?:string;loading?:boolean;loadTemplates?:()=>void;loadPreview?:(project:DashboardProject)=>Promise<PlanPreview>}
+function savedView(){try{return localStorage.getItem('erect-project-view')==='grid'?'grid':'list'}catch{return 'list'}}
+export function visibleProjects(projects:DashboardProject[],query:string,sort:string){
+  return projects.filter(p=>p.name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())).toSorted((a,b)=>
+    (sort==='name'?a.name.localeCompare(b.name):sort==='oldest'?a.modified-b.modified:b.modified-a.modified)||a.id.localeCompare(b.id))
 }
-const categories: SampleCategory[] = ['Residential', 'Commercial', 'Public']
-
-function SamplePlan({ sample }: { sample: ArchitecturalSample }) {
-  const level = sample.project.buildings[0].levels[0]
-  const points = wallBoundsPoints(level.walls)
-  const minX = Math.min(...points.map(point => point.x)), maxX = Math.max(...points.map(point => point.x))
-  const minZ = Math.min(...points.map(point => point.z)), maxZ = Math.max(...points.map(point => point.z))
-  const pad = Math.max(maxX - minX, maxZ - minZ) * .09
-  const width = Math.max(1, maxX - minX), height = Math.max(1, maxZ - minZ)
-  return <svg className="sample-plan-preview" role="img" aria-label={`${sample.title} ground-floor plan`}
-    viewBox={`${minX - pad} ${minZ - pad} ${width + pad * 2} ${height + pad * 2}`}>
-    <rect x={minX - pad} y={minZ - pad} width={width + pad * 2} height={height + pad * 2} fill="#f3f4ef" />
-    {level.rooms.map(room => <polygon key={room.id} points={room.polygon.map(point => `${point.x},${point.z}`).join(' ')}
-      fill={room.category === 'football-pitch' ? '#83a876' : room.category === 'table-tennis-hall' ? '#b4c6bc'
-        : room.category === 'atrium' || room.category === 'field' ? '#dfe8e6' : '#e9e5d9'}
-      stroke="#bcc4bb" strokeWidth={Math.max(.04, width * .002)} />)}
-    {(level.slabs || []).flatMap(slab => slab.openings).map(opening => <polygon key={opening.id}
-      points={opening.polygon.map(point => `${point.x},${point.z}`).join(' ')} fill="#f3f4ef" stroke="#7d918e"
-      strokeDasharray={`${width * .008} ${width * .005}`} strokeWidth={Math.max(.04, width * .0018)} />)}
-    {level.walls.map(wall => <polyline key={wall.id} points={wallSubpath(wall, 0, undefined, Math.max(.2, width / 100)).map(point => `${point.x},${point.z}`).join(' ')}
-      fill="none" stroke={wall.kind === 'interior' ? '#64716a' : '#33433e'}
-      strokeWidth={Math.max(.08, wall.thickness)} strokeLinecap="round" strokeLinejoin="round" />)}
-    {(level.seatingSections || []).map(section => {
-      const outwardLength = Math.hypot(section.outward.x, section.outward.z) || 1
-      const ox = section.outward.x / outwardLength, oz = section.outward.z / outwardLength
-      const outerStart = { x: section.start.x + ox * section.rows * section.rowDepth, z: section.start.z + oz * section.rows * section.rowDepth }
-      const outerEnd = { x: section.end.x + ox * section.rows * section.rowDepth, z: section.end.z + oz * section.rows * section.rowDepth }
-      return <g key={section.id}>
-        <polygon points={[section.start, section.end, outerEnd, outerStart].map(point => `${point.x},${point.z}`).join(' ')}
-          fill={section.aisle ? '#c6bca5' : section.seatColor} fillOpacity={section.aisle ? '.85' : '.2'}
-          stroke="#61756d" strokeWidth={Math.max(.04, width * .0015)} />
-        {Array.from({ length: section.rows }, (_, row) => {
-          const offset = (row + .5) * section.rowDepth
-          return <line key={row} x1={section.start.x + ox * offset} y1={section.start.z + oz * offset}
-            x2={section.end.x + ox * offset} y2={section.end.z + oz * offset}
-            stroke="#61756d" strokeWidth={Math.max(.025, width * .0008)} />
-        })}
-      </g>
-    })}
-  </svg>
-}
-
-export function Dashboard({ projects, samples, open, openSample, create, remove, account,notice,busy,createBlocked,samplesError }: Props) {
-  const [name, setName] = useState('')
-  const [building, setBuilding] = useState('')
-  const [units, setUnits] = useState<Project['units']>('m')
-  const [previewId, setPreviewId] = useState<string | null>(null)
-  return <main className="dashboard">
-    <header className="dashboard-head">
-      
-      <div  className="brand-mark"><img src="/favicon.svg" alt="Erect3D logo" /></div>
-      <div><strong>ERECT</strong><small>ARCHITECTURAL RECONSTRUCTION</small></div>
-      {account}
-    </header>
+export function Dashboard({projects,samples,open,openSample,create,remove,account,notice,busy,createBlocked,samplesError,loadTemplates,loadPreview,createError,loading=false}:Props){
+  const [tab,setTab]=useState<'projects'|'templates'>('projects'),[layout,setLayout]=useState(savedView),[query,setQuery]=useState(''),[sort,setSort]=useState('recent'),[creating,setCreating]=useState(false)
+  const {renderer,setRenderer}=useRenderPreference(),shown=useMemo(()=>visibleProjects(projects,query,sort),[projects,query,sort])
+  useEffect(()=>{const key=(event:KeyboardEvent)=>{dismissMenu(event)};window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key)},[])
+  const chooseLayout=(next:string)=>{setLayout(next);try{localStorage.setItem('erect-project-view',next)}catch{}}
+  const chooseTab=(next:typeof tab)=>{setTab(next);if(next==='templates')loadTemplates?.()}
+  return <main className="dashboard project-browser">
+    <header className="dashboard-head"><div className="brand-mark"><img src="/favicon.svg" alt="Erect3D logo"/></div><div><strong>ERECT</strong><small>ARCHITECTURAL RECONSTRUCTION</small></div>{account}</header>
     <div className="dashboard-main">
-      <div className="section-lead"><div className="eyebrow">WORKSPACE</div>
-        <h1>Architectural projects</h1><p>Import or draw a floor plan, edit the building, and explore every level in 3D.</p>
-      </div>
-      {notice}
-      <fieldset className="create-row" disabled={busy || createBlocked} style={{border:0,padding:0}}>
-        <input aria-label="Project name" placeholder="Project name" value={name}
-          onChange={event => setName(event.target.value)}
-          onKeyDown={event => {
-            if (event.key === 'Enter' && name.trim()) create(name.trim(), false, building, units)
-          }} />
-        <input aria-label="Building name" placeholder="Building name (optional)" value={building}
-          onChange={event => setBuilding(event.target.value)} />
-        <select aria-label="Display units" value={units}
-          onChange={event => setUnits(event.target.value as Project['units'])}>
-          <option value="m">metres</option><option value="cm">centimetres</option><option value="mm">millimetres</option>
-        </select>
-        <button className="primary" disabled={!name.trim()}
-          onClick={() => create(name.trim(), false, building, units)}>Create project</button>
-        <button disabled={!samples.length} onClick={() => openSample(samples[0],false)}>Open sample building</button>
-      </fieldset>
-      <div className="list-head"><span>RECENT PROJECTS</span><span>{projects.length} total</span></div>
-      {projects.length === 0 ? <div className="no-projects">No projects yet. Create one or inspect the sample building.</div>
-        : <div className="project-list">{projects.toSorted((a, b) => b.modified - a.modified).map(project =>
-          <div className="project-row" key={project.id}>
-            <div className="project-icon">{project.sources.length ? 'PL' : '3D'}</div>
-            <div className="project-info"><strong>{project.name}</strong>
-              <span>{project.sources[0]?.name || 'Building model'} · Updated {new Date(project.modified).toLocaleDateString()}{project.pending?' · Changes waiting to sync':''}</span>
-            </div>
-            <button disabled={busy} onClick={() => open(project)}>Open</button>
-            <button disabled={busy} className="quiet" onClick={() => {
-              if (confirm(`Delete ${project.name}?`)) remove(project.id)
-            }}>Delete</button>
-          </div>)}</div>}
-      <section className="sample-library" aria-labelledby="sample-library-heading">
-        <header className="sample-library-head">
-          <div><div className="eyebrow">REAL EDITABLE PROJECTS</div><h2 id="sample-library-heading">Sample library</h2></div>
-          <p>Open a model in the editor or duplicate it as a starting point.</p>
-        </header>
-        {samplesError && <p role="status">{samplesError}</p>}
-        {categories.map(category => <section className="sample-category" key={category} aria-labelledby={`sample-${category}`}>
-          <h3 id={`sample-${category}`}>{category}</h3>
-          <div className="sample-grid">{samples.filter(sample => sample.category === category).map(sample => {
-            const level = sample.project.buildings[0].levels[0]
-            const active = previewId === sample.id
-            return <article className={`sample-card${active ? ' preview-open' : ''}`} key={sample.id}>
-              <div className="sample-card-top"><strong>{sample.title}</strong><span>{sample.project.buildings[0].levels.length} level{sample.project.buildings[0].levels.length === 1 ? '' : 's'}</span></div>
-              <p>{sample.description}</p>
-              <div className="sample-card-meta">{level.walls.length} walls · {level.rooms.length} spaces · {level.slabs?.length || 0} slabs</div>
-              {active && <SamplePlan sample={sample} />}
-              <div className="sample-card-actions">
-                <button type="button" aria-expanded={active} onClick={() => setPreviewId(active ? null : sample.id)}>
-                  {active ? 'Hide plan' : 'Preview plan'}
-                </button>
-                <button disabled={busy || createBlocked} type="button" className="primary" onClick={() => openSample(sample, false)}>Open sample</button>
-                <button disabled={busy || createBlocked} type="button" className="quiet" onClick={() => openSample(sample, true)}>Duplicate</button>
-              </div>
-            </article>
-          })}</div>
-        </section>)}
-      </section>
-      <section className="dashboard-about" aria-label="About Erect 3D">
-        <h2>From floor plan to editable 3D building</h2>
-        <p>Work from a PNG, JPEG or PDF drawing, or start with a blank plan. Review detected walls, edit doors and windows, and configure rooms, floors, stairs, columns and roofs.</p>
-        <h2>Explore the entire building</h2>
-        <p>Design multiple levels with real elevations, inspect section and exploded views, then walk through the model in your browser. Projects save to your account. Keep editing opened projects offline; changes sync automatically when you reconnect.</p>
-      </section>
+      <header className="project-page-heading"><div><div className="eyebrow">WORKSPACE</div><h1>Your projects</h1><p>Continue a building or start from a template.</p></div>
+        <button className="primary" disabled={busy||createBlocked} onClick={()=>setCreating(true)}>+ New project</button></header>
+      <div className="project-browser-nav"><nav aria-label="Project library"><button aria-pressed={tab==='projects'} onClick={()=>chooseTab('projects')}>Projects <span>{projects.length}</span></button><button aria-pressed={tab==='templates'} onClick={()=>chooseTab('templates')}>Templates</button></nav>
+        <details className="graphics-preference"><summary>Graphics</summary><label>3D renderer<select aria-label="3D renderer" value={renderer} onChange={e=>setRenderer(e.target.value as typeof renderer)}><option value="auto">WebGPU preferred</option><option value="webgl">Compatibility renderer</option></select></label><p>Applies before opening 3D. Rendering quality stays fixed while you navigate.</p></details></div>
+      <div className="project-notices">{notice}</div>
+      {tab==='projects'?<section aria-label="Projects">
+        <div className="project-filters"><input type="search" aria-label="Search projects" placeholder="Search projects…" value={query} onChange={e=>setQuery(e.target.value)}/>
+          <select aria-label="Sort projects" value={sort} onChange={e=>setSort(e.target.value)}><option value="recent">Recently updated</option><option value="oldest">Oldest updated</option><option value="name">Name</option></select>
+          <div aria-label="Project layout"><button aria-label="List view" aria-pressed={layout==='list'} onClick={()=>chooseLayout('list')}>List</button><button aria-label="Grid view" aria-pressed={layout==='grid'} onClick={()=>chooseLayout('grid')}>Grid</button></div></div>
+        <div className="project-result-count" role="status">{loading?'Loading projects…':`${shown.length} ${shown.length===1?'project':'projects'}${query?' found':''}`}</div>
+        {shown.length?<div className={`project-results ${layout}`}>{shown.map(project=><article className="project-item" key={project.id}>
+          {layout==='grid'&&<ProjectPreview project={project} load={loadPreview}/>}
+          <div className="project-item-info"><button className="project-name" disabled={busy} onClick={()=>open(project)}>{project.name}</button><span>{project.sources[0]?.name||'Building model'}</span><time dateTime={new Date(project.modified).toISOString()}>Updated {new Date(project.modified).toLocaleDateString()}</time></div>
+          <span className={`project-sync ${project.pending?'pending':''}`}>{project.pending?'Changes waiting to sync':project.offline?'Available offline':'Saved'}</span>
+          <div className="project-item-actions"><button disabled={busy} onClick={()=>open(project)}>Open</button><details><summary aria-label={`Actions for ${project.name}`}>•••</summary><button disabled={busy} onClick={()=>void confirmAction(`Delete ${project.name}?`,'Delete project').then(yes=>{if(yes)remove(project.id)})}>Delete</button></details></div>
+        </article>)}</div>:!loading&&<div className="project-empty"><h2>{query?'No matching projects':'Your next building starts here'}</h2><p>{query?'Try a different project name.':'Create a project or explore an editable template.'}</p>{!query&&<button onClick={()=>chooseTab('templates')}>Browse templates</button>}</div>}
+      </section>:<SampleLibrary samples={samples} openSample={openSample} busy={busy} createBlocked={createBlocked} samplesError={samplesError}/>}
     </div>
+    {creating&&<NewProjectDialog close={()=>setCreating(false)} create={create} busy={busy} blocked={createBlocked} error={createError}/>}
   </main>
 }

@@ -1,32 +1,47 @@
 import { useEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
-import {PerspectiveCamera} from 'three'
+import {PerspectiveCamera,Vector3} from 'three'
 import { zoomEvent, type ZoomDetail } from '../app/useWorkspaceZoom'
 import { manipulationEvent } from './ElementGizmo'
 
 export type CameraPreset = 'default' | 'exterior' | 'overview' | 'interior'
-export function InspectionCamera({ walk, top, center, span, preset = 'default', sportsKind }: {
+export function InspectionCamera({ walk, top, center, span, preset = 'default', sportsKind,probe=false }: {
   walk: boolean; top: boolean; center: [number, number, number]; span: number;
-  preset?: CameraPreset; sportsKind?: 'stadium' | 'arena' | null }) {
+  preset?: CameraPreset; sportsKind?: 'stadium' | 'arena' | null;probe?:boolean }) {
   const { camera, gl, invalidate } = useThree()
   const controlsRef = useRef<OrbitControls | null>(null)
   const previous = useRef<{ position: typeof camera.position; quaternion: typeof camera.quaternion; target: typeof camera.position } | null>(null), wasWalking = useRef(false)
   const [cx, cy, cz] = center
   const framing = useRef({ cx, cy, cz, span })
+  const trace=useRef<{start:number;offset:Vector3}|null>(null)
+  useEffect(()=>{trace.current=null},[probe])
   useEffect(()=>{
     if(camera instanceof PerspectiveCamera){camera.far=Math.max(1000,span*8);camera.near=walk?.03:Math.max(.03,Math.min(2,span/5000));camera.updateProjectionMatrix()}
     if(controlsRef.current)controlsRef.current.maxDistance=Math.max(160,span*4)
     invalidate()
   },[camera,span,walk,invalidate])
   useEffect(() => { framing.current = { cx, cy, cz, span } }, [cx, cy, cz, span])
-  useFrame(() => controlsRef.current?.update())
+  useFrame(({clock}) => {
+    if(import.meta.env.DEV&&probe&&controlsRef.current){
+      const controls=controlsRef.current
+      trace.current||={start:clock.elapsedTime,offset:camera.position.clone().sub(controls.target)}
+      camera.position.copy(trace.current.offset).applyAxisAngle(new Vector3(0,1,0),(clock.elapsedTime-trace.current.start)*.18).add(controls.target)
+    }
+    const controls=controlsRef.current;controls?.update()
+    if(!walk&&controls&&camera instanceof PerspectiveCamera){
+      // Keep depth precision at tower-scale distances, while allowing close
+      // inspection and the separate human-scale walkthrough near plane.
+      const near=Math.max(.03,Math.min(2,camera.position.distanceTo(controls.target)/100))
+      if(Math.abs(camera.near-near)>.001){camera.near=near;camera.updateProjectionMatrix()}
+    }
+  })
   useEffect(() => {
     if (walk) { wasWalking.current = true; return }
     const frame = () => {
       const { cx, cy, cz, span } = framing.current
       const targetY = sportsKind === 'stadium' ? 3.5 : sportsKind === 'arena' ? 4 : cy
-      if (top) camera.position.set(cx, span * 1.8, cz + .001)
+      if (top) camera.position.set(cx, cy + span * 1.8, cz + .001)
       else if (preset === 'interior' && sportsKind === 'stadium') camera.position.set(cx + span * .18, 4.2, cz + span * .24)
       else if (preset === 'interior' && sportsKind === 'arena') camera.position.set(cx, 3.4, cz - span * .18)
       else if (preset === 'exterior') camera.position.set(cx + span * .5, span * .17,
@@ -35,7 +50,7 @@ export function InspectionCamera({ walk, top, center, span, preset = 'default', 
         cz + span * .65)
       else if (sportsKind) camera.position.set(cx + span * .55, span * .56,
         cz + span * .7)
-      else camera.position.set(cx + span * .82, span * .68, cz + span * 1.0)
+      else camera.position.set(cx + span * .82, cy + span * .68, cz + span * 1.0)
       camera.lookAt(cx, top ? cy : targetY, cz)
     }
     const restore = wasWalking.current ? previous.current : null
@@ -48,7 +63,7 @@ export function InspectionCamera({ walk, top, center, span, preset = 'default', 
     controls.enableDamping = true; controls.enableRotate = !top; controls.enableZoom = true
     controls.minDistance = 2; controls.maxDistance = Math.max(160, span * 4)
     controlsRef.current = controls
-    const changed=()=>invalidate()
+    const changed=()=>{if(import.meta.env.DEV)gl.domElement.dataset.camera=JSON.stringify([...camera.position.toArray(),...controls.target.toArray()].map(n=>Number(n.toFixed(4))));invalidate()}
     controls.addEventListener('change', changed)
     invalidate()
     const host = gl.domElement.closest('.viewer')
