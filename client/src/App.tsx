@@ -10,7 +10,7 @@ function App() {
   const [route,setRoute]=useState(()=>window.location.pathname.replace(/\/$/,'') || '/')
   const navigate=useCallback((path:string)=>{closeFloatingOverlay();window.history.pushState({},'',path);setRoute(path)},[])
   useEffect(()=>{
-    const change=()=>setRoute(window.location.pathname.replace(/\/$/,'') || '/')
+    const change=()=>{closeFloatingOverlay();setRoute(window.location.pathname.replace(/\/$/,'') || '/')}
     window.addEventListener('popstate',change);return()=>window.removeEventListener('popstate',change)
   },[])
   if (route==='/dev/graphics' && GraphicsBenchmark) return <Suspense fallback={<p>Preparing renderer…</p>}><GraphicsBenchmark/></Suspense>

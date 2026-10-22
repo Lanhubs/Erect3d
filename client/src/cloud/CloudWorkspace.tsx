@@ -16,6 +16,7 @@ export function CloudWorkspace({ user, projectId, navigate }: { user: User; proj
   const [tools, setTools] = useState(false), [conflict, setConflict] = useState(false), [error, setError] = useState('')
   const [chat,setChat]=useState(false),[preview,setPreview]=useState(false),[proposed,setProposed]=useState(true)
   const assistant=useAssistant(user.id,projectId,session,chat)
+  const editLocked=useProject(state=>state.editLocked)
   const previewDocument=preview&&!assistant.stale&&assistant.thread.run?.status==='ready'?assistant.thread.run.proposal?.document:undefined
   useEffect(()=>{if(preview&&!previewDocument)setPreview(false)},[preview,previewDocument])
   const [request,setRequest]=useState({token:0,projectId:'',levelId:'',sourceId:''})
@@ -45,7 +46,7 @@ export function CloudWorkspace({ user, projectId, navigate }: { user: User; proj
   if (!project || !session.record) return <main className="cloud-page"><button onClick={() => navigate('/projects')}>Projects</button><p role={session.error ? 'alert' : 'status'}>{session.error || 'Opening project…'}</p><button onClick={() => window.location.reload()}>Retry</button></main>
   return <div className="cloud-workspace" key={generation}>
     <Workspace project={previewDocument&&proposed?previewDocument:project} back={() => { void back() }} reconstructing={reconstructing}
-      assistant={()=>setChat(value=>!value)} assistantOpen={chat} previewing={!!previewDocument}
+      assistant={()=>setChat(value=>!value)} assistantOpen={chat} previewing={!!previewDocument||editLocked}
       previewControls={previewDocument&&<AssistantPreviewBar assistant={assistant} proposed={proposed} toggle={setProposed} close={()=>setPreview(false)} chat={()=>setChat(true)}/>}
       statusContent={<WorkspaceDock session={session} projectId={projectId} offlineReady={offlineReady} error={error || session.error}
         onError={setError} reviewConflict={()=>setConflict(true)} toolsOpen={tools}

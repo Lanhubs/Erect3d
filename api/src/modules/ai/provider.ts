@@ -18,7 +18,6 @@ export class ProviderFailure extends Error {
   constructor(public code: string, public retryable: boolean, public upstreamStatus?: number, public schemaIssues?: string[]) { super(code) }
 }
 export function classifyFailure(error: unknown) {
-  console.log(error)
   if (error instanceof ProviderFailure) return error
   const status = error && typeof error === 'object' && 'status' in error ? Number(error.status) : 0
   if (status === 429) return new ProviderFailure('AI_QUOTA', true)

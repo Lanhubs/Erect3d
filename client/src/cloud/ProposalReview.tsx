@@ -15,7 +15,7 @@ import { buildableCandidates } from '../../../api/src/modules/plan-analysis/qual
 import {watchAnalysis} from './watchAnalysis'
 import {reconstructionUpdate} from './reconstructionState'
 import {useSourceScope} from './useSourceScope'
-type Analysis = { status: string; job_status: string;created_at?:string; options?:{engine?:string;purpose?:string}; failure_code?: string; progress?: { completed: string[]; stages: string[]; current: string }; result?: { proposal: Intelligence; provenance?: unknown;quality?:{status:string;issues:{code:string;message:string;severity:string}[]} } }
+type Analysis = { status: string; job_status: string;created_at?:string; options?:{engine?:string;purpose?:string}; failure_code?: string; progress?: { completed: string[]; stages: string[]; current: string }; result?: { proposal: Intelligence; quality?:{status:string;issues:{code:string;message:string;severity:string}[]} } }
 type Acceptance = { operationId: string; baseRevision: number; candidateIds: string[]; edits: Candidate[]; allowConfirmedIds?: string[]; designIds?: string[]; replaceLevel?:boolean; rejected?: boolean; before?: Project; historyRecorded?: boolean }
 export function ProposalReview({ analysisId, session, source,levelId,autoApply=false }: { analysisId: string; session: CloudSession; source: SourceDocument;levelId:string;autoApply?:boolean }) {
   const [analysis, setAnalysis] = useState<Analysis>(), [candidates, setCandidates] = useState<Candidate[]>([])
@@ -139,7 +139,6 @@ export function ProposalReview({ analysisId, session, source,levelId,autoApply=f
       </details><button className="primary" disabled={Boolean(cannotApply)} onClick={() => void run(accept)}>{busy?'Applying reconstruction…':analysis?.status==='accepted'?'Applied to your model':acceptance ? 'Retry applying reconstruction' : rebuilding?'Apply reconstruction to this floor':`Accept ${selected.size} model changes / ${selectedDesigns.size} designs`}</button>
       {acceptance?.rejected && <button disabled={busy || readOnly} onClick={() => void run(async () => { await session.engine?.refresh(); await putTask(taskKey, undefined); setAcceptance(undefined) })}>Review again against current revision</button>}
       <button disabled={busy || readOnly || Boolean(acceptance && !acceptance.rejected)} onClick={() => void run(() => api.request(`/analysis/${analysisId}/reject`, 'POST'))}>Reject proposal</button>
-      {analysis.result?.provenance && <details><summary>Analysis diagnostics</summary><pre>{JSON.stringify(analysis.result.provenance, null, 2)}</pre></details>}
     </>}{error && <p role="alert" className="error">{error}</p>}
   </section>
 }

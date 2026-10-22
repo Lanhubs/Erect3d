@@ -12,6 +12,9 @@ import {ApiError} from '../../security/errors'
 import {validateLockedLevels} from '../projects/locked-levels'
 import {validateGeometry} from '../projects/geometry-validation'
 import {documentChanges} from '../../../client'
+import {validateEdits} from './validation'
+import {setBuildingRoof} from '../../../../client/src/domain/roofDesign'
+import {effectiveRoofSections} from '../../../../client/src/domain/roofCoverage'
 const protectedFields=new Set(['id','sourceId','calibration','alignment','locked','visible','sourceDetectionId'])
 const levelFields=new Set(['name','elevation','floorToFloorHeight','slabThickness','autoRoof','autoSlab','roof'])
 export class EditWorkspace{
@@ -30,7 +33,7 @@ export class EditWorkspace{
       const properties=parseProperties(command.properties)
       if(Object.keys(properties).some(k=>protectedFields.has(k)))throw new ApiError(422,'ASSISTANT_PROPERTIES','IDs, sources and locks are managed by the editor')
       const selectedRoom=this.scope.mode==='selection'&&this.allowed.has(String(properties.roomId))&&command.kind==='furniture'
-      if(this.scope.mode!=='building' && this.scope.levelId!==level.id&&!this.allowed.has(level.id)||this.scope.mode==='selection'&&!selectedRoom&&!this.allowed.has(level.id))throw new ApiError(422,'ASSISTANT_SCOPE','Choose This floor to add model elements')
+      if((this.scope.mode!=='building'&&this.scope.levelId!==level.id&&!this.allowed.has(level.id))||(this.scope.mode==='selection'&&!selectedRoom&&!this.allowed.has(level.id)))throw new ApiError(422,'ASSISTANT_SCOPE','Choose This floor to add model elements')
       const id=uid(command.kind)
       if(command.kind==='level'){
         if(this.scope.mode!=='building')throw new ApiError(422,'ASSISTANT_SCOPE','Choose Whole building to add floors')
@@ -54,6 +57,7 @@ export class EditWorkspace{
     }
     const kind:Kind=command.action==='duplicate-level'?'level':command.action==='detach-floor'?'system':command.kind
     const target=findTarget(this.document,kind,command.id);permitTarget(this.scope,target,this.allowed)
+    if(this.scope.floorIndex!==undefined&&command.id===this.scope.entityId&&target.value?.kind==='typical-floors'&&command.action!=='detach-floor')throw new ApiError(422,'ASSISTANT_SCOPE','Detach the selected linked floor before editing it')
     if(command.action==='detach-floor'){
       if(this.scope.mode==='selection'&&this.scope.floorIndex!==undefined&&command.index!==this.scope.floorIndex)throw new ApiError(422,'ASSISTANT_SCOPE','Choose the selected floor instance')
       this.document=detachTypicalFloor(this.document,building.id,command.id,command.index)
@@ -81,13 +85,28 @@ export class EditWorkspace{
       return {removed:command.id}
     }
     const properties=parseProperties(command.properties)
-    if(Object.keys(properties).some(k=>protectedFields.has(k)||kind==='level'&&!levelFields.has(k)))throw new ApiError(422,'ASSISTANT_PROPERTIES','Use semantic edit tools for these properties')
+    for(const key of Object.keys(properties))if(protectedFields.has(key)||kind==='level'&&!levelFields.has(key)){
+      if(JSON.stringify(properties[key])===JSON.stringify(target.value?.[key]))delete properties[key]
+      else throw new ApiError(422,'ASSISTANT_PROPERTIES','Use semantic edit tools for these properties; set accepts changed editable fields only, without IDs or locks')
+    }
     if('levelId' in properties && properties.levelId!==target.value?.levelId || 'fromLevelId' in properties && properties.fromLevelId!==target.value?.fromLevelId)throw new ApiError(422,'ASSISTANT_SCOPE','An element cannot be moved to another floor with set')
     const value=schemas[kind].parse({...((kind==='roof'&&!target.value)?defaultRoof:target.value),...properties})
+    if(kind==='roof'){
+      if(!target.level)setBuildingRoof(building,properties)
+      else{
+        if(!building.roofSections?.some(section=>section.levelId===target.level!.id)){
+          const derived=effectiveRoofSections(building).filter(section=>section.levelId===target.level!.id)
+          ;(building.roofSections||=[]).push(...derived.map(section=>({...section,id:uid('roof-section')})))
+        }
+        target.level.roof=value as any
+        for(const section of building.roofSections||[])if(section.levelId===target.level.id)section.roof=schemas.roof.parse({...section.roof,...properties})
+      }
+      return value
+    }
     target.parent[target.key]=value;return value
   }
   proposal(){
-    const document=projectSchema.parse(this.document);validateLockedLevels(this.original,document);validateGeometry(document)
+    const document=projectSchema.parse(this.document);validateLockedLevels(this.original,document);validateGeometry(document);validateEdits(this.original,document)
     const changes=documentChanges(this.original,document)
     if(!changes.length)throw new ApiError(422,'ASSISTANT_EMPTY','No model changes were prepared')
     if(changes.length>512)throw new ApiError(422,'ASSISTANT_SIZE','Request a smaller group of changes')

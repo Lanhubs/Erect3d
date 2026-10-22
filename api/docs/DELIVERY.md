@@ -702,3 +702,20 @@ entering 3D; this does not close the native WebGPU defect. No restart was reques
 for the last stalled test; its tab was closed and a usable review page reopened.
 
 Nothing was committed, pushed or deployed; Gemini agent work remains deferred.
+
+## 31. Design assistant, bronze controls and exclusive overlays
+
+Implemented a separate Gemini editing provider and bounded semantic tool runner,
+private user/project threads, proposal runs, recipient-scoped progress and additive
+migration 011. The bottom-dock Assistant supports scoped prompts, optional source
+references, persistent drafts/history, same-canvas Current/Proposed review,
+revision-checked Apply and one-step Undo. Model-only assistance does not need R2.
+
+Controls use the logo bronze palette, viewport actions share an explicit aligned
+row below the file header, and phone options use a scrollable sheet. A shared
+coordinator closes previous floating interfaces while retaining pinned panels and
+chat state. Coordinated confirmations replace affected native confirms.
+
+Setup, endpoints, validation, measured live Gemini evidence and limitations are in
+`DESIGN_ASSISTANT.md`. The separate native WebGPU tower startup defect remains
+open. No push or deployment was performed.

@@ -31,6 +31,7 @@ export async function applyAssistant(db:Database,config:Config,actor:Actor,proje
 export async function cancelAssistant(db:Database,actor:Actor,projectId:string,id:string){
   await authorize(db,actor,projectId,'edit')
   return db.begin(async tx=>{
+    await tx`SELECT id FROM projects WHERE id=${projectId} FOR UPDATE`
     const run=await ownedRun(tx,actor,projectId,id)
     if(run.status==='applied')throw new ApiError(409,'ASSISTANT_APPLIED','Use Undo to revert applied changes')
     const status=run.status==='ready'?'discarded':'cancelled'

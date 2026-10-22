@@ -41,7 +41,6 @@
     max-height: min(68vh, 600px);
     overflow: auto;
     overscroll-behavior: contain;
-    background: #f7f8f5;
     border: 1px solid #b9c4b9;
     box-shadow: 0 12px 26px #1d2e2440;
     padding: 10px;

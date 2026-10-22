@@ -79,9 +79,9 @@ export function SourcePanel({ session, available, aiAvailable, reconstructReques
       if(recent?.analysisId)task={input:undefined,key:'',analysisId:recent.analysisId}
     }
     if (task?.analysisId) {
-      const result = await api.request<{ status: string;prompt_version?:number;currentPromptVersion?:number;model_revision?:string;options?:{region?:Region;designMode?:string;styleReferenceAssetId?:string};result?:{quality?:{status:string}} }>(`/analysis/${task.analysisId}`)
+      const result = await api.request<{ status: string;isCurrent?:boolean;prompt_version?:number;currentPromptVersion?:number;model_revision?:string;options?:{region?:Region;designMode?:string;styleReferenceAssetId?:string};result?:{quality?:{status:string}} }>(`/analysis/${task.analysisId}`)
       scope.assertCurrent()
-      const current=(result.currentPromptVersion===undefined || result.prompt_version===result.currentPromptVersion) && (result.model_revision===undefined || Number(result.model_revision)===session.engine?.record.base.revision)
+      const current=(result.isCurrent ?? (result.currentPromptVersion===undefined || result.prompt_version===result.currentPromptVersion)) && (result.model_revision===undefined || Number(result.model_revision)===session.engine?.record.base.revision)
         && result.options?.styleReferenceAssetId===(designMode==='creative'?building.designReference?.assetId:undefined) && (!result.options?.designMode || result.options.designMode===designMode)
         && (['x','y','width','height'] as const).every(key=>result.options?.region?.[key]===region?.[key])
       if (current && ['pending', 'ready'].includes(result.status) && result.result?.quality?.status!=='blocked') {

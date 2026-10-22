@@ -2,6 +2,7 @@ import { afterAll,beforeAll,expect,test } from 'bun:test'
 import { websocket } from '@hono/bun'
 import { account,createProject,harness,request,origin,type Account } from './helpers'
 import { maximumMessageBytes } from '../src/realtime/protocol'
+import {assistantEvent} from '../src/modules/assistant/events'
 const first=harness(),second=harness()
 let owner:Account,viewer:Account
 let servers:Bun.Server<any>[]=[]
@@ -67,3 +68,13 @@ test('WebSocket handshake refuses foreign membership and untrusted origin',async
   const originDenied=await first.app.request(`/api/v1/realtime/projects/${project.id}`,{ headers:{ Cookie:owner.cookie,Origin:'https://evil.example',Upgrade:'websocket' } })
   expect(originDenied.status).toBe(403)
 })
+test('assistant progress is delivered only to the requesting account across API instances',async()=>{
+  const project=await createProject(first.app,owner)
+  await request(first.app,owner,`/projects/${project.id}/members/${viewer.id}`,'PUT',{role:'EDITOR'})
+  const a=connect(servers[0],owner,project.id),b=connect(servers[1],viewer,project.id)
+  await until(()=>a.messages.some(m=>m.type==='connected')&&b.messages.some(m=>m.type==='connected'))
+  await assistantEvent(first.db,project.id,owner.id,'private-run','Preparing changes','running')
+  await until(()=>a.messages.some(m=>m.type==='assistant.progress'))
+  await second.hub.catchUp()
+  expect(b.messages.some(m=>m.type==='assistant.progress')).toBe(false)
+},10000)

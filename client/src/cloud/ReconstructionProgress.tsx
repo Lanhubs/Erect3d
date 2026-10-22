@@ -4,9 +4,11 @@ import {api} from './api'
 import {analysisStatus} from './analysisStatus'
 import {useReconstruction,reconstructionUpdate,reconstructionPhase} from './reconstructionState'
 import {currentReconstructionSource,sameReconstructionSource,type ReconstructionContext} from './reconstructionContext'
+import {useOverlay} from '../app/useOverlay'
 export function ReconstructionProgress({context,details}:{context:ReconstructionContext;details:()=>void}) {
   const current=useReconstruction(state=>state.current),[,tick]=useState(0),[error,setError]=useState('')
   const [expanded,setExpanded]=useState(false),element=useRef<HTMLElement>(null),panelId=useId()
+  useOverlay(element,expanded,()=>setExpanded(false),true,false)
   const state=sameReconstructionSource(current,context)?current:undefined,pending=state?.status==='pending'
   useEffect(()=>{setExpanded(false);setError('')},[context.projectId,context.levelId,context.sourceId])
   useEffect(()=>{if(!pending)return;const timer=setInterval(()=>tick(value=>value+1),1000);return()=>clearInterval(timer)},[pending])

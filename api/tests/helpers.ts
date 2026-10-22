@@ -6,8 +6,9 @@ import type { Project } from '../src/contracts/project'
 import type { ObjectStore } from '../src/storage/objects'
 import { unpackSource } from '../src/storage/archive'
 import type { PlanIntelligenceProvider } from '../src/modules/ai/provider'
+import type { EditingProvider } from '../src/modules/assistant/provider'
 export const origin='http://127.0.0.1:5173'
-export function harness(overrides:{ store?:ObjectStore;provider?:PlanIntelligenceProvider;ai?:boolean }={}) {
+export function harness(overrides:{ store?:ObjectStore;provider?:PlanIntelligenceProvider;editingProvider?:EditingProvider;ai?:boolean }={}) {
   const url=process.env.TEST_DATABASE_URL || process.env.DATABASE_URL
   if (!url || !new URL(url).pathname.endsWith('_test')) throw new Error('Integration tests require TEST_DATABASE_URL with a database ending in _test')
   const config=readConfig({ DATABASE_URL:url,NODE_ENV:'test',ALLOWED_ORIGINS:origin,

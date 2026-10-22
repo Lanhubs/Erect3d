@@ -44,3 +44,13 @@ body .studio-workspace.studio-workspace .viewer-zoom{top:64px}
  body .studio-workspace.studio-workspace .view-options-close{display:block!important;align-self:flex-end}
  .confirmation-dialog button{min-width:44px;min-height:44px}
 }
+body :is(.cloud-page,.cloud-tools,.cloud-dialog,.cloud-signin){color:var(--control-ink);background:var(--control-surface);border-color:var(--control-border)}
+body :is(.cloud-page,.cloud-tools,.cloud-dialog) :is(button,summary,input,select,textarea){color:var(--control-ink);border-color:var(--control-border)}
+body :is(.cloud-page,.cloud-tools,.cloud-dialog) button[aria-pressed=true]{background:var(--brand-tint);color:var(--brand-strong)}
+body .cloud-modal{background:#33291cb3}body :is(.cloud-tools,.cloud-dialog) pre{background:#f0ede7}
+body .cloud-tools{box-shadow:0 8px 24px #39271824}
+body :is(.studio-workspace,.cloud-page,.project-browser,.cloud-tools,.cloud-dialog,.assistant-dialog) input[type=checkbox]{accent-color:var(--brand-strong)}
+body .studio-workspace.studio-workspace :is(.level-manager,.level-manager-body,.furniture-panel,.inspector){background:var(--control-surface);color:var(--control-ink);border-color:var(--control-border)}
+body .studio-workspace.studio-workspace .level-row.active{background:var(--brand-tint)}
+body .studio-workspace.studio-workspace .proposal-accepted{border-color:var(--brand-accent)!important}
+body .studio-workspace.studio-workspace .level-manager-body{scrollbar-color:var(--brand-accent) #f1ede6}

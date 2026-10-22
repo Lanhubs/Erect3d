@@ -1,6 +1,6 @@
 import { connect } from '../src/db/connection'
 import { readConfig } from '../src/config/env'
-import { digest } from '../src/security/tokens'
+import {migrationChecksum,matchesMigrationChecksum} from '../src/db/migration-checksum'
 import { fileURLToPath } from 'node:url'
 const db = connect(readConfig())
 try {
@@ -10,10 +10,10 @@ try {
     const names = [...new Bun.Glob('*.sql').scanSync(fileURLToPath(new URL('../migrations', import.meta.url)))].sort()
     for (const name of names) {
       const sql = await Bun.file(new URL(`../migrations/${name}`, import.meta.url)).text()
-      const hash = digest(sql)
+      const hash = migrationChecksum(sql)
       const [existing] = await tx`SELECT checksum FROM schema_migrations WHERE name=${name}`
       if (existing) {
-        if (existing.checksum !== hash) throw new Error(`Applied migration changed: ${name}`)
+        if (!matchesMigrationChecksum(sql,existing.checksum)) throw new Error(`Applied migration changed: ${name}`)
         continue
       }
       await tx.unsafe(sql).simple()

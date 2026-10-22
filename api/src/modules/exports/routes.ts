@@ -35,7 +35,7 @@ export function exportRoutes(db: Database,store?: ObjectStore) {
     const projectId = param(context,'projectId'),jobId = param(context,'jobId')
     await authorize(db,context.get('actor'),projectId)
     const [job] = await db`SELECT id,kind,status,attempts,result,failure_code,created_at,started_at,completed_at
-      FROM jobs WHERE id=${jobId} AND project_id=${projectId}`
+      FROM jobs WHERE id=${jobId} AND project_id=${projectId} AND (kind<>'assistant.edit' OR actor_id=${context.get('actor').id})`
     return context.json(requireValue(job))
   })
   return routes

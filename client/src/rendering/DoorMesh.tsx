@@ -9,8 +9,8 @@ import {EntityInstances} from './EntityInstances'
 import {SectionalDoor} from './SectionalDoor'
 import {useRenderResources} from './RenderResources'
 
-function Leaf({ door, width, hinge, pivot, selected, open }: {
-  door: Door; width: number; hinge: 'left' | 'right'; pivot: number; selected: boolean; open: boolean
+function Leaf({ door, width, hinge, pivot, selected, open, pose }: {
+  door: Door; width: number; hinge: 'left' | 'right'; pivot: number; selected: boolean; open: boolean; pose?:number
 }) {
   const ref = useRef<Group>(null)
   const invalidate=useThree(state=>state.invalidate)
@@ -18,6 +18,7 @@ function Leaf({ door, width, hinge, pivot, selected, open }: {
   const sign = (hinge === 'left' ? 1 : -1) * (door.swing === 'out' ? -1 : 1)
   useFrame((_, delta) => {
     if (!ref.current) return
+    if(pose!==undefined){ref.current.rotation.y=sign*Math.PI*.48*pose;return}
     const target = open ? sign * Math.PI * .48 : 0
     if(Math.abs(target-ref.current.rotation.y)>.00001)resources.shadowEpoch++
     ref.current.rotation.y += (target - ref.current.rotation.y) * Math.min(1, delta * 9)
@@ -40,8 +41,8 @@ function Leaf({ door, width, hinge, pivot, selected, open }: {
   </group>
 }
 
-export function DoorMesh({ door, wall, selection, select, open }: {
-  door: Door; wall: Wall; selection: Selection; select: (selection: Selection) => void; open: boolean
+export function DoorMesh({ door, wall, selection, select, open, pose }: {
+  door: Door; wall: Wall; selection: Selection; select: (selection: Selection) => void; open: boolean; pose?:number
 }) {
   const start=atWall(wall,door.offset),end=atWall(wall,door.offset+door.width),width=wall.curve?Math.hypot(end.x-start.x,end.z-start.z):door.width
   const center = wall.curve?{x:(start.x+end.x)/2,z:(start.z+end.z)/2}:atWall(wall, door.offset + door.width / 2)
@@ -66,7 +67,7 @@ export function DoorMesh({ door, wall, selection, select, open }: {
       <boxGeometry args={[width-.12, .06, wall.thickness + .02]} />
       <SharedStandardMaterial color={selected ? '#e0a545' : '#625a4b'} />
     </mesh>
-    {door.style==='sectional'?<SectionalDoor width={width} height={door.height} selected={selected} open={open} metal={door.material!=='timber'}/>:leaves.map((leaf, index) => <Leaf key={index} door={door} {...leaf} selected={selected} open={open} />)}
+    {door.style==='sectional'?<SectionalDoor width={width} height={door.height} selected={selected} open={open} metal={door.material!=='timber'}/>:leaves.map((leaf, index) => <Leaf key={index} door={door} {...leaf} selected={selected} open={open} pose={pose} />)}
     <mesh position={[0, .01, 0]} castShadow receiveShadow>
       <boxGeometry args={[width, .02, wall.thickness + .02]} />
       <SharedStandardMaterial color="#777770" metalness={.12} roughness={.72} />

@@ -19,7 +19,7 @@ export function PanelDrawer({active,pinned,pin,close,children,open}:{active:Pane
   const ref=useRef<HTMLElement>(null)
   const [sheet,setSheet]=useState(()=>window.matchMedia('(max-width:700px)').matches)
   useEffect(()=>{const media=window.matchMedia('(max-width:700px)'),change=()=>setSheet(media.matches);media.addEventListener('change',change);return()=>media.removeEventListener('change',change)},[])
-  useOverlay(ref,Boolean(active),close,sheet,sheet,!pinned||sheet)
+  useOverlay(ref,Boolean(active)&&(!pinned||sheet),close,sheet,sheet)
   return <aside ref={ref} hidden={!active} role={sheet?'dialog':undefined} aria-modal={sheet||undefined} className={`workspace-drawer${pinned?' pinned':''}${active==='properties'?' side-right':''}`} aria-label={panels.find(p=>p.id===active)?.label||'Building panel'}>
     <header><select aria-label="Panel" value={active||'levels'} onChange={event=>open(event.target.value as PanelId)}>{panels.map(panel=><option key={panel.id} value={panel.id}>{panel.label}</option>)}</select><button className="drawer-pin" aria-pressed={pinned} onClick={pin}>{pinned?'Unpin':'Pin'}</button><button aria-label="Close panel" onClick={close}>×</button></header>
     <div className="drawer-content">{children}</div>

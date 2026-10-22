@@ -13,11 +13,12 @@ import type {EditingProvider} from '../modules/assistant/provider'
 export class RequestedAnalysis {
   private pending = new Set<string>()
   private active = new Map<string,Worker>()
+  private resumes=new Map<string,ReturnType<typeof setTimeout>>()
   private stopping = false
   constructor(private db:Database,private config:Config,private store?:ObjectStore,
     private provider?:PlanIntelligenceProvider,private metrics?:Metrics,private editingProvider?:EditingProvider) {}
   start(id:string) {
-    if (this.stopping || this.active.has(id)) return
+    if (this.stopping || this.active.has(id)||this.resumes.has(id)) return
     this.pending.add(id);this.pump()
   }
   private pump() {
@@ -34,12 +35,16 @@ export class RequestedAnalysis {
     while (!this.stopping) {
       const [job]=await this.db`SELECT status,kind,available_at,attempts,max_attempts,lease_expires_at FROM jobs WHERE id=${id}`
       if (!job || !['plan.analyze','assistant.edit'].includes(job.kind) || !['queued','running'].includes(job.status)) return
-      if (job.status==='running' && new Date(job.lease_expires_at).getTime()>Date.now()) return // Another process owns its lease.
+      if (job.status==='running' && new Date(job.lease_expires_at).getTime()>Date.now()) {
+        // Recheck this explicitly requested job once its current owner loses the lease.
+        const timer=setTimeout(()=>{this.resumes.delete(id);this.start(id)},new Date(job.lease_expires_at).getTime()-Date.now()+50)
+        this.resumes.set(id,timer);return
+      }
       if (job.attempts>=job.max_attempts) {await recoverExhausted(this.db,id);return}
       const delay=Math.max(0,new Date(job.available_at).getTime()-Date.now())
       if (delay) await new Promise(resolve=>setTimeout(resolve,Math.min(delay,1000)))
       else if (!await worker.runOnce(id)) return
     }
   }
-  stop() {this.stopping=true;this.pending.clear();for(const worker of this.active.values())worker.stop()}
+  stop() {this.stopping=true;this.pending.clear();for(const timer of this.resumes.values())clearTimeout(timer);this.resumes.clear();for(const worker of this.active.values())worker.stop()}
 }

@@ -5,6 +5,7 @@ import { ProviderFailure, classifyFailure } from './provider'
 import { passInstructions } from './passes'
 import { responseSchema } from './response-schema'
 import { log } from '../../security/log'
+import {providerFetch} from './fetch'
 import {compactMeasurements,compactSourceFeatures,compactReconstructionSchema,expandReconstruction} from './compact-reconstruction'
 import {normalizeArchitecturalWire,architecturalWireInstructions} from './architectural-wire'
 import {directInstructions} from './direct-instructions'
@@ -50,7 +51,7 @@ The upright image defines geometry coordinates. When a PDF is included, study it
 Detail crops use full-image coordinates. White margins, room labels and dimension chains create no structure. No mesh generation or generic building boxes.`
 export class GeminiProvider implements PlanIntelligenceProvider {
   private client: GoogleGenAI
-  constructor(key: string) { this.client = new GoogleGenAI({ apiKey: key }) }
+  constructor(key: string) { this.client = new GoogleGenAI({ apiKey: key, httpOptions:{fetch:providerFetch} }) }
   async interpret(input: IntelligenceInput, signal: AbortSignal) {
     const audit = input.pass.startsWith('native-measurement-audit'), pass = audit ? 'native-measurement-audit' : input.pass
     const regional=pass.startsWith('reconstruct-region-'),direct=pass==='reconstruct-model' || regional

@@ -39,7 +39,7 @@ export async function runAssistant(db:Database,config:Config,provider:EditingPro
       for(const id of previous.proposal.allowedIds||[])work.allowed.add(id)
     }
     const messages=await db`SELECT role,content FROM assistant_messages WHERE thread_id=${run.thread_id} ORDER BY id DESC LIMIT 16`
-    const parts:any[]=[{text:JSON.stringify({scope:run.scope,buildingId:run.scope.buildingId,activeLevelId:run.scope.levelId,units:'metres',note:'Use inspect_model for actual entities. Earlier proposals are conversation context only; inspect the current model before editing.'})}]
+    const parts:any[]=[{text:JSON.stringify({scope:run.scope,buildingId:run.scope.buildingId,activeLevelId:run.scope.levelId,units:'metres',model:executeTool(work,'inspect_model',{}),note:'This is the actual current working model summary. Batch any further inspections and schemas together. You have only three model responses. Earlier proposals are conversation context only.'})}]
     for(const sourceId of run.plan_source_ids){
       if(!store)throw new ApiError(503,'STORAGE_UNAVAILABLE','Private plan storage is unavailable; retry without a plan reference')
       const [asset]=await db`SELECT a.* FROM source_plans s JOIN assets a ON a.id=s.original_asset_id WHERE s.project_id=${run.project_id} AND s.source_id=${sourceId} AND a.state='ready'`
@@ -51,6 +51,7 @@ export async function runAssistant(db:Database,config:Config,provider:EditingPro
     let calls=0,repairs=0,text='',usage:Record<string,number>={}
     for(let round=0;round<3;round++){
       await progress(round?'Preparing the changes':'Reading your request')
+      if(round)history.push({role:'user',parts:[{text:`Runtime budget: ${3-round} responses and ${12-calls} tool calls remain. Use the returned schemas and actual IDs. ${round===2?'This is the final response: prepare the requested semantic edits now if evidence permits, or ask a focused clarification. Do not spend it only inspecting.':'Batch remaining inspections and edits where possible.'}`} ]})
       const reply=await provider.next(config.GEMINI_MODEL_AGENT||config.GEMINI_MODEL_PLAN,history,editingTools,signal)
       history.push(reply.content) // Preserve complete SDK content, including function-call thought signatures.
       for(const [key,value] of Object.entries(reply.usage||{}))usage[key]=(usage[key]||0)+(value||0)
@@ -65,7 +66,10 @@ export async function runAssistant(db:Database,config:Config,provider:EditingPro
       }
       if(responses.length)history.push({role:'user',parts:responses})
       if(!responses.length||round===2){
-        if(!work.descriptions.length){await finish('clarification',text||'Which part of the building would you like to improve?',undefined,usage);return}
+        if(!work.descriptions.length){
+          if(responses.length&&round===2)throw new ApiError(422,'ASSISTANT_LIMIT','The request needs a smaller change. No changes were prepared within its limit.')
+          await finish('clarification',text||'Which part of the building would you like to improve?',undefined,usage);return
+        }
         try{
           const proposal=work.proposal();validateDocumentSize(proposal.document,config.MAX_PROJECT_BYTES)
           const current=await loadDocument(db,run.project_id)
@@ -78,8 +82,8 @@ export async function runAssistant(db:Database,config:Config,provider:EditingPro
   }catch(error){
     const code=error instanceof ApiError?error.code:timeout.aborted?'ASSISTANT_TIMEOUT':outer.aborted?'ASSISTANT_CANCELLED':'ASSISTANT_FAILED'
     const message=code==='ASSISTANT_TIMEOUT'?'This request took too long. Try a smaller change.':error instanceof ApiError?error.message:'The request could not be completed. Your model is unchanged.'
-    await db`UPDATE assistant_runs SET status=${code==='ASSISTANT_STALE'?'stale':'failed'},progress=${message},failure_code=${code} WHERE id=${run.id} AND status IN ('queued','running')`
-    await assistantEvent(db,run.project_id,actor.id,run.id,message,'failed')
+    const failed=await db`UPDATE assistant_runs SET status=${code==='ASSISTANT_STALE'?'stale':'failed'},progress=${message},failure_code=${code} WHERE id=${run.id} AND status IN ('queued','running') RETURNING id`
+    if(failed.length)await assistantEvent(db,run.project_id,actor.id,run.id,message,code==='ASSISTANT_STALE'?'stale':'failed')
     throw error
   }
   async function finish(status:string,message:string,proposal:unknown,usage:Record<string,number>){

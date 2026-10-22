@@ -20,6 +20,7 @@ type State = {
   undo: () => void; redo: () => void; markSaved: (version: number) => void
   setReadOnly: (value: boolean) => void; replaceDocument: (project: Project) => void; adoptDocument: (project: Project) => void
   rememberAccepted: (before: Project) => void
+  editLocked: boolean; setEditLocked: (value: boolean) => void
 }
 const commit = (set: (change: Partial<State>) => void, state: State, next: Project) => {
   confirmManualChanges(state.project!, next)
@@ -29,6 +30,7 @@ const commit = (set: (change: Partial<State>) => void, state: State, next: Proje
 }
 export const useProject = create<State>((set, get) => ({
   project: null, activeLevelId: null, selection: null, tool: 'select', view: 'split', readOnly: false,
+  editLocked: false, setEditLocked: editLocked => set({editLocked}),
   grid: { visible: true, snap: false, step: .1, angle: 0, length: 0 }, history: [], future: [], dirty: false, version: 0, previewBase: null,
   setReadOnly: readOnly => { if (get().readOnly !== readOnly) { get().cancelPreview(); set({ readOnly, tool: 'select' }) } },
   adoptDocument: input => {
@@ -42,7 +44,7 @@ export const useProject = create<State>((set, get) => ({
     else set({snapshotFingerprint:fingerprint})
   },
   replaceDocument: project => {
-    if (get().readOnly) return
+    if (get().readOnly || get().editLocked) return
     get().editProject(() => project)
     set({ selection: null, tool: 'select' })
   },
@@ -52,10 +54,10 @@ export const useProject = create<State>((set, get) => ({
       set({ history: [...state.history.slice(-49), before], future: [] })
     }
   },
-  preview: project => { if (!get().readOnly) set(state => ({ previewBase: state.previewBase || state.project, project: state.project ? shareUnchanged(state.project, project) : project })) },
+  preview: project => { if (!get().readOnly && !get().editLocked) set(state => ({ previewBase: state.previewBase || state.project, project: state.project ? shareUnchanged(state.project, project) : project })) },
   finishPreview: () => {
     const state = get()
-    if (!state.previewBase || !state.project) return
+    if (!state.previewBase || !state.project || state.editLocked) return
     commit(set, { ...state, project: state.previewBase }, state.project); set({ previewBase: null })
   },
   cancelPreview: () => { const state = get(); if (state.previewBase) set({ project: state.previewBase, previewBase: null }) },
@@ -70,14 +72,14 @@ export const useProject = create<State>((set, get) => ({
   setSelection: selection => { get().finishPreview(); set({ selection }) }, setTool: tool => { get().cancelPreview(); if (!get().readOnly || ['select','pan','measure'].includes(tool)) set({ tool }) }, setView: view => set({ view }),
   setGrid: change => set(state => ({ grid: { ...state.grid, ...change } })),
   editProject: change => {
-    if (get().readOnly) return
+    if (get().readOnly || get().editLocked) return
     get().finishPreview()
     const state = get()
     if (!state.project) return
     commit(set, state, change(structuredClone(state.project)))
   },
   edit: change => {
-    if (get().readOnly) return
+    if (get().readOnly || get().editLocked) return
     get().finishPreview()
     const state = get()
     if (!state.project) return
@@ -93,7 +95,7 @@ export const useProject = create<State>((set, get) => ({
     commit(set, state, next)
   },
   undo: () => {
-    if (get().readOnly) return
+    if (get().readOnly || get().editLocked) return
     if (get().previewBase) { get().cancelPreview(); return }
     const state = get()
     if (!state.project || !state.history.length) return
@@ -103,7 +105,7 @@ export const useProject = create<State>((set, get) => ({
       history: state.history.slice(0, -1), future: [...state.future, state.project], dirty: true, version: state.version + 1 })
   },
   redo: () => {
-    if (get().readOnly) return
+    if (get().readOnly || get().editLocked) return
     get().cancelPreview()
     const state = get()
     if (!state.project || !state.future.length) return

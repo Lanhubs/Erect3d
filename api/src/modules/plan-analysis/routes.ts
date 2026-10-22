@@ -17,6 +17,7 @@ import { checksum } from '../../security/tokens'
 import { analysisPasses } from '../ai/passes'
 import { reviewModel } from './review-model'
 import { promptVersion } from '../ai/gemini'
+import { presentAnalysis } from './presentation'
 const review = z.object({ operationId: id, baseRevision: revision,
   candidateIds: z.array(id).max(1000), edits: z.array(candidateSchema).max(1000).default([]), allowConfirmedIds: z.array(id).max(1000).default([]),
   designIds: z.array(id).max(20).default([]),replaceLevel:z.boolean().default(false) }).strict()
@@ -51,7 +52,7 @@ export function analysisRoutes(db: Database, config: Config, startRequested?:(id
     await authorize(db,context.get('actor'),row.project_id)
     const completed = await db`SELECT pass FROM analysis_passes WHERE analysis_id=${analysisId} ORDER BY created_at`
     const stages = analysisPasses(row.options.mode, row.options.complex, row.options.architectureCompletion,row.options.engine==='backend',row.options.purpose==='rebuild' && row.options.strategy!=='detailed')
-    return context.json({ ...row, currentPromptVersion:promptVersion, progress: { completed: completed.map((item: { pass: string }) => item.pass),
+    return context.json({ ...presentAnalysis(row,promptVersion), progress: { completed: completed.map((item: { pass: string }) => item.pass),
       stages:[...stages,...completed.map((item:{pass:string})=>item.pass).filter((pass:string)=>pass.startsWith('validated-model-repair'))], current: stages.find(stage => !completed.some((item: { pass: string }) => item.pass === stage)) || (row.job_status==='running'?'model-validation':'review') } })
   })
   routes.post('/analysis/:analysisId/cancel', async context => {
