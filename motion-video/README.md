@@ -82,4 +82,3 @@ Verification: the film’s two tests cover 3179 assertions. Production build pas
 large-chunk warnings. Browser review confirmed a 1920×1080 drawing buffer and
 composition, and identical full-frame bytes when returning to the same timestamp.
 The standalone browser timeline is also encoded as `output/erect3d-film.mp4`. Generated builds, frames and video remain outside source control.
-

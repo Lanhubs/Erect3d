@@ -1,0 +1,18 @@
+{
+  "src/modules/ai/compact-reconstruction.ts": 288,
+  "src/modules/ai/gemini.ts": 236,
+  "src/modules/assistant/edits.ts": 229,
+  "src/modules/assistant/run.ts": 239,
+  "src/modules/plan-analysis/architectural-systems.ts": 219,
+  "src/modules/plan-analysis/routes.ts": 239,
+  "src/workers/analyze.ts": 355,
+  "tests/architectural-details.test.ts": 328,
+  "tests/assistant.integration.test.ts": 203,
+  "tests/backend-reconstruction.integration.test.ts": 381,
+  "tests/compact-reconstruction.test.ts": 204,
+  "tests/enhancement.integration.test.ts": 294,
+  "tests/jobs.integration.test.ts": 238,
+  "tests/reconstruction-geometry.test.ts": 268,
+  "tests/requested-analysis.integration.test.ts": 253,
+  "tests/source-geometry.test.ts": 241
+}

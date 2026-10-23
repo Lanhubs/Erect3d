@@ -1,0 +1,9 @@
+.git
+.local
+**/node_modules
+**/.local*
+**/.env*
+**/coverage
+**/dist
+**/output
+**/*.log

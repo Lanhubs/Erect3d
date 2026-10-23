@@ -12,5 +12,8 @@ export async function pngSize(file: Blob): Promise<ImageSize> {
 
 export function validateImageSize({ width, height }: ImageSize): void {
   if (width < 1 || height < 1) throw new Error('The plan has invalid image dimensions.')
-  if (width * height > maxPixels) throw new Error(`This plan is ${width} × ${height} pixels (${Math.round(width * height / 1_000_000)} MP). The browser workspace supports up to 256 MP.`)
+  if (width * height > maxPixels)
+    throw new Error(
+      `This plan is ${width} × ${height} pixels (${Math.round((width * height) / 1_000_000)} MP). The browser workspace supports up to 256 MP.`,
+    )
 }

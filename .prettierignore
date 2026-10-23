@@ -1,0 +1,17 @@
+node_modules
+**/node_modules
+.git
+.local
+**/.local*
+**/dist
+**/output
+**/coverage
+**/bun.lock
+**/package-lock.json
+**/*.min.*
+**/public/vendor
+**/*.svg
+**/*.sql
+**/*.patch
+**/*.log
+**/.env*

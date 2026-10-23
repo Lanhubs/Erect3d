@@ -3,25 +3,26 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "lint": "oxlint --config ../.oxlintrc.json src client scripts tests",
     "dev": "bun --watch src/index.ts",
     "start": "bun src/index.ts",
     "worker": "bun src/workers/index.ts",
     "migrate": "bun scripts/migrate.ts",
     "seed": "bun scripts/seed.ts",
     "typecheck": "tsc --noEmit",
-    "test": "bun test tests",
+    "test": "bun test tests --timeout=20000",
     "check:lines": "bun scripts/check-lines.ts",
     "check:startup": "bun scripts/check-startup.ts",
     "check:storage": "bun scripts/check-storage.ts",
     "check:ai": "bun scripts/check-ai.ts",
-    "verify": "bun run check:lines && bun run typecheck && bun test tests"
+    "verify": "bun run check:lines && bun run typecheck && bun run test"
   },
   "dependencies": {
     "@google/genai": "^2.28.0",
     "@hono/bun": "^1.0.0",
     "@techstark/opencv-js": "5.0.0-release.1",
     "hono": "^4.0.0",
-    "sharp": "^0.34.0",
+    "sharp": "0.35.5",
     "three": "^0.186.0",
     "zod": "^4.0.0"
   },

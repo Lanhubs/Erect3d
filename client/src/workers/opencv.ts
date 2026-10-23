@@ -6,7 +6,10 @@ let ready: Promise<typeof cvModule> | undefined
 function openCV() {
   ready ??= (async () => {
     const cv = await cvModule
-    if (!cv.Mat) await new Promise<void>(resolve => { cv.onRuntimeInitialized = resolve })
+    if (!cv.Mat)
+      await new Promise<void>((resolve) => {
+        cv.onRuntimeInitialized = resolve
+      })
     return cv
   })()
   return ready
@@ -15,7 +18,10 @@ function openCV() {
 export async function preparePlan(pixels: Uint8ClampedArray, width: number, height: number) {
   const cv = await openCV()
   const rgba = new cv.Mat(height, width, cv.CV_8UC4)
-  const gray = new cv.Mat(), smooth = new cv.Mat(), binary = new cv.Mat(), fine = new cv.Mat()
+  const gray = new cv.Mat(),
+    smooth = new cv.Mat(),
+    binary = new cv.Mat(),
+    fine = new cv.Mat()
   try {
     rgba.data.set(pixels)
     // Transparent PNG margins render white in the editor. Composite them over
@@ -25,26 +31,45 @@ export async function preparePlan(pixels: Uint8ClampedArray, width: number, heig
       if (alpha === 255) continue
       const transparency = 255 - alpha
       for (let channel = 0; channel < 3; channel++)
-        rgba.data[index + channel] = Math.round((rgba.data[index + channel] * alpha + 255 * transparency) / 255)
+        rgba.data[index + channel] = Math.round(
+          (rgba.data[index + channel] * alpha + 255 * transparency) / 255,
+        )
       rgba.data[index + 3] = 255
     }
     cv.cvtColor(rgba, gray, cv.COLOR_RGBA2GRAY)
     cv.threshold(gray, fine, 0, 255, cv.THRESH_BINARY_INV | cv.THRESH_OTSU)
     if (Math.min(width, height) >= 300) cv.medianBlur(gray, smooth, 3)
-    cv.threshold(Math.min(width, height) >= 300 ? smooth : gray, binary, 0, 255, cv.THRESH_BINARY_INV | cv.THRESH_OTSU)
-    return { structural: Uint8Array.from(binary.data, value => value > 0 ? 1 : 0),
-      fine: Uint8Array.from(fine.data, value => value > 0 ? 1 : 0) }
+    cv.threshold(
+      Math.min(width, height) >= 300 ? smooth : gray,
+      binary,
+      0,
+      255,
+      cv.THRESH_BINARY_INV | cv.THRESH_OTSU,
+    )
+    return {
+      structural: Uint8Array.from(binary.data, (value) => (value > 0 ? 1 : 0)),
+      fine: Uint8Array.from(fine.data, (value) => (value > 0 ? 1 : 0)),
+    }
   } finally {
-    rgba.delete(); gray.delete(); smooth.delete(); binary.delete(); fine.delete()
+    rgba.delete()
+    gray.delete()
+    smooth.delete()
+    binary.delete()
+    fine.delete()
   }
 }
 
 export async function scanDiagonals(mask: Uint8Array, width: number, height: number) {
-  const cv = await openCV(), image = new cv.Mat(height, width, cv.CV_8UC1), lines = new cv.Mat()
+  const cv = await openCV(),
+    image = new cv.Mat(height, width, cv.CV_8UC1),
+    lines = new cv.Mat()
   try {
-    image.data.set(mask.map(value => value ? 255 : 0))
-    const minimum = Math.max(20, Math.min(width, height) * .04)
+    image.data.set(mask.map((value) => (value ? 255 : 0)))
+    const minimum = Math.max(20, Math.min(width, height) * 0.04)
     cv.HoughLinesP(image, lines, 1, Math.PI / 360, Math.round(minimum), minimum, 2)
     return diagonalWalls(lines.data32S, mask, width, height)
-  } finally { image.delete(); lines.delete() }
+  } finally {
+    image.delete()
+    lines.delete()
+  }
 }

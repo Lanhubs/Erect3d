@@ -1,40 +1,59 @@
 import { create } from 'zustand'
 import { api, setExpectedUser } from './api'
 import { RemoteError } from '../../../api/client'
-import { connectionUnavailable,rememberAccount,rememberedAccount } from './offline'
+import { connectionUnavailable, rememberAccount, rememberedAccount } from './offline'
 export type User = { id: string; name: string; email: string }
 type Account = { user: User | null; checking: boolean; error: string; generation: number }
 export const useAccount = create<Account>(() => ({ user: null, checking: false, error: '', generation: 0 }))
-useAccount.subscribe(state => setExpectedUser(state.user?.id || null))
-const channel = typeof BroadcastChannel === 'undefined' ? undefined : new BroadcastChannel('erect-cloud-account')
+useAccount.subscribe((state) => setExpectedUser(state.user?.id || null))
+const channel =
+  typeof BroadcastChannel === 'undefined' ? undefined : new BroadcastChannel('erect-cloud-account')
 let refresh: Promise<void> | undefined
 export function refreshAccount() {
   if (refresh) return refresh
   useAccount.setState({ checking: true, error: '' })
-  refresh = api.session().then(user => { rememberAccount(user);useAccount.setState({ user }) }).catch(error => {
-    if (error instanceof RemoteError && error.status === 401) {rememberAccount(null);useAccount.setState({ user: null })}
-    else if (connectionUnavailable(error)) useAccount.setState({user:useAccount.getState().user || rememberedAccount(),error:'Offline · account verification resumes when connected.'})
-    else useAccount.setState({ error: (error as Error).message })
-  }).finally(() => { refresh = undefined; useAccount.setState({ checking: false }) })
+  refresh = api
+    .session()
+    .then((user) => {
+      rememberAccount(user)
+      useAccount.setState({ user })
+    })
+    .catch((error) => {
+      if (error instanceof RemoteError && error.status === 401) {
+        rememberAccount(null)
+        useAccount.setState({ user: null })
+      } else if (connectionUnavailable(error))
+        useAccount.setState({
+          user: useAccount.getState().user || rememberedAccount(),
+          error: 'Offline · account verification resumes when connected.',
+        })
+      else useAccount.setState({ error: (error as Error).message })
+    })
+    .finally(() => {
+      refresh = undefined
+      useAccount.setState({ checking: false })
+    })
   return refresh
 }
 export async function signIn(email: string, password: string, name?: string) {
   const user = name ? await api.register(name, email, password) : await api.login(email, password)
   rememberAccount(user)
-  useAccount.setState(state => ({ user, error: '', generation: state.generation + 1 }))
+  useAccount.setState((state) => ({ user, error: '', generation: state.generation + 1 }))
   channel?.postMessage('changed')
 }
 export async function signOut() {
   await api.logout()
   rememberAccount(null)
-  useAccount.setState(state => ({ user: null, generation: state.generation + 1 }))
+  useAccount.setState((state) => ({ user: null, generation: state.generation + 1 }))
   channel?.postMessage('changed')
 }
 channel?.addEventListener('message', () => {
   // Hide the previous account's project immediately; recheck the shared HttpOnly cookie.
-  rememberAccount(null);useAccount.setState(state => ({ user: null, generation: state.generation + 1 }))
+  rememberAccount(null)
+  useAccount.setState((state) => ({ user: null, generation: state.generation + 1 }))
   void refreshAccount()
 })
 window.addEventListener('erect-session-expired', () => {
-  rememberAccount(null);useAccount.setState(state => ({ user: null, generation: state.generation + 1 }))
+  rememberAccount(null)
+  useAccount.setState((state) => ({ user: null, generation: state.generation + 1 }))
 })

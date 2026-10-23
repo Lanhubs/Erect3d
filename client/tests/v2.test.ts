@@ -1,6 +1,13 @@
 import { expect, test } from 'bun:test'
 import { fixtureProject } from '../src/domain/fixture'
-import { blankLevel, duplicateLevel, normalizeProject, refreshAutoSlabs, translateLevel, translateWalls } from '../src/domain/levels'
+import {
+  blankLevel,
+  duplicateLevel,
+  normalizeProject,
+  refreshAutoSlabs,
+  translateLevel,
+  translateWalls,
+} from '../src/domain/levels'
 import { atriumBuilding, stairBuilding, threeStoreyBuilding, twoStoreyHouse } from '../src/domain/v2Fixtures'
 import { buildingQuantities, slabArea } from '../src/geometry/quantities'
 import { localToWorld, stairHeightAt, stairLanding, stairOpening, stairSteps } from '../src/geometry/stairs'
@@ -12,10 +19,13 @@ import { roomShapes } from '../src/rendering/roomShape'
 import { findStairPlacement } from '../src/geometry/stairPlacement'
 
 test('V1 data migrates to one level while preserving wall IDs and roof settings', () => {
-  const original = fixtureProject(), level = original.buildings[0].levels[0]
+  const original = fixtureProject(),
+    level = original.buildings[0].levels[0]
   const migrated = normalizeProject(original)
   expect(migrated.buildings[0].levels).toHaveLength(1)
-  expect(migrated.buildings[0].levels[0].walls.map(wall => wall.id)).toEqual(level.walls.map(wall => wall.id))
+  expect(migrated.buildings[0].levels[0].walls.map((wall) => wall.id)).toEqual(
+    level.walls.map((wall) => wall.id),
+  )
   expect(migrated.buildings[0].roof).toEqual(level.roof!)
   expect(migrated.buildings[0].levels[0].slabs).toHaveLength(1)
 })
@@ -47,66 +57,86 @@ test('atrium void removes actual floor area', () => {
 })
 
 test('stair links levels and its opening is contained in upper slab', () => {
-  const building = stairBuilding().buildings[0], [ground, upper] = building.levels
-  const stair = ground.stairs![0], steps = stairSteps(stair, building.levels)
+  const building = stairBuilding().buildings[0],
+    [ground, upper] = building.levels
+  const stair = ground.stairs![0],
+    steps = stairSteps(stair, building.levels)
   expect(steps.length).toBeGreaterThan(10)
   expect(steps.at(-1)!.height).toBeCloseTo(upper.elevation - ground.elevation)
   expect(containsPolygon(upper.slabs![0].polygon, upper.slabs![0].openings[0].polygon)).toBe(true)
-  expect(stairHeightAt(stair, building.levels, { x: stair.start.x + .14, z: stair.start.z })).not.toBeNull()
+  expect(stairHeightAt(stair, building.levels, { x: stair.start.x + 0.14, z: stair.start.z })).not.toBeNull()
 })
 
 test('adding a level and editing its slab are undoable as whole-project changes', () => {
-  const project = twoStoreyHouse(), store = useProject.getState()
+  const project = twoStoreyHouse(),
+    store = useProject.getState()
   store.setProject(project)
-  store.editProject(copy => { copy.buildings[0].levels[1].slabs![0].thickness = .3; return copy })
-  expect(useProject.getState().project!.buildings[0].levels[1].slabs![0].thickness).toBe(.3)
+  store.editProject((copy) => {
+    copy.buildings[0].levels[1].slabs![0].thickness = 0.3
+    return copy
+  })
+  expect(useProject.getState().project!.buildings[0].levels[1].slabs![0].thickness).toBe(0.3)
   useProject.getState().undo()
-  expect(useProject.getState().project!.buildings[0].levels[1].slabs![0].thickness).toBe(.22)
+  expect(useProject.getState().project!.buildings[0].levels[1].slabs![0].thickness).toBe(0.22)
   useProject.getState().redo()
-  expect(useProject.getState().project!.buildings[0].levels[1].slabs![0].thickness).toBe(.3)
+  expect(useProject.getState().project!.buildings[0].levels[1].slabs![0].thickness).toBe(0.3)
 })
 
 test('level alignment moves editable geometry and imported draft walls together', () => {
   const level = atriumBuilding().buildings[0].levels[1]
-  const firstWall = level.walls[0].start.x, firstSlab = level.slabs![0].polygon[0].x
+  const firstWall = level.walls[0].start.x,
+    firstSlab = level.slabs![0].polygon[0].x
   const opening = level.slabs![0].openings[0].polygon[0].x
   translateLevel(level, { x: 1.5, z: -2 })
   expect(level.walls[0].start.x).toBeCloseTo(firstWall + 1.5)
   expect(level.slabs![0].polygon[0].x).toBeCloseTo(firstSlab + 1.5)
   expect(level.slabs![0].openings[0].polygon[0].x).toBeCloseTo(opening + 1.5)
   const draft = { walls: structuredClone(level.walls.slice(0, 1)) }
-  translateWalls(draft, { x: -.5, z: 0 })
+  translateWalls(draft, { x: -0.5, z: 0 })
   expect(draft.walls[0].start.x).toBeCloseTo(firstWall + 1)
 })
 
 test('editing the top roof also updates the building roof used by 3D', () => {
-  const project = twoStoreyHouse(), upper = project.buildings[0].levels[1]
+  const project = twoStoreyHouse(),
+    upper = project.buildings[0].levels[1]
   useProject.getState().setProject(project)
   useProject.getState().setActiveLevel(upper.id)
-  useProject.getState().edit(model => ({ ...model, roof: { ...defaultRoof, shape: 'gable' } }))
+  useProject.getState().edit((model) => ({ ...model, roof: { ...defaultRoof, shape: 'gable' } }))
   expect(useProject.getState().project!.buildings[0].roof?.shape).toBe('gable')
   useProject.getState().undo()
   expect(useProject.getState().project!.buildings[0].roof?.shape).toBe('hip')
 })
 
 test('an upper-floor import is not assigned to Ground during migration', () => {
-  const project = twoStoreyHouse(), upper = project.buildings[0].levels[1]
+  const project = twoStoreyHouse(),
+    upper = project.buildings[0].levels[1]
   upper.sourceId = 'upper-plan'
-  project.sources = [{ id: 'upper-plan', name: 'First.png', mime: 'image/png', width: 1000, height: 800, originalBytes: 4000 }]
+  project.sources = [
+    { id: 'upper-plan', name: 'First.png', mime: 'image/png', width: 1000, height: 800, originalBytes: 4000 },
+  ]
   const normalized = normalizeProject(project)
   expect(normalized.buildings[0].levels[0].sourceId).toBeUndefined()
   expect(normalized.buildings[0].levels[1].sourceId).toBe('upper-plan')
 })
 
 test('straight, L and U stairs climb the same real floor rise', () => {
-  const building = stairBuilding().buildings[0], stair = building.levels[0].stairs![0]
+  const building = stairBuilding().buildings[0],
+    stair = building.levels[0].stairs![0]
   for (const form of ['straight', 'L', 'U'] as const) {
-    const current = { ...stair, form }, steps = stairSteps(current, building.levels)
+    const current = { ...stair, form },
+      steps = stairSteps(current, building.levels)
     expect(steps.at(-1)!.height).toBeCloseTo(building.levels[1].elevation)
-    expect(steps.every((step, index) => index === 0 || step.height - steps[index - 1].height <= .2)).toBe(true)
+    expect(steps.every((step, index) => index === 0 || step.height - steps[index - 1].height <= 0.2)).toBe(
+      true,
+    )
     const landing = stairLanding(current, building.levels)
-    if (landing) expect(stairHeightAt(current, building.levels, localToWorld(current, landing.u, landing.v))).not.toBeNull()
-    expect(containsPolygon(building.levels[1].slabs![0].polygon, stairOpening(current, building.levels))).toBe(true)
+    if (landing)
+      expect(
+        stairHeightAt(current, building.levels, localToWorld(current, landing.u, landing.v)),
+      ).not.toBeNull()
+    expect(
+      containsPolygon(building.levels[1].slabs![0].polygon, stairOpening(current, building.levels)),
+    ).toBe(true)
   }
 })
 
@@ -115,8 +145,25 @@ test('atrium opening cuts the room finish surface above it', () => {
   const voidPolygon = upper.slabs![0].openings[0].polygon
   const pieces = roomShapes(upper.rooms[0], [voidPolygon])
   expect(pieces).toHaveLength(4)
-  expect(pieces.reduce((sum, shape) => sum + Math.abs(shape.getPoints().reduce((area, point, index, points) =>
-    area + point.x * points[(index + 1) % points.length].y - points[(index + 1) % points.length].x * point.y, 0)) / 2, 0)).toBeCloseTo(32)
+  expect(
+    pieces.reduce(
+      (sum, shape) =>
+        sum +
+        Math.abs(
+          shape
+            .getPoints()
+            .reduce(
+              (area, point, index, points) =>
+                area +
+                point.x * points[(index + 1) % points.length].y -
+                points[(index + 1) % points.length].x * point.y,
+              0,
+            ),
+        ) /
+          2,
+      0,
+    ),
+  ).toBeCloseTo(32)
   expect(roomShapes(upper.rooms[1], [voidPolygon])).toHaveLength(1)
 })
 
@@ -136,8 +183,23 @@ test('stair opening cuts floor finish across adjacent rooms', () => {
   const opening = upper.slabs![0].openings[0].polygon
   for (const room of upper.rooms.slice(0, 2)) {
     const pieces = roomShapes(room, [opening])
-    const area = pieces.reduce((sum, shape) => sum + Math.abs(shape.getPoints().reduce((total, point, index, points) =>
-      total + point.x * points[(index + 1) % points.length].y - points[(index + 1) % points.length].x * point.y, 0)) / 2, 0)
+    const area = pieces.reduce(
+      (sum, shape) =>
+        sum +
+        Math.abs(
+          shape
+            .getPoints()
+            .reduce(
+              (total, point, index, points) =>
+                total +
+                point.x * points[(index + 1) % points.length].y -
+                points[(index + 1) % points.length].x * point.y,
+              0,
+            ),
+        ) /
+          2,
+      0,
+    )
     expect(area).toBeLessThan(roomArea(room))
   }
 })
@@ -145,11 +207,16 @@ test('stair opening cuts floor finish across adjacent rooms', () => {
 test('new stairs find a clear route and fit an opening inside the upper slab', () => {
   const building = twoStoreyHouse().buildings[0]
   const sample = stairBuilding().buildings[0].levels[0].stairs![0]
-  const stair = findStairPlacement({ ...sample, fromLevelId: building.levels[0].id,
-    toLevelId: building.levels[1].id }, building.levels, building.levels[1].slabs!)
+  const stair = findStairPlacement(
+    { ...sample, fromLevelId: building.levels[0].id, toLevelId: building.levels[1].id },
+    building.levels,
+    building.levels[1].slabs!,
+  )
   expect(stair).not.toBeNull()
   expect(stair!.direction).toBe(90)
-  expect(containsPolygon(building.levels[1].slabs![0].polygon, stairOpening(stair!, building.levels))).toBe(true)
+  expect(containsPolygon(building.levels[1].slabs![0].polygon, stairOpening(stair!, building.levels))).toBe(
+    true,
+  )
 })
 
 test('adding a storey connects adjacent levels with a stair when a route fits', () => {
@@ -157,13 +224,15 @@ test('adding a storey connects adjacent levels with a stair when a route fits', 
   const [ground, upper] = project.buildings[0].levels
   expect(ground.stairs).toHaveLength(1)
   expect(ground.stairs![0].toLevelId).toBe(upper.id)
-  expect(upper.slabs![0].openings.some(opening => opening.id === ground.stairs![0].openingId)).toBe(true)
+  expect(upper.slabs![0].openings.some((opening) => opening.id === ground.stairs![0].openingId)).toBe(true)
 })
 
 test('normalizing an existing stair restores a missing upper-floor opening', () => {
-  const project = stairBuilding(), [, upper] = project.buildings[0].levels
+  const project = stairBuilding(),
+    [, upper] = project.buildings[0].levels
   upper.slabs![0].openings = []
-  const normalized = normalizeProject(project), [normalizedGround, normalizedUpper] = normalized.buildings[0].levels
+  const normalized = normalizeProject(project),
+    [normalizedGround, normalizedUpper] = normalized.buildings[0].levels
   expect(normalizedGround.stairs).toHaveLength(1)
   expect(normalizedUpper.slabs![0].openings).toHaveLength(1)
   expect(normalizedUpper.slabs![0].openings[0].id).toBe(normalizedGround.stairs![0].openingId)
@@ -172,5 +241,5 @@ test('normalizing an existing stair restores a missing upper-floor opening', () 
 test('duplicating a floor leaves orphaned stair openings behind', () => {
   const building = stairBuilding().buildings[0]
   const duplicate = duplicateLevel(building.levels[1], 'Level 02', 6.4)
-  expect(duplicate.slabs![0].openings.some(opening => opening.kind === 'stair')).toBe(false)
+  expect(duplicate.slabs![0].openings.some((opening) => opening.kind === 'stair')).toBe(false)
 })

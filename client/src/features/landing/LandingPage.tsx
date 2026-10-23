@@ -40,7 +40,9 @@ export function LandingPage({ projects, onStartDesigning, onOpenWorkspace }: Lan
     <div className="landing-page">
       <header className="landing-header">
         <div className="landing-brand" aria-label="Erect3D home">
-          <div className="brand-mark"><img src="/favicon.svg" alt="Erect3D logo" /></div>
+          <div className="brand-mark">
+            <img src="/favicon.svg" alt="Erect3D logo" />
+          </div>
           <span className="brand-word">ERECT3D</span>
         </div>
 
@@ -51,8 +53,14 @@ export function LandingPage({ projects, onStartDesigning, onOpenWorkspace }: Lan
         </nav>
 
         <div className="landing-actions">
-          {hasProjects && <button type="button" className="button button-secondary" onClick={onOpenWorkspace}>Open Workspace</button>}
-          <button type="button" className="button button-primary" onClick={onStartDesigning}>Start Designing</button>
+          {hasProjects && (
+            <button type="button" className="button button-secondary" onClick={onOpenWorkspace}>
+              Open Workspace
+            </button>
+          )}
+          <button type="button" className="button button-primary" onClick={onStartDesigning}>
+            Start Designing
+          </button>
         </div>
       </header>
 
@@ -64,13 +72,17 @@ export function LandingPage({ projects, onStartDesigning, onOpenWorkspace }: Lan
               <span>Experience it in 3D.</span>
             </h1>
             <p className="hero-text">
-              Create a floor plan from scratch or import an existing one, shape the building in 2D,
-              customize its structure and materials, then step inside the result directly from your browser.
+              Create a floor plan from scratch or import an existing one, shape the building in 2D, customize
+              its structure and materials, then step inside the result directly from your browser.
             </p>
 
             <div className="hero-actions">
-              <button type="button" className="button button-primary" onClick={onStartDesigning}>Start Designing</button>
-              <a href="#how-it-works" className="button button-link">See How It Works</a>
+              <button type="button" className="button button-primary" onClick={onStartDesigning}>
+                Start Designing
+              </button>
+              <a href="#how-it-works" className="button button-link">
+                See How It Works
+              </a>
             </div>
           </div>
 
@@ -94,7 +106,7 @@ export function LandingPage({ projects, onStartDesigning, onOpenWorkspace }: Lan
           </div>
 
           <div className="process-grid">
-            {workflow.map(step => (
+            {workflow.map((step) => (
               <article className="process-card" key={step.number}>
                 <div className="process-number">{step.number}</div>
                 <h4>{step.title}</h4>
@@ -128,13 +140,18 @@ export function LandingPage({ projects, onStartDesigning, onOpenWorkspace }: Lan
             <article className="starting-card">
               <div className="starting-topline">CREATE</div>
               <h4>Start from a blank canvas.</h4>
-              <p>Draw the plan directly in the browser and shape the building as you refine the architecture.</p>
+              <p>
+                Draw the plan directly in the browser and shape the building as you refine the architecture.
+              </p>
             </article>
 
             <article className="starting-card">
               <div className="starting-topline">IMPORT</div>
               <h4>Bring in an existing drawing.</h4>
-              <p>Prepare the source scale, reconstruct the plan and continue editing without leaving the workspace.</p>
+              <p>
+                Prepare the source scale, reconstruct the plan and continue editing without leaving the
+                workspace.
+              </p>
             </article>
           </div>
         </section>
@@ -215,21 +232,30 @@ export function LandingPage({ projects, onStartDesigning, onOpenWorkspace }: Lan
           <div className="presentation-copy">
             <p className="eyebrow">FROM WORKSPACE TO PRESENTATION</p>
             <h3>Move from editing to a clean presentation view.</h3>
-            <p>Switch into a presentation environment for exploring the completed design without editor clutter.</p>
+            <p>
+              Switch into a presentation environment for exploring the completed design without editor
+              clutter.
+            </p>
           </div>
-          <button type="button" className="button button-primary" onClick={onOpenWorkspace}>Open Workspace</button>
+          <button type="button" className="button button-primary" onClick={onOpenWorkspace}>
+            Open Workspace
+          </button>
         </section>
 
         <section className="final-cta">
           <p className="eyebrow">YOUR NEXT BUILDING CAN START WITH A LINE.</p>
           <h3>Create the plan. Shape the architecture. Step inside.</h3>
-          <button type="button" className="button button-primary" onClick={onStartDesigning}>Start Designing</button>
+          <button type="button" className="button button-primary" onClick={onStartDesigning}>
+            Start Designing
+          </button>
         </section>
       </main>
 
       <footer className="landing-footer">
         <div className="landing-brand brand-footer">
-          <div className="brand-mark"><img src="/favicon.svg" alt="Erect3D logo" /></div>
+          <div className="brand-mark">
+            <img src="/favicon.svg" alt="Erect3D logo" />
+          </div>
           <span className="brand-word">ERECT3D</span>
         </div>
         <p>Browser-based architectural design and visualization.</p>

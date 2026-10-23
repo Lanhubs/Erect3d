@@ -3,22 +3,24 @@
   flex: none;
   background: #f6f7f4;
   border-left: 1px solid #cbd2c8;
-  overflow: auto
+  overflow: auto;
 }
 
 .panel-title {
   padding: 14px 15px 9px;
   border-bottom: 1px solid #d6dcd4;
-  font: 600 10px 'IBM Plex Mono', monospace;
-  letter-spacing: .1em;
-  color: #6c786d
+  font:
+    600 10px 'IBM Plex Mono',
+    monospace;
+  letter-spacing: 0.1em;
+  color: #6c786d;
 }
 
 .inspector-empty {
   padding: 18px 15px 24px;
   color: #829084;
   font-size: 12px;
-  line-height: 1.55
+  line-height: 1.55;
 }
 
 .summary-grid {
@@ -27,11 +29,11 @@
   gap: 9px;
   padding: 16px;
   color: #68756a;
-  font-size: 12px
+  font-size: 12px;
 }
 
 .summary-grid b {
-  color: #354239
+  color: #354239;
 }
 
 .entity-title {
@@ -39,23 +41,27 @@
   flex-direction: column;
   gap: 4px;
   padding: 15px;
-  border-bottom: 1px solid #d8ded5
+  border-bottom: 1px solid #d8ded5;
 }
 
 .entity-title strong {
-  font: 600 14px 'IBM Plex Mono', monospace;
-  letter-spacing: .03em
+  font:
+    600 14px 'IBM Plex Mono',
+    monospace;
+  letter-spacing: 0.03em;
 }
 
 .entity-title small {
-  font: 10px 'IBM Plex Mono', monospace;
+  font:
+    10px 'IBM Plex Mono',
+    monospace;
   color: #8b978b;
   overflow: hidden;
-  text-overflow: ellipsis
+  text-overflow: ellipsis;
 }
 
 .fields {
-  padding: 7px 15px
+  padding: 7px 15px;
 }
 
 .inspector-field,
@@ -67,9 +73,9 @@
   min-height: 39px;
   font-size: 11px;
   color: #647066;
-  border-bottom: 1px solid #e4e8e1
+  border-bottom: 1px solid #e4e8e1;
 }
-.inspector-field{
+.inspector-field {
   margin: auto 10px auto 10px;
 }
 
@@ -80,12 +86,12 @@
   background: #fff;
   color: #36443a;
   padding: 5px 6px;
-  font-size: 11px
+  font-size: 11px;
 }
 
-.inspector-field input[type=color] {
+.inspector-field input[type='color'] {
   height: 27px;
-  padding: 2px
+  padding: 2px;
 }
 
 .readout b {
@@ -94,7 +100,7 @@
   text-align: right;
   max-width: 130px;
   overflow: hidden;
-  text-overflow: ellipsis
+  text-overflow: ellipsis;
 }
 
 .delete-button {
@@ -103,7 +109,7 @@
   background: #f8f2ef;
   color: #8d574c;
   font-size: 11px;
-  padding: 7px 9px
+  padding: 7px 9px;
 }
 
 .inspector-action {
@@ -112,7 +118,7 @@
   background: #e9eee8;
   color: #35513b;
   padding: 8px 10px;
-  font-size: 11px
+  font-size: 11px;
 }
 
 .roof-controls {
@@ -129,7 +135,7 @@
 }
 
 .roof-controls select,
-.roof-controls input[type=color] {
+.roof-controls input[type='color'] {
   width: 100%;
   min-height: 30px;
   border: 1px solid #c4ccc1;
@@ -138,11 +144,11 @@
   padding: 4px 6px;
 }
 
-.roof-controls input[type=color] {
+.roof-controls input[type='color'] {
   padding: 2px;
 }
 
-.roof-controls input[type=range] {
+.roof-controls input[type='range'] {
   width: 100%;
   accent-color: #9a7047;
 }
@@ -186,7 +192,7 @@
   background: #fbfcf9;
 }
 
-.roof-section-card>summary {
+.roof-section-card > summary {
   cursor: pointer;
   color: #49564b;
   font-size: 11px;
@@ -285,13 +291,15 @@
 }
 
 .site-actions button:disabled {
-  opacity: .45;
+  opacity: 0.45;
 }
 
 .site-subtitle {
   padding: 9px 15px 3px;
   color: #788477;
-  font: 600 9px 'IBM Plex Mono', monospace;
+  font:
+    600 9px 'IBM Plex Mono',
+    monospace;
 }
 
 .site-point {
@@ -332,7 +340,7 @@
 }
 
 .site-point button:disabled {
-  opacity: .35;
+  opacity: 0.35;
 }
 
 .site-add {

@@ -1,0 +1,17 @@
+{
+  "client": {
+    "linePercent": 60,
+    "functionPercent": 76,
+    "files": 288
+  },
+  "api": {
+    "linePercent": 87,
+    "functionPercent": 88,
+    "files": 156
+  },
+  "motion-video": {
+    "linePercent": 99,
+    "functionPercent": 94,
+    "files": 4
+  }
+}

@@ -13,18 +13,18 @@ no Bun, database, storage or Gemini runtime imports.
 
 ## Modules
 
-| Area | Responsibility |
-| --- | --- |
-| `config`, `middleware`, `security` | Validated settings, exact origins, CSRF, errors, rate limits, permissions and logging |
-| `db`, `migrations`, `scripts` | Bun.SQL pool, ordered immutable migrations and verification |
-| `projects`, `versions` | Canonical JSONB snapshots, incremental patches and immutable named states |
-| `auth`, `users`, `teams`, `collaboration` | Identity, hashed opaque sessions and personal/team permissions |
-| `assets`, `storage` | Private upload authorization, verification, source metadata and signed downloads |
-| `jobs`, `workers`, `ai`, `plan-analysis` | Durable processing and reviewed cloud interpretation |
-| `realtime` | Authenticated channels, database notifications, resume, presence and short locks |
-| `comments`, `issues`, `approvals` | Architectural review, lifecycle rules and append-only decisions |
-| `shares`, `presentations` | Revocable scoped links and saved presentation data |
-| `components`, `quantities`, `exports`, `audit` | Scoped materials/components, estimates, actual JSON exports and history |
+| Area                                           | Responsibility                                                                        |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `config`, `middleware`, `security`             | Validated settings, exact origins, CSRF, errors, rate limits, permissions and logging |
+| `db`, `migrations`, `scripts`                  | Bun.SQL pool, ordered immutable migrations and verification                           |
+| `projects`, `versions`                         | Canonical JSONB snapshots, incremental patches and immutable named states             |
+| `auth`, `users`, `teams`, `collaboration`      | Identity, hashed opaque sessions and personal/team permissions                        |
+| `assets`, `storage`                            | Private upload authorization, verification, source metadata and signed downloads      |
+| `jobs`, `workers`, `ai`, `plan-analysis`       | Durable processing and reviewed cloud interpretation                                  |
+| `realtime`                                     | Authenticated channels, database notifications, resume, presence and short locks      |
+| `comments`, `issues`, `approvals`              | Architectural review, lifecycle rules and append-only decisions                       |
+| `shares`, `presentations`                      | Revocable scoped links and saved presentation data                                    |
+| `components`, `quantities`, `exports`, `audit` | Scoped materials/components, estimates, actual JSON exports and history               |
 
 ## Database
 
@@ -61,11 +61,13 @@ together. Persist no animation frames or camera motion.
   "type": "document.patch",
   "entityId": "wall_existing-id",
   "payload": {
-    "changes": [{
-      "action": "put",
-      "path": ["buildings", "building_id", "levels", "level_id", "walls", "wall_existing-id", "height"],
-      "value": 3.2
-    }]
+    "changes": [
+      {
+        "action": "put",
+        "path": ["buildings", "building_id", "levels", "level_id", "walls", "wall_existing-id", "height"],
+        "value": 3.2
+      }
+    ]
   }
 }
 ```
@@ -93,13 +95,13 @@ current validated format. Newer unsupported schemas fail explicitly.
 
 ## Permissions and sessions
 
-| Role | Actions |
-| --- | --- |
-| OWNER | Read, edit, review, approve, manage |
-| EDITOR | Read, edit, review |
-| REVIEWER | Read, review |
-| CLIENT | Read, review; approve only if project setting permits |
-| VIEWER | Read |
+| Role     | Actions                                               |
+| -------- | ----------------------------------------------------- |
+| OWNER    | Read, edit, review, approve, manage                   |
+| EDITOR   | Read, edit, review                                    |
+| REVIEWER | Read, review                                          |
+| CLIENT   | Read, review; approve only if project setting permits |
+| VIEWER   | Read                                                  |
 
 Personal project owners have OWNER permission. Team owners manage all their team's
 projects; the creator of a team project receives their membership role. Direct project

@@ -20,6 +20,8 @@ export function roofOverhang(footprint: Point[], distance: number): Point[] {
     if (Math.abs(denominator) < 1e-8) return [a]
     const along = cross({ x: b.x - a.x, z: b.z - a.z }, outgoing) / denominator
     const intersection = { x: a.x + incoming.x * along, z: a.z + incoming.z * along }
-    return Math.hypot(intersection.x - point.x, intersection.z - point.z) <= distance * 4 ? [intersection] : [a, b]
+    return Math.hypot(intersection.x - point.x, intersection.z - point.z) <= distance * 4
+      ? [intersection]
+      : [a, b]
   })
 }

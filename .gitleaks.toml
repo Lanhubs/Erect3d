@@ -1,0 +1,13 @@
+title = "Erect3D secret scanning"
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Explicit synthetic credentials used only by isolated integration tests"
+regexTarget = "match"
+regexes = [
+  '''fake-test-key''',
+  '''safe-test-password-123''',
+  '''local-development-only''',
+  '''ci-only-password'''
+]

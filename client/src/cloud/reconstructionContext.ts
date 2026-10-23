@@ -7,7 +7,9 @@ export function reconstructionContext(project: Project, levelId: string | null):
   return { projectId: project.id, levelId: level.id, sourceId: level.sourceId || '' }
 }
 export function sameReconstructionSource(a?: ReconstructionContext, b?: ReconstructionContext) {
-  return Boolean(a && b && a.projectId === b.projectId && a.levelId === b.levelId && a.sourceId === b.sourceId)
+  return Boolean(
+    a && b && a.projectId === b.projectId && a.levelId === b.levelId && a.sourceId === b.sourceId,
+  )
 }
 export function currentReconstructionSource(context: ReconstructionContext) {
   const { project, activeLevelId } = useProject.getState()

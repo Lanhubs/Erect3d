@@ -1,0 +1,15 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "enabledManagers": ["bun", "npm", "github-actions", "docker-compose", "dockerfile"],
+  "automerge": false,
+  "prConcurrentLimit": 3,
+  "lockFileMaintenance": { "enabled": true, "schedule": ["before 5am on monday"] },
+  "packageRules": [
+    {
+      "matchPackageNames": ["react", "react-dom", "@react-three/fiber", "three", "@types/three"],
+      "groupName": "rendering compatibility",
+      "automerge": false
+    }
+  ]
+}

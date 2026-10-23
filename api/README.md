@@ -30,7 +30,7 @@ cd ../api
 bun install --frozen-lockfile
 ```
 
-Copy `.env.r2.example` to an ignored `.env.local`. Set `DATABASE_URL` to your development
+Copy `.env.example` to an ignored `.env.local`. Set `DATABASE_URL` to your development
 database. Leave cloud credentials empty to test accounts, projects and collaboration;
 asset and AI routes then return an explicit unavailable error.
 
@@ -44,12 +44,14 @@ For the frontend production preview, also set `VITE_PUBLIC_REGISTRATION=true` in
 Optional Docker services, from the repository root:
 
 ```sh
-docker compose -f api/deploy/local.compose.yml up -d
+docker compose up -d postgres
 ```
 
-That setup uses `postgres://erect_dev:local-development-only@127.0.0.1:55432/erect_api_test`.
-Use this URL only for local development. Redis is on port 56379 and must be 7.2 or newer
-for Bun's native client. PostgreSQL rate limiting works without Redis.
+Development uses `postgres://erect_dev:local-development-only@127.0.0.1:55432/erect_dev`;
+the separate disposable test database is `erect_api_test` on the same local service.
+These credentials are for local development only. Add Redis with
+`docker compose --profile redis up -d redis` on port 56379. PostgreSQL rate limiting
+works without Redis. See the root README to run the API and worker in Compose too.
 
 ```sh
 # Run from api/
@@ -79,8 +81,7 @@ bun build ./client/index.ts --target browser --outfile .local/browser-adapter.js
 ```
 
 `TEST_REDIS_URL` enables the additional native Redis integration test. See
-`ci/github-actions.yml` for the PostgreSQL/Redis GitHub CI template; copy it into the
-repository's `.github/workflows` when you choose to enable it. It is not active yet.
+the root `.github/workflows/ci.yml` for active PostgreSQL/Redis CI checks.
 
 Real cloud checks are separate, operator-invoked commands:
 

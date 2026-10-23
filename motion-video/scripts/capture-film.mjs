@@ -31,12 +31,12 @@ const option = (name, fallback) => {
   const index = args.indexOf(`--${name}`)
   return index >= 0 && args[index + 1] ? args[index + 1] : fallback
 }
-const flag = name => args.includes(`--${name}`)
+const flag = (name) => args.includes(`--${name}`)
 
 const FILM_URL = option('url', 'http://127.0.0.1:5192/motion/erect3d-film')
 const OUT = resolve(option('out', '.local/film-frames'))
 const FPS = Number(option('fps', '30'))
-if(FPS!==30)throw new Error('This film is authored at 30fps.')
+if (FPS !== 30) throw new Error('This film is authored at 30fps.')
 const PORT = Number(option('port', '9333'))
 const FRAME_SPEC = option('frames', 'all')
 const STEP = Number(option('step', '1'))
@@ -51,7 +51,7 @@ const CHROME_CANDIDATES = [
   '/usr/bin/chromium',
 ].filter(Boolean)
 
-const browserPath = CHROME_CANDIDATES.find(path => existsSync(path))
+const browserPath = CHROME_CANDIDATES.find((path) => existsSync(path))
 if (!browserPath) {
   console.error('No Chrome or Edge binary found. Pass --chrome <path>.')
   process.exit(1)
@@ -76,7 +76,7 @@ const browser = spawn(
   { stdio: 'ignore', windowsHide: true },
 )
 
-const sleep = ms => new Promise(done => setTimeout(done, ms))
+const sleep = (ms) => new Promise((done) => setTimeout(done, ms))
 
 async function endpoint() {
   for (let attempt = 0; attempt < 60; attempt += 1) {
@@ -97,7 +97,7 @@ class Session {
     this.id = 0
     this.pending = new Map()
     this.handlers = new Map()
-    socket.addEventListener('message', event => {
+    socket.addEventListener('message', (event) => {
       const message = JSON.parse(event.data)
       if (message.id && this.pending.has(message.id)) {
         const { resolve, reject } = this.pending.get(message.id)
@@ -151,7 +151,7 @@ await session.send(
 )
 await session.send('Page.navigate', { url: url.toString() }, sessionId)
 
-const evaluate = async expression => {
+const evaluate = async (expression) => {
   const result = await session.send(
     'Runtime.evaluate',
     { expression, awaitPromise: true, returnByValue: true },
@@ -177,14 +177,22 @@ if (!ready) {
 const total = 1050
 const frames =
   FRAME_SPEC === 'all'
-    ? Array.from({ length: Math.ceil(total / STEP) }, (_, index) => index * STEP).filter(frame => frame < total)
-    : FRAME_SPEC.split(',').map(value => Number(value.trim())).filter(Number.isFinite)
+    ? Array.from({ length: Math.ceil(total / STEP) }, (_, index) => index * STEP).filter(
+        (frame) => frame < total,
+      )
+    : FRAME_SPEC.split(',')
+        .map((value) => Number(value.trim()))
+        .filter(Number.isFinite)
 
 await mkdir(OUT, { recursive: true })
 for (let index = 0; index < frames.length; index += 1) {
   const frame = frames[index]
   await evaluate(`window.erectFilm.seek(${frame}/30)`)
-  const shot = await session.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false }, sessionId)
+  const shot = await session.send(
+    'Page.captureScreenshot',
+    { format: 'png', captureBeyondViewport: false },
+    sessionId,
+  )
   const file = join(OUT, `frame-${String(frame).padStart(5, '0')}.png`)
   await writeFile(file, Buffer.from(shot.data, 'base64'))
   if (index % 10 === 0 || index === frames.length - 1) {
@@ -196,6 +204,7 @@ console.log(`done: ${frames.length} frames in ${OUT}`)
 if (!flag('keep')) {
   await session.send('Target.closeTarget', { targetId }).catch(() => {})
   browser.kill()
-  if(!resolve(profile).startsWith(resolve(tmpdir())+sep)||!basename(profile).startsWith('erect3d-film-'))throw new Error('Unexpected capture profile path')
+  if (!resolve(profile).startsWith(resolve(tmpdir()) + sep) || !basename(profile).startsWith('erect3d-film-'))
+    throw new Error('Unexpected capture profile path')
   await rm(profile, { recursive: true, force: true }).catch(() => {})
 }

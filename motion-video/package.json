@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "lint": "oxlint --config ../.oxlintrc.json src scripts tests",
     "dev": "vite --host 127.0.0.1 --port 5191 --strictPort",
     "typecheck": "tsc -p tsconfig.json",
     "test": "bun test tests",
@@ -27,6 +28,6 @@
     "@vitejs/plugin-react": "6.1.1",
     "oxlint": "1.85.0",
     "typescript": "6.0.3",
-    "vite": "8.3.0"
+    "vite": "8.3.3"
   }
 }

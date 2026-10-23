@@ -1,0 +1,27 @@
+{
+  "name": "erect3d-repository",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@1.4.2",
+  "scripts": {
+    "setup": "bun scripts/repository.mjs install",
+    "dev:api": "bun scripts/repository.mjs dev:api",
+    "dev:client": "bun scripts/repository.mjs dev:client",
+    "dev:worker": "bun scripts/repository.mjs dev:worker",
+    "dev:film": "bun scripts/repository.mjs dev:film",
+    "lint": "oxlint --config .oxlintrc.json client api motion-video scripts",
+    "format": "bun scripts/format.mjs --write",
+    "format:check": "bun scripts/format.mjs",
+    "typecheck": "bun scripts/repository.mjs typecheck",
+    "test": "bun scripts/repository.mjs test",
+    "coverage": "bun scripts/coverage.mjs",
+    "build": "bun scripts/repository.mjs build",
+    "verify": "bun scripts/repository.mjs verify",
+    "audit": "bun scripts/repository.mjs audit",
+    "test:prepare": "bun scripts/test-database.mjs"
+  },
+  "devDependencies": {
+    "oxlint": "1.85.0",
+    "prettier": "3.9.10"
+  }
+}

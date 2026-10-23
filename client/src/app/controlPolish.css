@@ -1,9 +1,22 @@
 /* Shared control treatments; renderer surfaces and building materials are untouched. */
-body :is(.studio-workspace, .project-browser, .cloud-page, .cloud-tools, .cloud-dialog, .assistant-dialog, .confirmation-dialog) :is(button, summary) {
+body
+  :is(
+    .studio-workspace,
+    .project-browser,
+    .cloud-page,
+    .cloud-tools,
+    .cloud-dialog,
+    .assistant-dialog,
+    .confirmation-dialog
+  )
+  :is(button, summary) {
   box-shadow: none;
   font-family: 'DM Sans', sans-serif;
   font-weight: 500;
-  transition: background-color .12s, border-color .12s, color .12s;
+  transition:
+    background-color 0.12s,
+    border-color 0.12s,
+    color 0.12s;
 }
 
 body :is(.drawer-content, .cloud-tools, .cloud-dialog, .project-dialog, .confirmation-dialog) button {
@@ -17,45 +30,49 @@ body :is(.drawer-content, .cloud-tools, .cloud-dialog, .project-dialog, .confirm
   line-height: 1.3;
 }
 
-body :is(.drawer-content, .cloud-tools, .cloud-dialog, .project-dialog, .confirmation-dialog) button:hover:not(:disabled) {
+body
+  :is(.drawer-content, .cloud-tools, .cloud-dialog, .project-dialog, .confirmation-dialog)
+  button:hover:not(:disabled) {
   background: var(--brand-tint);
   border-color: #cbb79f;
-  color: var(--brand-strong)
+  color: var(--brand-strong);
 }
 
-body :is(.drawer-content, .cloud-tools, .cloud-dialog) button[aria-pressed=true] {
+body :is(.drawer-content, .cloud-tools, .cloud-dialog) button[aria-pressed='true'] {
   background: var(--brand-tint);
   border-color: var(--brand-accent);
-  color: var(--brand-strong)
+  color: var(--brand-strong);
 }
 
-body :is(.drawer-content, .cloud-tools, .cloud-dialog, .project-dialog, .confirmation-dialog) button:disabled {
-  opacity: .45;
-  cursor: not-allowed
+body
+  :is(.drawer-content, .cloud-tools, .cloud-dialog, .project-dialog, .confirmation-dialog)
+  button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 body button.destructive {
   background: #f9eeea;
   color: #923e32;
-  border-color: #dfbbb2
+  border-color: #dfbbb2;
 }
 
 body button.destructive:hover:not(:disabled) {
   background: #f2ddd5;
   color: #7c2e24;
-  border-color: #c99082
+  border-color: #c99082;
 }
 
 body .confirmation-dialog {
   padding: 24px;
   border-radius: 10px;
-  box-shadow: 0 8px 32px #39271818
+  box-shadow: 0 8px 32px #39271818;
 }
 
 body .confirmation-dialog h2 {
   font-size: 18px;
   margin-bottom: 12px;
-  letter-spacing: -.02em
+  letter-spacing: -0.02em;
 }
 
 .confirmation-item {
@@ -64,7 +81,7 @@ body .confirmation-dialog h2 {
   background: #f1ede6;
   border-radius: 5px;
   font-size: 13px;
-  overflow-wrap: anywhere
+  overflow-wrap: anywhere;
 }
 
 body .plan-settings-panel {
@@ -73,38 +90,38 @@ body .plan-settings-panel {
   border: 1px solid var(--control-border);
   border-radius: 8px;
   box-shadow: 0 6px 24px #39271818;
-  z-index: 55
+  z-index: 55;
 }
 
 body .plan-settings-panel label {
-  color: var(--control-ink)
+  color: var(--control-ink);
 }
 
 body .plan-settings-panel small {
-  color: var(--control-muted)
+  color: var(--control-muted);
 }
 
 body .plan-settings-panel :is(input, select) {
   accent-color: var(--brand-strong);
   border-color: var(--control-border);
   color: var(--control-ink);
-  border-radius: 4px
+  border-radius: 4px;
 }
 
 body .confirmation-dialog p {
   color: var(--control-muted);
   font-size: 13px;
-  margin: 14px 0 22px
+  margin: 14px 0 22px;
 }
 
 body .confirmation-dialog .error {
   color: #923e32;
-  margin: 10px 0
+  margin: 10px 0;
 }
 
 body .confirmation-dialog button {
   min-height: 38px;
-  padding-inline: 15px
+  padding-inline: 15px;
 }
 
 body .studio-workspace.studio-workspace .furniture-tools {
@@ -112,42 +129,42 @@ body .studio-workspace.studio-workspace .furniture-tools {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
-  padding: 12px 0
+  padding: 12px 0;
 }
 
-body .studio-workspace.studio-workspace .furniture-tools>label {
+body .studio-workspace.studio-workspace .furniture-tools > label {
   grid-column: 1/-1;
   line-height: 1.5;
   gap: 8px;
-  font-size: 12px
+  font-size: 12px;
 }
 
-body .studio-workspace.studio-workspace .furniture-tools>button:first-of-type {
+body .studio-workspace.studio-workspace .furniture-tools > button:first-of-type {
   grid-column: 1/-1;
-  text-align: left
+  text-align: left;
 }
 
-body .studio-workspace.studio-workspace .furniture-tools>select {
+body .studio-workspace.studio-workspace .furniture-tools > select {
   min-width: 0;
   width: 100%;
-  grid-column: 1
+  grid-column: 1;
 }
 
-body .studio-workspace.studio-workspace .furniture-tools>button:nth-of-type(2) {
+body .studio-workspace.studio-workspace .furniture-tools > button:nth-of-type(2) {
   grid-column: 1/-1;
-  justify-self: start
+  justify-self: start;
 }
 
 body .studio-workspace.studio-workspace .furniture-tools :is(button, select) {
   min-height: 34px;
   font-size: 12px;
   border-radius: 5px;
-  box-shadow: none
+  box-shadow: none;
 }
 
 body .studio-workspace.studio-workspace .furniture-panel {
   padding: 0;
-  border: 0
+  border: 0;
 }
 
 body .studio-workspace.studio-workspace .studio-collaborate {
@@ -156,76 +173,88 @@ body .studio-workspace.studio-workspace .studio-collaborate {
   padding-inline: 10px;
   font-size: 12px;
   border: 1px solid var(--control-border);
-  border-radius: 5px
+  border-radius: 5px;
 }
 
 body .studio-workspace.studio-workspace .studio-present {
   display: flex;
   align-items: center;
   gap: 5px;
-  padding-inline: 9px
+  padding-inline: 9px;
 }
 
 body .studio-workspace.studio-workspace .studio-present svg {
   width: 13px;
-  height: 13px
+  height: 13px;
 }
 
 body .studio-workspace.studio-workspace .studio-view-dock {
-  right: 12px
+  right: 12px;
 }
 
-body :is(.workspace-drawer, .assistant-dialog, .cloud-tools, .cloud-dialog, .project-dialog, .confirmation-dialog) {
-  box-shadow: 0 6px 24px #39271818
+body
+  :is(
+    .workspace-drawer,
+    .assistant-dialog,
+    .cloud-tools,
+    .cloud-dialog,
+    .project-dialog,
+    .confirmation-dialog
+  ) {
+  box-shadow: 0 6px 24px #39271818;
 }
 
 /* Consistent scrollbars without forcing them onto empty content. */
-@media(forced-colors:none) {
+@media (forced-colors: none) {
   :is(.studio-workspace, .project-browser, .cloud-page, .cloud-tools, .cloud-dialog, .assistant-dialog) * {
     scrollbar-width: thin;
-    scrollbar-color: #bdac97 transparent
+    scrollbar-color: #bdac97 transparent;
   }
 
-  :is(.studio-workspace, .project-browser, .cloud-page, .cloud-tools, .cloud-dialog, .assistant-dialog) ::-webkit-scrollbar {
+  :is(.studio-workspace, .project-browser, .cloud-page, .cloud-tools, .cloud-dialog, .assistant-dialog)
+    ::-webkit-scrollbar {
     width: 7px;
-    height: 7px
+    height: 7px;
   }
 
-  :is(.studio-workspace, .project-browser, .cloud-page, .cloud-tools, .cloud-dialog, .assistant-dialog) ::-webkit-scrollbar-track {
-    background: transparent
+  :is(.studio-workspace, .project-browser, .cloud-page, .cloud-tools, .cloud-dialog, .assistant-dialog)
+    ::-webkit-scrollbar-track {
+    background: transparent;
   }
 
-  :is(.studio-workspace, .project-browser, .cloud-page, .cloud-tools, .cloud-dialog, .assistant-dialog) ::-webkit-scrollbar-thumb {
+  :is(.studio-workspace, .project-browser, .cloud-page, .cloud-tools, .cloud-dialog, .assistant-dialog)
+    ::-webkit-scrollbar-thumb {
     background: #bdac97;
     border: 2px solid var(--control-surface);
-    border-radius: 8px
+    border-radius: 8px;
   }
 
-  :is(.studio-workspace, .project-browser, .cloud-page, .cloud-tools, .cloud-dialog, .assistant-dialog) ::-webkit-scrollbar-thumb:hover {
-    background: #947956
+  :is(.studio-workspace, .project-browser, .cloud-page, .cloud-tools, .cloud-dialog, .assistant-dialog)
+    ::-webkit-scrollbar-thumb:hover {
+    background: #947956;
   }
 }
 
 body .assistant-dialog {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  max-height: calc(100dvh - 170px)
+  max-height: calc(100dvh - 170px);
 }
 
 body .assistant-dialog[hidden] {
-  display: none
+  display: none;
 }
 
-body .assistant-dialog>form {
+body .assistant-dialog > form {
   max-height: none;
   overflow: visible;
-  padding: 12px 16px 14px
+  padding: 12px 16px 14px;
 }
 
 body .assistant-dialog .assistant-conversation {
   min-height: 0;
   padding: 14px 16px;
-  overflow: auto
+  overflow: auto;
 }
 
 .assistant-conversation-btns {
@@ -233,20 +262,20 @@ body .assistant-dialog .assistant-conversation {
 }
 
 body .assistant-dialog .assistant-empty {
-  padding: 0
+  padding: 0;
 }
 
 body .assistant-dialog .assistant-empty h3 {
   font-size: 16px;
   font-weight: 500;
-  letter-spacing: -.02em;
-  margin: 0 0 8px
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
 }
 
 body .assistant-dialog .assistant-empty p {
   line-height: 1.55;
   margin: 0 0 14px;
-  font-size: 12px
+  font-size: 12px;
 }
 
 body .assistant-dialog .assistant-empty button {
@@ -255,28 +284,28 @@ body .assistant-dialog .assistant-empty button {
   padding: 8px 10px;
   width: 100%;
   background: #f5f1eb;
-  border-color: transparent
+  border-color: transparent;
 }
 
 body .assistant-dialog .assistant-empty button:hover {
   background: var(--brand-tint);
-  color: var(--brand-strong)
+  color: var(--brand-strong);
 }
 
 body .assistant-dialog.assistant-intro {
   bottom: auto;
   height: auto;
-  grid-template-rows: auto auto auto
+  grid-template-rows: auto auto auto;
 }
 
-body .assistant-dialog>header {
-  padding: 12px 16px
+body .assistant-dialog > header {
+  padding: 12px 16px;
 }
 
 body .assistant-dialog textarea {
   min-height: 66px;
   max-height: 120px;
-  resize: none
+  resize: none;
 }
 
 /* Quiet fields retain a visible keyboard focus state without an outer outline. */
@@ -290,17 +319,17 @@ body :is(.cloud-signin, .project-dialog) :is(input, select) {
   padding: 12px;
   color: var(--control-ink);
   width: 100%;
-  min-height: 44px
+  min-height: 44px;
 }
 
 body :is(.cloud-signin, .project-dialog) :is(input, select):focus {
   border-color: var(--brand-strong);
-  background: #fffdf9
+  background: #fffdf9;
 }
 
 body :is(.cloud-signin, .project-dialog) :is(input, select):focus-visible {
   border-bottom-width: 3px;
-  padding-bottom: 10px
+  padding-bottom: 10px;
 }
 
 body .project-browser .project-dialog {
@@ -308,11 +337,11 @@ body .project-browser .project-dialog {
   color: var(--control-ink);
   border-color: var(--control-border);
   padding: 24px;
-  border-radius: 10px
+  border-radius: 10px;
 }
 
 body .project-dialog :is(label, p) {
-  color: var(--control-muted)
+  color: var(--control-muted);
 }
 
 body .cloud-page:has(.cloud-signin) {
@@ -320,25 +349,25 @@ body .cloud-page:has(.cloud-signin) {
   background: #f3f0ea;
   padding: 32px;
   display: flex;
-  flex-direction: column
+  flex-direction: column;
 }
 
 body .cloud-page:has(.cloud-signin) .cloud-page-header {
   width: 100%;
   max-width: 1120px;
-  margin: 0 auto
+  margin: 0 auto;
 }
 
 body .cloud-page:has(.cloud-signin) .cloud-page-header h1 {
   font-size: 13px;
   font-weight: 500;
-  color: var(--control-muted)
+  color: var(--control-muted);
 }
 
 body .cloud-page:has(.cloud-signin) .cloud-page-header a {
   color: var(--brand-strong);
   text-decoration: none;
-  font-weight: 500
+  font-weight: 500;
 }
 
 body .cloud-signin {
@@ -347,100 +376,102 @@ body .cloud-signin {
   padding: 34px 0;
   border: 0;
   border-radius: 0;
-  background: transparent
+  background: transparent;
 }
 
 .signin-brand {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 30px
+  margin-bottom: 30px;
 }
 
 .signin-brand img {
   width: 36px;
-  height: 36px
+  height: 36px;
 }
 
 .signin-brand span {
   font-size: 15px;
-  letter-spacing: .14em
+  letter-spacing: 0.14em;
 }
 
 body .cloud-signin .signin-eyebrow {
-  font: 10px 'IBM Plex Mono', monospace;
-  letter-spacing: .1em;
+  font:
+    10px 'IBM Plex Mono',
+    monospace;
+  letter-spacing: 0.1em;
   color: var(--brand-strong);
-  margin: 0 0 10px
+  margin: 0 0 10px;
 }
 
 body .cloud-signin h2 {
   font-size: 29px;
   line-height: 1.2;
   font-weight: 500;
-  letter-spacing: -.04em;
-  margin: 0 0 12px
+  letter-spacing: -0.04em;
+  margin: 0 0 12px;
 }
 
-body .cloud-signin>p:not(.signin-eyebrow) {
+body .cloud-signin > p:not(.signin-eyebrow) {
   font-size: 13px;
   line-height: 1.7;
   color: var(--control-muted);
-  margin: 0 0 26px
+  margin: 0 0 26px;
 }
 
 body .cloud-signin form {
-  gap: 18px
+  gap: 18px;
 }
 
 body .cloud-signin label {
   gap: 8px;
   color: var(--control-muted);
-  font-size: 12px
+  font-size: 12px;
 }
 
-body .cloud-signin form>button {
+body .cloud-signin form > button {
   min-height: 44px;
   border-radius: 5px;
-  font-size: 13px
+  font-size: 13px;
 }
 
-body .cloud-signin form>button:not(.primary) {
+body .cloud-signin form > button:not(.primary) {
   background: transparent;
   border-color: transparent;
-  color: var(--brand-strong)
+  color: var(--brand-strong);
 }
 
-@media(min-width:701px) and (max-width:1500px) {
+@media (min-width: 701px) and (max-width: 1500px) {
   body .studio-workspace.studio-workspace .studio-view-dock {
-    bottom: 108px
+    bottom: 108px;
   }
 }
 
-@media(max-width:700px) {
+@media (max-width: 700px) {
   body .studio-workspace.studio-workspace .studio-filebar .studio-home {
     width: 44px;
     min-width: 44px;
-    min-height: 44px
+    min-height: 44px;
   }
 
-  body .plan-settings-panel :is(label, select, input[type=number]) {
-    min-height: 44px
+  body .plan-settings-panel :is(label, select, input[type='number']) {
+    min-height: 44px;
   }
 
   body .studio-workspace.studio-workspace .studio-present {
-    display: none
+    display: none;
   }
 
   body .studio-workspace.studio-workspace .studio-collaborate {
     min-height: 44px;
     font-size: 11px;
-    padding-inline: 7px
+    padding-inline: 7px;
   }
 
   body .studio-workspace.studio-workspace .furniture-tools :is(button, select),
   body :is(.drawer-content, .cloud-tools, .cloud-dialog, .project-dialog, .confirmation-dialog) button {
-    min-height: 44px
+    min-height: 44px;
   }
 
   body .assistant-dialog,
@@ -449,28 +480,28 @@ body .cloud-signin form>button:not(.primary) {
     width: 100%;
     height: 100dvh;
     max-height: none;
-    grid-template-rows: auto minmax(0, 1fr) auto
+    grid-template-rows: auto minmax(0, 1fr) auto;
   }
 
-  body .assistant-dialog>form {
-    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px))
+  body .assistant-dialog > form {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   }
 
   body .assistant-dialog .assistant-empty {
-    padding-top: 8px
+    padding-top: 8px;
   }
 
   body .cloud-page:has(.cloud-signin) {
-    padding: 20px
+    padding: 20px;
   }
 
   .signin-brand {
-    margin-bottom: 24px
+    margin-bottom: 24px;
   }
 }
 
-@media(prefers-reduced-motion:reduce) {
+@media (prefers-reduced-motion: reduce) {
   body :is(button, summary) {
-    transition: none !important
+    transition: none !important;
   }
 }

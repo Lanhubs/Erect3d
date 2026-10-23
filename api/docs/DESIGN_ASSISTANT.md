@@ -42,13 +42,13 @@ the coordinated confirmation container instead of browser-native confirmations.
 All routes require normal project permissions; another collaborator cannot read
 or apply the requesting user's private run.
 
-| Route under `/api/v1/projects/:projectId/assistant` | Purpose |
-| --- | --- |
-| `GET /thread?cursor=…` | Last 30 messages, pagination, current saved run |
-| `POST /messages` | Idempotent prompt, scope, base revision, optional references |
-| `GET /runs/:runId` | Reconnect recovery, including stale state |
-| `POST /runs/:runId/cancel` | Cancel work or discard an unapplied proposal |
-| `POST /runs/:runId/apply` | Atomically validate revision/permissions/locks and commit |
+| Route under `/api/v1/projects/:projectId/assistant` | Purpose                                                      |
+| --------------------------------------------------- | ------------------------------------------------------------ |
+| `GET /thread?cursor=…`                              | Last 30 messages, pagination, current saved run              |
+| `POST /messages`                                    | Idempotent prompt, scope, base revision, optional references |
+| `GET /runs/:runId`                                  | Reconnect recovery, including stale state                    |
+| `POST /runs/:runId/cancel`                          | Cancel work or discard an unapplied proposal                 |
+| `POST /runs/:runId/apply`                           | Atomically validate revision/permissions/locks and commit    |
 
 Gemini receives typed inspect/find/schema/edit/validate tools. Complete SDK model
 content, function call IDs and thought signatures are retained through rounds.

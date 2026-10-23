@@ -1,0 +1,86 @@
+name: Verify Erect3D
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: erect_test
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: erect_api_test
+        ports: ['5432:5432']
+        options: --health-cmd "pg_isready -U erect_test -d erect_api_test" --health-interval 3s --health-timeout 3s --health-retries 20
+      redis:
+        image: redis:7.4-alpine
+        ports: ['6379:6379']
+        options: --health-cmd "redis-cli ping" --health-interval 3s --health-timeout 3s --health-retries 20
+    env:
+      CI: 'true'
+      NODE_ENV: test
+      DATABASE_URL: postgres://erect_test:ci-only-password@127.0.0.1:5432/erect_api_test
+      TEST_DATABASE_URL: postgres://erect_test:ci-only-password@127.0.0.1:5432/erect_api_test
+      TEST_REDIS_URL: redis://127.0.0.1:6379
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.4.2
+      - name: Install repository tools
+        run: bun install --frozen-lockfile
+      - name: Install packages
+        run: bun run setup
+      - name: Lint
+        run: bun run lint
+      - name: Formatting
+        run: bun run format:check
+      - name: Type checks
+        run: bun run typecheck
+      - name: Migrate disposable test database
+        run: bun run test:prepare
+      - name: Test repository tooling
+        run: bun test scripts/tests
+      - name: Tests and coverage gates
+        run: bun run coverage
+      - name: Production web builds
+        run: bun run build
+      - name: Backend packaging smoke check
+        run: docker build -f api/deploy/Dockerfile -t erect3d-api:ci .
+      - name: Coverage reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: coverage
+          path: |
+            coverage/
+            client/coverage/
+            api/coverage/
+            motion-video/coverage/
+          if-no-files-found: warn
+  security:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Scan pristine checkout for secrets (redacted)
+        run: docker run --rm -v "$PWD:/repo:ro" zricethezav/gitleaks:v8.24.3 detect --source /repo --no-git --redact --config /repo/.gitleaks.toml
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.4.2
+      - run: bun install --frozen-lockfile && bun run setup
+      - name: Dependency advisories (high and critical)
+        run: bun run audit

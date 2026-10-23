@@ -9,7 +9,13 @@ function setClippingPlanes(renderer: WebGLRenderer, height: number | null, verti
   ]
 }
 
-export function SectionPlane({ height, vertical = null }: { height: number | null; vertical?: number | null }) {
+export function SectionPlane({
+  height,
+  vertical = null,
+}: {
+  height: number | null
+  vertical?: number | null
+}) {
   const { gl } = useThree()
   useEffect(() => {
     setClippingPlanes(gl, height, vertical)

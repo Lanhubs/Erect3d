@@ -5,8 +5,15 @@ import { currentReconstructionSource, type ReconstructionContext } from './recon
 // mounting: a source can change before React runs an effect's cleanup.
 export function useSourceScope(context: ReconstructionContext) {
   const alive = useRef(true)
-  useEffect(() => { alive.current = true; return () => { alive.current = false } }, [])
+  useEffect(() => {
+    alive.current = true
+    return () => {
+      alive.current = false
+    }
+  }, [])
   const current = () => alive.current && currentReconstructionSource(context)
-  const assertCurrent = () => { if (!current()) throw new Error('The floor plan changed. Reconstruct the current source.') }
+  const assertCurrent = () => {
+    if (!current()) throw new Error('The floor plan changed. Reconstruct the current source.')
+  }
   return { current, assertCurrent }
 }

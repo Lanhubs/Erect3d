@@ -7,7 +7,8 @@ describe('large source plans', () => {
     header.set([137, 80, 78, 71, 13, 10, 26, 10], 0)
     header.set([73, 72, 68, 82], 12)
     const view = new DataView(header.buffer)
-    view.setUint32(16, 20_000); view.setUint32(20, 10_000)
+    view.setUint32(16, 20_000)
+    view.setUint32(20, 10_000)
     expect(await pngSize(new Blob([header]))).toEqual({ width: 20_000, height: 10_000 })
   })
 

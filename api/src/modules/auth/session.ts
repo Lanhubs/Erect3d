@@ -18,15 +18,19 @@ export async function extendSession(db: Database, actor: Actor, config: Config) 
     WHERE id=${actor.sessionId} AND revoked_at IS NULL`
 }
 export async function createSession(db: Database, userId: string, config: Config, device: string) {
-  const raw = token(), csrf = token(), sessionId = newId('session')
+  const raw = token(),
+    csrf = token(),
+    sessionId = newId('session')
   await db`INSERT INTO sessions(id,user_id,token_hash,csrf_hash,expires_at,idle_expires_at,device)
     VALUES (${sessionId},${userId},${digest(raw)},${digest(csrf)},
       now()+${config.SESSION_ABSOLUTE_SECONDS}*interval '1 second',
-      now()+${config.SESSION_IDLE_SECONDS}*interval '1 second',${device.slice(0,200)})`
+      now()+${config.SESSION_IDLE_SECONDS}*interval '1 second',${device.slice(0, 200)})`
   return { raw, csrf, sessionId }
 }
 export async function verifyCsrf(db: Database, actor: Actor, csrf: string | undefined) {
-  if (!csrf || csrf.length !== 43) throw new ApiError(403, 'CSRF_FAILED', 'Refresh your session before making changes')
-  const [row] = await db`SELECT 1 FROM sessions WHERE id=${actor.sessionId} AND csrf_hash=${digest(csrf)} AND revoked_at IS NULL`
+  if (!csrf || csrf.length !== 43)
+    throw new ApiError(403, 'CSRF_FAILED', 'Refresh your session before making changes')
+  const [row] =
+    await db`SELECT 1 FROM sessions WHERE id=${actor.sessionId} AND csrf_hash=${digest(csrf)} AND revoked_at IS NULL`
   if (!row) throw new ApiError(403, 'CSRF_FAILED', 'Refresh your session before making changes')
 }

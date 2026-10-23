@@ -99,7 +99,7 @@ already incurred. Ordinary tests use fake providers and spend no Gemini quota.
 `.env.example` contains configuration for database/TLS/CA, exact origins, sessions, private
 R2, optional Gemini/model policies, Redis/PostgreSQL protection, quotas, snapshots, worker
 leases, logs and trusted proxies. `.env*`, `.local/`, dependencies and logs are ignored;
-only placeholder `.env.example` and `.env.r2.example` templates are intended for Git.
+only placeholder `.env.example` templates are intended for Git.
 Credentials found in the edited template were preserved under ignored `.local/` and removed
 from the tracked template. No actual credentials appear in deployment templates.
 
@@ -649,7 +649,6 @@ native tower rendering, end-to-end Open/Duplicate visual framing and the final
 phone capture are not accepted. API tests verify both independent creation paths,
 save/reopen, template edits and detachment; these are not native visual evidence.
 Full graphics acceptance is incomplete. Nothing was pushed or deployed.
-
 
 ## 30. Compact studio workspace, Projects and fixed-quality navigation
 

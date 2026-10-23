@@ -1,10 +1,16 @@
 import { createHash } from 'node:crypto'
 import type { Plugin } from 'vite'
-export function offlineShell():Plugin {
-  return {name:'erect-offline-shell',apply:'build',generateBundle(_options,bundle) {
-    const files=['/','/favicon.svg',...Object.keys(bundle).map(file=>`/${file}`)]
-    const version=createHash('sha256').update(JSON.stringify(files)).digest('hex').slice(0,16)
-    this.emitFile({type:'asset',fileName:'offline-worker.js',source:`
+export function offlineShell(): Plugin {
+  return {
+    name: 'erect-offline-shell',
+    apply: 'build',
+    generateBundle(_options, bundle) {
+      const files = ['/', '/favicon.svg', ...Object.keys(bundle).map((file) => `/${file}`)]
+      const version = createHash('sha256').update(JSON.stringify(files)).digest('hex').slice(0, 16)
+      this.emitFile({
+        type: 'asset',
+        fileName: 'offline-worker.js',
+        source: `
 const cacheName='erect-shell-${version}',files=${JSON.stringify(files)};
 self.addEventListener('install',event=>event.waitUntil(caches.open(cacheName).then(cache=>cache.addAll(files))));
 self.addEventListener('activate',event=>event.waitUntil((async()=>{
@@ -28,6 +34,8 @@ self.addEventListener('fetch',event=>{
     if(saved)return saved;
     const response=await fetch(request);if(response.ok)await cache.put(request,response.clone());return response;
   })());
-});`})
-  }}
+});`,
+      })
+    },
+  }
 }

@@ -1,105 +1,104 @@
 .furniture-panel {
-    border-bottom: 1px solid #d2d8cd;
-    background: #f6f7f3;
-    font-size: 11px;
-    padding: 4px 8px
+  border-bottom: 1px solid #d2d8cd;
+  background: #f6f7f3;
+  font-size: 11px;
+  padding: 4px 8px;
 }
 
 .furniture-panel summary {
-    font-weight: 600;
-    cursor: pointer
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .furniture-tools,
 .furniture-correction {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    flex-wrap: wrap;
-    padding: 6px 0
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 6px 0;
 }
 
 .furniture-panel p {
-    margin: 2px 0 6px
+  margin: 2px 0 6px;
 }
 
 .furniture-panel label {
-    display: flex;
-    gap: 4px;
-    align-items: center
+  display: flex;
+  gap: 4px;
+  align-items: center;
 }
 
 .furniture-panel small {
-    display: block;
-    padding: 4px 0;
-    color: #536355
+  display: block;
+  padding: 4px 0;
+  color: #536355;
 }
 
 .furniture-candidates {
-    display: flex;
-    gap: 5px;
-    max-height: 100px;
-    overflow: auto;
-    flex-wrap: wrap
+  display: flex;
+  gap: 5px;
+  max-height: 100px;
+  overflow: auto;
+  flex-wrap: wrap;
 }
 
-.furniture-candidates button[aria-pressed=true] {
-    outline: 2px solid #367bb0
+.furniture-candidates button[aria-pressed='true'] {
+  outline: 2px solid #367bb0;
 }
 
 .proposal-accepted {
-    border-color: #478363 !important
+  border-color: #478363 !important;
 }
 
 .proposal-rejected {
-    opacity: .5;
-    border-color: #9b5b55 !important
+  opacity: 0.5;
+  border-color: #9b5b55 !important;
 }
 
 .furniture-correction input {
-    width: 65px
+  width: 65px;
 }
 
 .furniture-warnings {
-    color: #876133;
-    font-size: 11px
+  color: #876133;
+  font-size: 11px;
 }
 
 .furniture-inspector .fields {
-    padding: 10px
+  padding: 10px;
 }
 
 .furniture-panel button,
 .furniture-panel select {
-    min-height: 28px
+  min-height: 28px;
 }
 
-.furniture-panel input[type=checkbox] {
-    accent-color: #36785c
+.furniture-panel input[type='checkbox'] {
+  accent-color: #36785c;
 }
 
-@media(max-width:600px) {
+@media (max-width: 600px) {
+  .furniture-panel button,
+  .furniture-panel select {
+    min-height: 36px;
+  }
 
-    .furniture-panel button,
-    .furniture-panel select {
-        min-height: 36px
-    }
+  .furniture-tools {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
 
-    .furniture-tools {
-        display: grid;
-        grid-template-columns: 1fr 1fr
-    }
+  .furniture-tools > label {
+    grid-column: 1/-1;
+  }
 
-    .furniture-tools>label {
-        grid-column: 1/-1
-    }
+  .furniture-correction {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
 
-    .furniture-correction {
-        display: grid;
-        grid-template-columns: 1fr 1fr
-    }
-
-    .furniture-warnings {
-        grid-column: 1/-1
-    }
+  .furniture-warnings {
+    grid-column: 1/-1;
+  }
 }

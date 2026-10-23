@@ -26,7 +26,7 @@ export class SnackbarHelper {
       dismissible: true,
       position: 'bottom',
       maxVisible: 3,
-      ...options
+      ...options,
     }
   }
 
@@ -38,7 +38,7 @@ export class SnackbarHelper {
       message,
       variant,
       duration: options?.duration ?? this.options.duration,
-      dismissible: options?.dismissible ?? this.options.dismissible
+      dismissible: options?.dismissible ?? this.options.dismissible,
     }
 
     this.messages.push(snackbar)
@@ -64,9 +64,9 @@ export class SnackbarHelper {
   }
 
   error(message: string, options?: Partial<SnackbarOptions>) {
-    return this.show(message, 'error', { 
+    return this.show(message, 'error', {
       duration: options?.duration ?? 8000, // Errors stay longer by default
-      ...options 
+      ...options,
     })
   }
 
@@ -115,7 +115,7 @@ export class SnackbarHelper {
 
   // Management methods
   dismiss(id: string) {
-    this.messages = this.messages.filter(msg => msg.id !== id)
+    this.messages = this.messages.filter((msg) => msg.id !== id)
     this.notifyListeners()
   }
 
@@ -128,7 +128,7 @@ export class SnackbarHelper {
   subscribe(listener: (messages: SnackbarMessage[]) => void) {
     this.listeners.push(listener)
     return () => {
-      this.listeners = this.listeners.filter(l => l !== listener)
+      this.listeners = this.listeners.filter((l) => l !== listener)
     }
   }
 
@@ -137,7 +137,7 @@ export class SnackbarHelper {
   }
 
   private notifyListeners() {
-    this.listeners.forEach(listener => listener([...this.messages]))
+    this.listeners.forEach((listener) => listener([...this.messages]))
   }
 
   // Update global options
@@ -150,21 +150,19 @@ export class SnackbarHelper {
 export const snackbar = new SnackbarHelper()
 
 // Convenience exports for direct usage
-export const showSuccess = (message: string, options?: Partial<SnackbarOptions>) => 
+export const showSuccess = (message: string, options?: Partial<SnackbarOptions>) =>
   snackbar.success(message, options)
 
-export const showError = (message: string, options?: Partial<SnackbarOptions>) => 
+export const showError = (message: string, options?: Partial<SnackbarOptions>) =>
   snackbar.error(message, options)
 
-export const showWarning = (message: string, options?: Partial<SnackbarOptions>) => 
+export const showWarning = (message: string, options?: Partial<SnackbarOptions>) =>
   snackbar.warning(message, options)
 
-export const showInfo = (message: string, options?: Partial<SnackbarOptions>) => 
+export const showInfo = (message: string, options?: Partial<SnackbarOptions>) =>
   snackbar.info(message, options)
 
 // API-specific helpers that preserve existing response handling
-export const showApiError = (error: string | Error, context?: string) => 
-  snackbar.apiError(error, context)
+export const showApiError = (error: string | Error, context?: string) => snackbar.apiError(error, context)
 
-export const showApiSuccess = (message: string, action?: string) => 
-  snackbar.apiSuccess(message, action)
+export const showApiSuccess = (message: string, action?: string) => snackbar.apiSuccess(message, action)

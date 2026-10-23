@@ -1,8 +1,9 @@
 import { writeFileSync } from 'node:fs'
 
 const drawingA = '0 0 0 RG 8 w 50 50 500 300 re S 250 50 m 250 350 l S 250 190 m 550 190 l S'
-const drawingB = '0 0 0 RG 10 w 45 45 510 310 re S 210 45 m 210 355 l S 390 45 m 390 355 l S 45 200 m 555 200 l S'
-const stream = content => `<< /Length ${Buffer.byteLength(content)} >>\nstream\n${content}\nendstream`
+const drawingB =
+  '0 0 0 RG 10 w 45 45 510 310 re S 210 45 m 210 355 l S 390 45 m 390 355 l S 45 200 m 555 200 l S'
+const stream = (content) => `<< /Length ${Buffer.byteLength(content)} >>\nstream\n${content}\nendstream`
 const objects = [
   '<< /Type /Catalog /Pages 2 0 R >>',
   '<< /Type /Pages /Kids [3 0 R 5 0 R] /Count 2 >>',

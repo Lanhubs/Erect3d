@@ -13,7 +13,7 @@ function SnackbarItem({ message, onDismiss }: SnackbarItemProps) {
   }
 
   return (
-    <div 
+    <div
       className={`snackbar-item snackbar-${message.variant}`}
       role="alert"
       aria-live={message.variant === 'error' ? 'assertive' : 'polite'}
@@ -21,11 +21,7 @@ function SnackbarItem({ message, onDismiss }: SnackbarItemProps) {
       <div className="snackbar-content">
         <div className="snackbar-message">{message.message}</div>
         {message.dismissible && (
-          <button 
-            className="snackbar-dismiss"
-            onClick={handleDismiss}
-            aria-label="Dismiss notification"
-          >
+          <button className="snackbar-dismiss" onClick={handleDismiss} aria-label="Dismiss notification">
             ×
           </button>
         )}
@@ -47,12 +43,8 @@ export function SnackbarContainer({ position = 'bottom' }: SnackbarContainerProp
 
   return (
     <div className={`snackbar-container snackbar-${position}`}>
-      {messages.map(message => (
-        <SnackbarItem
-          key={message.id}
-          message={message}
-          onDismiss={dismiss}
-        />
+      {messages.map((message) => (
+        <SnackbarItem key={message.id} message={message} onDismiss={dismiss} />
       ))}
     </div>
   )

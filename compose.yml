@@ -1,0 +1,64 @@
+name: erect3d-local
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: erect_dev
+      POSTGRES_PASSWORD: local-development-only
+      POSTGRES_DB: erect_dev
+    ports:
+      - '127.0.0.1:55432:5432'
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - ./tools/postgres-init.sql:/docker-entrypoint-initdb.d/10-test.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U erect_dev -d erect_dev']
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  migrate:
+    build:
+      context: .
+      dockerfile: api/deploy/Dockerfile
+    environment: &api-environment
+      NODE_ENV: development
+      DATABASE_URL: postgres://erect_dev:local-development-only@postgres:5432/erect_dev
+      HOST: 0.0.0.0
+      PUBLIC_REGISTRATION: 'true'
+      ALLOWED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ['bun', 'scripts/migrate.ts']
+  api:
+    build:
+      context: .
+      dockerfile: api/deploy/Dockerfile
+    environment: *api-environment
+    ports:
+      - '127.0.0.1:4000:4000'
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ['CMD', 'bun', '-e', "const r=await fetch('http://127.0.0.1:4000/ready');process.exit(r.ok?0:1)"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  worker:
+    build:
+      context: .
+      dockerfile: api/deploy/Dockerfile
+    environment: *api-environment
+    command: ['bun', 'src/workers/index.ts']
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+  redis:
+    image: redis:7.4-alpine
+    profiles: ['redis']
+    ports:
+      - '127.0.0.1:56379:6379'
+    command: ['redis-server', '--save', '', '--appendonly', 'no']
+volumes:
+  postgres:

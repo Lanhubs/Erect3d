@@ -1,6 +1,12 @@
 import type { Database } from '../../db/connection'
 
-export async function readOperations(db: Database, projectId: string, after: number, limit: number, through: number) {
+export async function readOperations(
+  db: Database,
+  projectId: string,
+  after: number,
+  limit: number,
+  through: number,
+) {
   // Bound both count and serialized payload bytes; a long history must not allocate hundreds of MiB.
   return db`WITH batch AS (
     SELECT operation_id AS "operationId",base_revision AS "baseRevision",revision,type,

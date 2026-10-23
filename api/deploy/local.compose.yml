@@ -6,18 +6,18 @@ services:
       POSTGRES_PASSWORD: local-development-only
       POSTGRES_DB: erect_api_test
     ports:
-      - "127.0.0.1:55432:5432"
+      - '127.0.0.1:55432:5432'
     volumes:
       - erect-postgres:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U erect_dev -d erect_api_test"]
+      test: ['CMD-SHELL', 'pg_isready -U erect_dev -d erect_api_test']
       interval: 5s
       timeout: 3s
       retries: 10
   redis:
     image: redis:7-alpine
     ports:
-      - "127.0.0.1:56379:6379"
-    command: ["redis-server", "--save", "", "--appendonly", "no"]
+      - '127.0.0.1:56379:6379'
+    command: ['redis-server', '--save', '', '--appendonly', 'no']
 volumes:
   erect-postgres:

@@ -1,49 +1,87 @@
-import {createContext,useContext,useEffect,useMemo,type Context,type ReactNode} from 'react'
-import {BoxGeometry,CylinderGeometry,ConeGeometry,SphereGeometry,MeshStandardMaterial,type MeshStandardMaterialParameters,type BufferGeometry,type Material} from 'three'
-import {standardMaterialKey} from './standardMaterialKey'
-import {architecturalMaterial} from './architecturalMaterial'
-import {FurnitureResources} from '../furniture/resources'
-export type InstanceShape='box'|'column'|'tree-trunk'|'tree-crown'|'leaf-crown'|'wheel'
+import { createContext, useContext, useEffect, useMemo, type Context, type ReactNode } from 'react'
+import {
+  BoxGeometry,
+  CylinderGeometry,
+  ConeGeometry,
+  SphereGeometry,
+  MeshStandardMaterial,
+  type MeshStandardMaterialParameters,
+  type BufferGeometry,
+  type Material,
+} from 'three'
+import { standardMaterialKey } from './standardMaterialKey'
+import { architecturalMaterial } from './architecturalMaterial'
+import { FurnitureResources } from '../furniture/resources'
+export type InstanceShape = 'box' | 'column' | 'tree-trunk' | 'tree-crown' | 'leaf-crown' | 'wheel'
 export class RenderResources {
-  shadowEpoch=0
-  furniture=new FurnitureResources()
-  geometries=new Map<InstanceShape,BufferGeometry>()
-  materials=new Map<string,Material>()
-  references=new Map<Material,number>()
-  geometry(shape:InstanceShape){
-    if(!this.geometries.has(shape)){
-      const geometry=shape==='box'?new BoxGeometry(1,1,1):shape==='tree-crown'?new ConeGeometry(1,1,8):shape==='leaf-crown'?new SphereGeometry(1,16,10):shape==='tree-trunk'?new CylinderGeometry(.22,.32,1,8):shape==='wheel'?new CylinderGeometry(.35,.35,.22,12).rotateX(Math.PI/2):new CylinderGeometry(.5,.5,1,24)
-      this.geometries.set(shape,geometry)
+  shadowEpoch = 0
+  furniture = new FurnitureResources()
+  geometries = new Map<InstanceShape, BufferGeometry>()
+  materials = new Map<string, Material>()
+  references = new Map<Material, number>()
+  geometry(shape: InstanceShape) {
+    if (!this.geometries.has(shape)) {
+      const geometry =
+        shape === 'box'
+          ? new BoxGeometry(1, 1, 1)
+          : shape === 'tree-crown'
+            ? new ConeGeometry(1, 1, 8)
+            : shape === 'leaf-crown'
+              ? new SphereGeometry(1, 16, 10)
+              : shape === 'tree-trunk'
+                ? new CylinderGeometry(0.22, 0.32, 1, 8)
+                : shape === 'wheel'
+                  ? new CylinderGeometry(0.35, 0.35, 0.22, 12).rotateX(Math.PI / 2)
+                  : new CylinderGeometry(0.5, 0.5, 1, 24)
+      this.geometries.set(shape, geometry)
     }
     return this.geometries.get(shape)!
   }
-  material(key:string,color:string){
-    const id=`${key}:${color}`
-    if(!this.materials.has(id))this.materials.set(id,architecturalMaterial(key,color))
+  material(key: string, color: string) {
+    const id = `${key}:${color}`
+    if (!this.materials.has(id)) this.materials.set(id, architecturalMaterial(key, color))
     return this.materials.get(id)!
   }
-  standard(parameters:MeshStandardMaterialParameters){
-    const key=`standard:${standardMaterialKey(parameters)}`
-    if(!this.materials.has(key))this.materials.set(key,new MeshStandardMaterial(parameters))
+  standard(parameters: MeshStandardMaterialParameters) {
+    const key = `standard:${standardMaterialKey(parameters)}`
+    if (!this.materials.has(key)) this.materials.set(key, new MeshStandardMaterial(parameters))
     return this.materials.get(key)!
   }
-  retain(material:Material){this.references.set(material,(this.references.get(material)||0)+1)}
-  release(material:Material){
-    this.references.set(material,Math.max(0,(this.references.get(material)||0)-1))
-    queueMicrotask(()=>{
-      if(this.references.get(material)!==0)return
+  retain(material: Material) {
+    this.references.set(material, (this.references.get(material) || 0) + 1)
+  }
+  release(material: Material) {
+    this.references.set(material, Math.max(0, (this.references.get(material) || 0) - 1))
+    queueMicrotask(() => {
+      if (this.references.get(material) !== 0) return
       this.references.delete(material)
-      for(const [key,value] of this.materials)if(value===material){this.materials.delete(key);material.dispose();break}
+      for (const [key, value] of this.materials)
+        if (value === material) {
+          this.materials.delete(key)
+          material.dispose()
+          break
+        }
     })
   }
-  dispose(){this.furniture.dispose();this.geometries.forEach(value=>value.dispose());this.materials.forEach(value=>value.dispose());this.geometries.clear();this.materials.clear()}
+  dispose() {
+    this.furniture.dispose()
+    this.geometries.forEach((value) => value.dispose())
+    this.materials.forEach((value) => value.dispose())
+    this.geometries.clear()
+    this.materials.clear()
+  }
 }
 // Keep provider/consumer identity together through development hot reloads.
-const Resources:Context<RenderResources|null>=import.meta.hot?.data.renderResourceContext??createContext<RenderResources|null>(null)
-if(import.meta.hot)import.meta.hot.data.renderResourceContext=Resources
-export function RenderResourceScope({children}:{children:ReactNode}){
-  const library=useMemo(()=>new RenderResources(),[RenderResources])
-  useEffect(()=>()=>library.dispose(),[library])
+const Resources: Context<RenderResources | null> =
+  import.meta.hot?.data.renderResourceContext ?? createContext<RenderResources | null>(null)
+if (import.meta.hot) import.meta.hot.data.renderResourceContext = Resources
+export function RenderResourceScope({ children }: { children: ReactNode }) {
+  const library = useMemo(() => new RenderResources(), [RenderResources])
+  useEffect(() => () => library.dispose(), [library])
   return <Resources.Provider value={library}>{children}</Resources.Provider>
 }
-export function useRenderResources(){const value=useContext(Resources);if(!value)throw new Error('Render resource scope is missing');return value}
+export function useRenderResources() {
+  const value = useContext(Resources)
+  if (!value) throw new Error('Render resource scope is missing')
+  return value
+}

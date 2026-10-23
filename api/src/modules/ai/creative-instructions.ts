@@ -1,4 +1,4 @@
-export const creativeInstructions=`Develop the depicted building through source-backed architecturalRequirements.
+export const creativeInstructions = `Develop the depicted building through source-backed architecturalRequirements.
 Preserve actual partitions, openings, courtyards, circulation and each distinct floor layout.
 Use separate architectural boundary candidates for details that are not walls or rooms. Never relabel an entrance canopy or balcony outline as a room to fit a schema.
 Use core, shaft, facade, podium, wing and repeated-floor systems where their boundaries and dimensions are supported.

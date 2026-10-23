@@ -11,14 +11,14 @@ processed in order with at most ten queued messages per connection.
 
 ## Client messages
 
-| Type | Fields | Meaning |
-| --- | --- | --- |
-| `operation.apply` | `operation` | Same persistent edit contract as HTTP |
-| `presence.update` | `presence` | Cursor, camera, selection, activeLevelId, editingEntityId, typing |
-| `lock.acquire` | `entityId` | Acquire/renew a 30-second lock on an existing entity |
-| `lock.release` | `entityId` | Release this connection's lock |
-| `resume` | `afterRevision` | Request later persisted operations |
-| `pong` | none | Reply to application heartbeat |
+| Type              | Fields          | Meaning                                                           |
+| ----------------- | --------------- | ----------------------------------------------------------------- |
+| `operation.apply` | `operation`     | Same persistent edit contract as HTTP                             |
+| `presence.update` | `presence`      | Cursor, camera, selection, activeLevelId, editingEntityId, typing |
+| `lock.acquire`    | `entityId`      | Acquire/renew a 30-second lock on an existing entity              |
+| `lock.release`    | `entityId`      | Release this connection's lock                                    |
+| `resume`          | `afterRevision` | Request later persisted operations                                |
+| `pong`            | none            | Reply to application heartbeat                                    |
 
 Camera presence uses `{x,y,z,yaw,pitch}`; cursor uses canonical `{x,z}` metres. Presence
 is optional, transient and expires after 30 seconds. It never advances project revision.

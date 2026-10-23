@@ -1,124 +1,124 @@
-@media(min-width:901px) and (max-width:1350px) {
+@media (min-width: 901px) and (max-width: 1350px) {
   .workspace-top {
     gap: 8px;
-    padding: 0 9px
+    padding: 0 9px;
   }
 
-  .toolset button:nth-child(n+5) {
-    display: none
+  .toolset button:nth-child(n + 5) {
+    display: none;
   }
 
   .toolset button {
-    padding: 0 8px
+    padding: 0 8px;
   }
 
   .more-tools {
     display: block;
     border: 1px solid #bdc8bb;
     background: #fff;
-    border-radius: 5px
+    border-radius: 5px;
   }
 
   .viewset {
-    padding-left: 7px
+    padding-left: 7px;
   }
 
   .mode-actions {
-    padding-left: 7px
+    padding-left: 7px;
   }
 }
 
-@media(max-width:900px) {
+@media (max-width: 900px) {
   .toolset button span {
-    display: none
+    display: none;
   }
 
   .inspector {
-    width: 220px
+    width: 220px;
   }
 
   .view-area.split {
-    flex-direction: column
+    flex-direction: column;
   }
 
-  .view-area.split>* {
+  .view-area.split > * {
     width: 100%;
-    height: 50%
+    height: 50%;
   }
 
-  .view-area.split>.plan-editor {
+  .view-area.split > .plan-editor {
     border-right: 0;
-    border-bottom: 1px solid #b8c1b8
+    border-bottom: 1px solid #b8c1b8;
   }
 
   .save-state {
-    display: none
+    display: none;
   }
 
   .mode-actions {
-    padding-left: 6px
+    padding-left: 6px;
   }
 
   .mode-actions button {
     padding: 0 6px;
-    font-size: 11px
+    font-size: 11px;
   }
 
   .ready-flow {
     gap: 6px;
-    padding: 6px 10px
+    padding: 6px 10px;
   }
 
-  .ready-flow>div {
+  .ready-flow > div {
     min-width: 95px;
-    flex: 1
+    flex: 1;
   }
 
   .ready-flow button {
-    padding: 6px 8px
+    padding: 6px 8px;
   }
 }
 
-@media(max-width:900px) {
+@media (max-width: 900px) {
   .workspace {
     height: 100dvh;
     min-height: 0;
-    overflow: hidden
+    overflow: hidden;
   }
 
   .appbar {
     height: 44px;
     flex: none;
     padding: 0 8px;
-    gap: 8px
+    gap: 8px;
   }
 
   .app-name {
     gap: 7px;
-    flex: 1
+    flex: 1;
   }
 
   .app-name strong {
-    font-size: 12px
+    font-size: 12px;
   }
 
   .app-name b {
     max-width: 100px;
-    font-size: 11px
+    font-size: 11px;
   }
 
   .app-actions {
     margin-left: 0;
-    gap: 4px
+    gap: 4px;
   }
 
   .app-actions button {
     height: 28px;
-    padding: 0 6px
+    padding: 0 6px;
   }
 
   .app-actions button:last-child span {
-    display: none
+    display: none;
   }
 
   .workspace-top {
@@ -129,7 +129,7 @@
     grid-template-rows: 33px 32px;
     gap: 2px 6px;
     padding: 3px 8px;
-    box-sizing: border-box
+    box-sizing: border-box;
   }
 
   .toolset {
@@ -137,7 +137,7 @@
     grid-row: 1;
     min-width: 0;
     overflow: hidden;
-    gap: 2px
+    gap: 2px;
   }
 
   .toolset button {
@@ -145,15 +145,15 @@
     min-width: 36px;
     height: 31px;
     justify-content: center;
-    padding: 0 8px
+    padding: 0 8px;
   }
 
-  .toolset button:nth-child(n+6) {
-    display: none
+  .toolset button:nth-child(n + 6) {
+    display: none;
   }
 
   .toolset button svg {
-    font-size: 16px
+    font-size: 16px;
   }
 
   .more-tools {
@@ -165,7 +165,7 @@
     border: 1px solid #bdc8bb;
     background: #fff;
     border-radius: 5px;
-    padding: 0 8px
+    padding: 0 8px;
   }
 
   .viewset {
@@ -176,7 +176,7 @@
     border: 0;
     background: #e9ede7;
     border-radius: 5px;
-    gap: 0
+    gap: 0;
   }
 
   .viewset button {
@@ -184,7 +184,7 @@
     min-width: 0;
     height: 29px;
     padding: 0 6px;
-    font-size: 11px
+    font-size: 11px;
   }
 
   .mode-actions {
@@ -197,7 +197,7 @@
     border: 0;
     background: #e9ede7;
     border-radius: 5px;
-    gap: 0
+    gap: 0;
   }
 
   .mode-actions button {
@@ -206,7 +206,7 @@
     height: 29px;
     padding: 0 5px;
     font-size: 10px;
-    white-space: nowrap
+    white-space: nowrap;
   }
 
   .inspector-toggle {
@@ -220,104 +220,104 @@
     border-radius: 5px;
     padding: 0 8px;
     font-size: 10px;
-    white-space: nowrap
+    white-space: nowrap;
   }
 
   .inspector-toggle.active {
-    background: #dbe9da
+    background: #dbe9da;
   }
 
   .workspace-body {
     display: block;
-    overflow: hidden
+    overflow: hidden;
   }
 
   .work-main {
     height: 100%;
-    width: 100%
+    width: 100%;
   }
 
   .workspace-overview {
-    grid-template-columns: minmax(0, 1fr) minmax(0, .65fr)
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.65fr);
   }
 
-  .level-manager>summary {
+  .level-manager > summary {
     gap: 8px;
     padding: 4px 9px;
-    font-size: 10px
+    font-size: 10px;
   }
 
-  .level-manager>summary b {
-    font-size: 11px
+  .level-manager > summary b {
+    font-size: 11px;
   }
 
   .structure-toggle {
     padding: 5px 9px;
-    font-size: 11px
+    font-size: 11px;
   }
 
   .source-strip {
     min-height: 29px;
     height: auto;
-    padding: 3px 7px
+    padding: 3px 7px;
   }
 
-  .source-strip>span {
+  .source-strip > span {
     display: flex;
-    min-width: 0
+    min-width: 0;
   }
 
-  .source-strip>div {
+  .source-strip > div {
     flex: none;
-    justify-content: flex-end
+    justify-content: flex-end;
   }
 
   .source-strip button,
   .source-strip .file-button {
     min-height: 25px;
     padding: 3px 8px;
-    font-size: 10px
+    font-size: 10px;
   }
 
   .reconstruction-flow {
     flex-wrap: nowrap;
     gap: 6px;
-    padding: 5px 8px
+    padding: 5px 8px;
   }
 
-  .reconstruction-flow>div {
+  .reconstruction-flow > div {
     min-width: 0;
     flex: 1;
-    gap: 2px
+    gap: 2px;
   }
 
   .reconstruction-flow strong {
-    font-size: 9px
+    font-size: 9px;
   }
 
   .reconstruction-flow span {
-    display: inline
+    display: inline;
   }
 
   .reconstruction-flow button {
     flex: none;
     padding: 5px 7px;
-    font-size: 10px
+    font-size: 10px;
   }
 
   .ready-flow {
-    flex-wrap: nowrap
+    flex-wrap: nowrap;
   }
 
-  .ready-flow>div {
+  .ready-flow > div {
     flex: 1;
     min-width: 0;
-    flex-basis: auto
+    flex-basis: auto;
   }
 
   .ready-flow button {
     flex: none;
-    padding: 5px 6px
+    padding: 5px 6px;
   }
 
   .viewport-head {
@@ -325,43 +325,43 @@
     min-height: 33px;
     flex-wrap: wrap;
     gap: 3px 7px;
-    padding: 3px 8px
+    padding: 3px 8px;
   }
 
-  .viewport-head>div {
+  .viewport-head > div {
     min-width: 0;
     overflow: visible;
     flex-wrap: wrap;
-    margin-left: auto
+    margin-left: auto;
   }
 
   .viewport-head button,
   .viewport-head select {
     flex: none;
-    white-space: nowrap
+    white-space: nowrap;
   }
 
-  .plan-editor .viewport-head>div {
+  .plan-editor .viewport-head > div {
     overflow: visible;
-    margin-left: auto
+    margin-left: auto;
   }
 
   .viewport-foot {
     padding: 0 8px;
     overflow: hidden;
     white-space: nowrap;
-    text-overflow: ellipsis
+    text-overflow: ellipsis;
   }
 
   .statusbar {
     height: 20px;
     padding: 0 7px;
     gap: 8px;
-    font-size: 8px
+    font-size: 8px;
   }
 
-  .statusbar>span:nth-child(2) {
-    display: none
+  .statusbar > span:nth-child(2) {
+    display: none;
   }
 
   .inspector-scrim {
@@ -370,7 +370,7 @@
     inset: 0;
     z-index: 8;
     background: #15241d77;
-    border: 0
+    border: 0;
   }
 
   .inspector {
@@ -385,11 +385,11 @@
     border: 0;
     border-top: 2px solid #9bab9a;
     border-radius: 14px 14px 0 0;
-    box-shadow: 0 -10px 30px #14201933
+    box-shadow: 0 -10px 30px #14201933;
   }
 
   .inspector.mobile-open {
-    display: block
+    display: block;
   }
 
   .inspector-mobile-head {
@@ -404,7 +404,7 @@
     border-bottom: 1px solid #cbd4c9;
     text-transform: capitalize;
     font-size: 13px;
-    color: #354b3c
+    color: #354b3c;
   }
 
   .inspector-mobile-head button {
@@ -414,20 +414,20 @@
     border-radius: 5px;
     background: #fff;
     font-size: 21px;
-    line-height: 1
+    line-height: 1;
   }
 
   .inspector-field,
   .readout {
     min-height: 45px;
-    font-size: 12px
+    font-size: 12px;
   }
 
   .inspector-field input,
   .inspector-field select {
     min-height: 34px;
     width: 140px;
-    font-size: 12px
+    font-size: 12px;
   }
 
   .tool-sheet-scrim {
@@ -436,7 +436,7 @@
     inset: 0;
     z-index: 20;
     background: #14221a88;
-    border: 0
+    border: 0;
   }
 
   .tool-sheet {
@@ -450,30 +450,32 @@
     border-top: 2px solid #9eae9e;
     border-radius: 12px 12px 0 0;
     padding: 12px;
-    box-shadow: 0 -10px 30px #14201933
+    box-shadow: 0 -10px 30px #14201933;
   }
 
-  .tool-sheet>div {
+  .tool-sheet > div {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font: 600 11px 'IBM Plex Mono', monospace;
-    letter-spacing: .1em;
-    margin-bottom: 12px
+    font:
+      600 11px 'IBM Plex Mono',
+      monospace;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
   }
 
-  .tool-sheet>div button {
+  .tool-sheet > div button {
     width: 36px;
     height: 36px;
     border: 1px solid #c4cec2;
     background: #fff;
-    font-size: 22px
+    font-size: 22px;
   }
 
   .tool-sheet nav {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 7px
+    gap: 7px;
   }
 
   .tool-sheet nav button {
@@ -486,89 +488,89 @@
     color: #3a4b3d;
     padding: 0 12px;
     text-align: left;
-    font-size: 12px
+    font-size: 12px;
   }
 
-  .tool-sheet nav button[aria-pressed=true] {
+  .tool-sheet nav button[aria-pressed='true'] {
     background: #e0e9df;
-    border-color: #8dab91
+    border-color: #8dab91;
   }
 }
 
-@media(max-width:900px) and (max-height:600px) {
+@media (max-width: 900px) and (max-height: 600px) {
   .appbar {
-    height: 40px
+    height: 40px;
   }
 
   .workspace-top {
     height: 63px;
     grid-template-rows: 27px 27px;
     gap: 2px 5px;
-    padding: 3px 7px
+    padding: 3px 7px;
   }
 
   .toolset button,
   .more-tools,
   .inspector-toggle {
-    height: 27px
+    height: 27px;
   }
 
   .viewset button,
   .mode-actions button {
-    height: 25px
+    height: 25px;
   }
 
-  .level-manager>summary {
-    padding: 3px 8px
+  .level-manager > summary {
+    padding: 3px 8px;
   }
 
   .structure-toggle {
-    padding: 3px 8px
+    padding: 3px 8px;
   }
 
   .source-strip {
-    min-height: 25px
+    min-height: 25px;
   }
 
   .reconstruction-flow {
-    padding: 3px 8px
+    padding: 3px 8px;
   }
 
   .statusbar {
-    height: 18px
+    height: 18px;
   }
 
   .viewport-head {
-    min-height: 33px
+    min-height: 33px;
   }
 
   .viewport-foot {
-    height: 19px
+    height: 19px;
   }
 }
 
-@media(max-width:600px) {
+@media (max-width: 600px) {
   .workspace-overview {
-    grid-template-columns: 1fr
+    grid-template-columns: 1fr;
   }
 
-  .workspace-overview>.structure-panel:first-child {
-    border-right: 0
+  .workspace-overview > .structure-panel:first-child {
+    border-right: 0;
   }
 
   .reconstruction-flow,
   .ready-flow {
-    flex-wrap: wrap
+    flex-wrap: wrap;
   }
 
-  .reconstruction-flow>div,
-  .ready-flow>div {
-    flex-basis: 100%
+  .reconstruction-flow > div,
+  .ready-flow > div {
+    flex-basis: 100%;
   }
 
   .reconstruction-flow button,
   .ready-flow button {
-    flex: 1 1 auto
+    flex: 1 1 auto;
   }
 
   .workspace-top {
@@ -577,25 +579,25 @@
     align-content: center;
     gap: 3px 5px;
     height: 74px;
-    padding: 3px 7px
+    padding: 3px 7px;
   }
 
   .toolset {
     order: 1;
     flex: 1 1 0;
     max-width: none;
-    overflow: hidden
+    overflow: hidden;
   }
 
   .toolset button {
     min-width: 32px;
-    padding: 0 6px
+    padding: 0 6px;
   }
 
   .more-tools {
     order: 2;
     flex: 0 0 49px;
-    padding: 0 5px
+    padding: 0 5px;
   }
 
   .inspector-toggle {
@@ -603,74 +605,74 @@
     flex: 0 0 47px;
     width: 47px;
     padding: 0;
-    font-size: 0
+    font-size: 0;
   }
 
   .inspector-toggle::after {
     content: 'Props';
-    font-size: 10px
+    font-size: 10px;
   }
 
   .workspace-top::before {
     content: '';
     order: 4;
     flex-basis: 100%;
-    height: 0
+    height: 0;
   }
 
   .viewset {
     order: 5;
     flex: 0 0 42%;
-    height: 29px
+    height: 29px;
   }
 
   .mode-actions {
     order: 6;
     flex: 1 1 0;
-    height: 29px
+    height: 29px;
   }
 
   .mode-actions button {
     font-size: 10px;
-    padding: 0 3px
+    padding: 0 3px;
   }
 }
 
-@media(min-width:600px) and (max-width:900px) and (max-height:600px) {
+@media (min-width: 600px) and (max-width: 900px) and (max-height: 600px) {
   .view-area.split {
-    flex-direction: row
+    flex-direction: row;
   }
 
-  .view-area.split>* {
+  .view-area.split > * {
     width: 50%;
-    height: 100%
+    height: 100%;
   }
 
-  .view-area.split>.plan-editor {
+  .view-area.split > .plan-editor {
     border-right: 1px solid #b8c1b8;
-    border-bottom: 0
+    border-bottom: 0;
   }
 }
 
-@media(max-width:450px) {
+@media (max-width: 450px) {
   .source-strip {
     flex-wrap: wrap;
-    gap: 3px 6px
+    gap: 3px 6px;
   }
 
-  .source-strip>span {
-    flex-basis: 100%
+  .source-strip > span {
+    flex-basis: 100%;
   }
 
-  .source-strip>div {
-    margin-left: auto
+  .source-strip > div {
+    margin-left: auto;
   }
 }
 
-@media(max-width:700px) {
-  .workspace-overview>.structure-panel:last-child .structure-body {
+@media (max-width: 700px) {
+  .workspace-overview > .structure-panel:last-child .structure-body {
     left: 0;
     right: 0;
-    width: 100vw
+    width: 100vw;
   }
 }

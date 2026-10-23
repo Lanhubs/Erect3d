@@ -7,3 +7,12 @@ node_modules
 motion-video/dist/
 motion-video/output/
 client/dist/
+
+# Repository verification artifacts and private environment files
+coverage/
+**/coverage/
+.env.*
+!.env.example
+!**/.env.example
+!**/.env.r2.example
+*.tsbuildinfo

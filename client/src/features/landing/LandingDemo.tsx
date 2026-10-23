@@ -3,15 +3,15 @@ import { fixtureProject } from '../../domain/fixture'
 import { PlanEditor } from '../plan/PlanEditor'
 import { useProject } from '../../state/project'
 
-const Viewer = lazy(() => import('../../rendering/Viewer').then(module => ({ default: module.Viewer })))
+const Viewer = lazy(() => import('../../rendering/Viewer').then((module) => ({ default: module.Viewer })))
 
 export function LandingDemo() {
   const project = useMemo(() => fixtureProject('Courtyard residence'), [])
   const level = project.buildings[0].levels[0]
-  const setProject = useProject(s => s.setProject)
-  const setActiveLevel = useProject(s => s.setActiveLevel)
-  const setTool = useProject(s => s.setTool)
-  const setView = useProject(s => s.setView)
+  const setProject = useProject((s) => s.setProject)
+  const setActiveLevel = useProject((s) => s.setActiveLevel)
+  const setTool = useProject((s) => s.setTool)
+  const setView = useProject((s) => s.setView)
 
   useEffect(() => {
     setProject(project)

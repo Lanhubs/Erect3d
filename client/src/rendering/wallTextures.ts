@@ -5,55 +5,99 @@ const cache = new Map<MaterialKey, CanvasTexture>()
 const scaledCache = new Map<string, CanvasTexture>()
 
 export function wallTexture(material: MaterialKey, width = 1, height = 1) {
-  const scaleX = material === 'brick' ? .78 : material === 'timber' || material === 'oak' ? 1.16 : material === 'tile' ? 1.67 : 1
-  const scaleY = material === 'brick' ? .5 : material === 'tile' ? 1.67 : 1
-  const repeatX = Math.max(.25, Math.round(width * scaleX * 4) / 4)
-  const repeatY = Math.max(.25, Math.round(height * scaleY * 4) / 4)
+  const scaleX =
+    material === 'brick'
+      ? 0.78
+      : material === 'timber' || material === 'oak'
+        ? 1.16
+        : material === 'tile'
+          ? 1.67
+          : 1
+  const scaleY = material === 'brick' ? 0.5 : material === 'tile' ? 1.67 : 1
+  const repeatX = Math.max(0.25, Math.round(width * scaleX * 4) / 4)
+  const repeatY = Math.max(0.25, Math.round(height * scaleY * 4) / 4)
   const key = `${material}:${repeatX}:${repeatY}`
   const existing = scaledCache.get(key)
   if (existing) return existing
   const cached = cache.get(material)
   if (cached) {
     const texture = cached.clone()
-    texture.wrapS = RepeatWrapping; texture.wrapT = RepeatWrapping; texture.repeat.set(repeatX, repeatY)
+    texture.wrapS = RepeatWrapping
+    texture.wrapT = RepeatWrapping
+    texture.repeat.set(repeatX, repeatY)
     scaledCache.set(key, texture)
     return texture
   }
   const canvas = document.createElement('canvas')
-  canvas.width = 256; canvas.height = 256
+  canvas.width = 256
+  canvas.height = 256
   const ctx = canvas.getContext('2d')!
-  ctx.fillStyle = '#f7f7f5'; ctx.fillRect(0, 0, 256, 256)
+  ctx.fillStyle = '#f7f7f5'
+  ctx.fillRect(0, 0, 256, 256)
   if (material === 'brick') {
-    for (let row = 0; row < 8; row++) for (let col = -1; col < 5; col++) {
-      const x = col * 70 + (row % 2) * 35, y = row * 32
-      ctx.fillStyle = row % 2 ? '#eeebe7' : '#faf8f4'; ctx.fillRect(x + 3, y + 3, 65, 27)
-      ctx.strokeStyle = '#c6c0b8'; ctx.lineWidth = 3; ctx.strokeRect(x + 1, y + 1, 68, 30)
-    }
+    for (let row = 0; row < 8; row++)
+      for (let col = -1; col < 5; col++) {
+        const x = col * 70 + (row % 2) * 35,
+          y = row * 32
+        ctx.fillStyle = row % 2 ? '#eeebe7' : '#faf8f4'
+        ctx.fillRect(x + 3, y + 3, 65, 27)
+        ctx.strokeStyle = '#c6c0b8'
+        ctx.lineWidth = 3
+        ctx.strokeRect(x + 1, y + 1, 68, 30)
+      }
   } else if (material === 'timber' || material === 'oak') {
     for (let x = 0; x < 256; x += 42) {
-      ctx.strokeStyle = '#c5bfb5'; ctx.lineWidth = 2
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 256); ctx.stroke()
-      ctx.strokeStyle = 'rgba(120,104,90,.1)'; ctx.lineWidth = 1
-      for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.moveTo(x + 6 + i * 7, 0); ctx.bezierCurveTo(x + 14 + i * 6, 80, x + 3 + i * 7, 170, x + 8 + i * 7, 256); ctx.stroke() }
+      ctx.strokeStyle = '#c5bfb5'
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.moveTo(x, 0)
+      ctx.lineTo(x, 256)
+      ctx.stroke()
+      ctx.strokeStyle = 'rgba(120,104,90,.1)'
+      ctx.lineWidth = 1
+      for (let i = 0; i < 5; i++) {
+        ctx.beginPath()
+        ctx.moveTo(x + 6 + i * 7, 0)
+        ctx.bezierCurveTo(x + 14 + i * 6, 80, x + 3 + i * 7, 170, x + 8 + i * 7, 256)
+        ctx.stroke()
+      }
     }
   } else if (material === 'tile') {
-    ctx.strokeStyle = '#d0ceca'; ctx.lineWidth = 3
-    for (const n of [0, 128, 255]) { ctx.beginPath(); ctx.moveTo(n, 0); ctx.lineTo(n, 256); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0, n); ctx.lineTo(256, n); ctx.stroke() }
+    ctx.strokeStyle = '#d0ceca'
+    ctx.lineWidth = 3
+    for (const n of [0, 128, 255]) {
+      ctx.beginPath()
+      ctx.moveTo(n, 0)
+      ctx.lineTo(n, 256)
+      ctx.stroke()
+      ctx.beginPath()
+      ctx.moveTo(0, n)
+      ctx.lineTo(256, n)
+      ctx.stroke()
+    }
   } else {
-    let seed=8129
-    const sample=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}
+    let seed = 8129
+    const sample = () => {
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0
+      return seed / 4294967296
+    }
     for (let i = 0; i < 1400; i++) {
-      const x=sample()*256,y=sample()*256
-      ctx.fillStyle=i%3?'rgba(91,93,91,.025)':'rgba(255,255,255,.07)'
-      ctx.fillRect(x,y,1+sample(),1+sample())
+      const x = sample() * 256,
+        y = sample() * 256
+      ctx.fillStyle = i % 3 ? 'rgba(91,93,91,.025)' : 'rgba(255,255,255,.07)'
+      ctx.fillRect(x, y, 1 + sample(), 1 + sample())
     }
   }
   const texture = new CanvasTexture(canvas)
-  texture.wrapS = RepeatWrapping; texture.wrapT = RepeatWrapping
-  texture.colorSpace = SRGBColorSpace; texture.anisotropy = 8
+  texture.wrapS = RepeatWrapping
+  texture.wrapT = RepeatWrapping
+  texture.colorSpace = SRGBColorSpace
+  texture.anisotropy = 8
   cache.set(material, texture)
   const scaled = texture.clone()
-  scaled.wrapS = RepeatWrapping; scaled.wrapT = RepeatWrapping; scaled.repeat.set(repeatX, repeatY)
+  scaled.wrapS = RepeatWrapping
+  scaled.wrapT = RepeatWrapping
+  scaled.repeat.set(repeatX, repeatY)
   scaledCache.set(key, scaled)
   return scaled
 }

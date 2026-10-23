@@ -24,31 +24,34 @@ import { realtimeRoutes } from './realtime/routes'
 import { sessionGuard } from './middleware/auth'
 import { memberTraffic } from './middleware/traffic'
 import { templateRoutes } from './modules/templates/routes'
-import {assistantRoutes} from './modules/assistant/routes'
-export function mountRoutes(app:Hono<ApiEnv>,services:Services) {
-  const { db,config,limits,store,hub } = services
-  app.route('/api/v1/auth',authRoutes(db,config,limits))
-  app.route('/api/v1/public/shares',publicShareRoutes(db,limits))
-  app.use('/api/v1/*',sessionGuard(db,config))
-  app.use('/api/v1/*',memberTraffic(limits))
-  app.route('/api/v1/users',userRoutes(db))
-  app.route('/api/v1/teams',teamRoutes(db))
-  app.route('/api/v1/projects',projectRoutes(db,config))
-  app.route('/api/v1/projects',assistantRoutes(services))
-  app.route('/api/v1/templates',templateRoutes(db,config))
-  app.route('/api/v1/projects',collaborationRoutes(db))
-  app.route('/api/v1/projects',versionRoutes(db,config.MAX_PROJECT_BYTES))
-  app.route('/api/v1/projects',assetRoutes(db,config,store))
-  app.route('/api/v1/projects',optimizedUploadRoutes(db,config,store))
-  app.route('/api/v1/projects',sourceRoutes(db))
-  app.route('/api/v1/projects',commentRoutes(db))
-  app.route('/api/v1/projects',issueRoutes(db))
-  app.route('/api/v1/projects',approvalRoutes(db))
-  app.route('/api/v1',analysisRoutes(db,config,id=>services.requestedAnalysis?.start(id)))
-  app.route('/api/v1/projects',presentationRoutes(db))
-  app.route('/api/v1/projects',shareRoutes(db))
-  app.route('/api/v1/library',libraryRoutes(db))
-  app.route('/api/v1/projects',exportRoutes(db,store))
-  app.route('/api/v1/projects',auditRoutes(db))
-  app.route('/api/v1/realtime',realtimeRoutes(hub,limits))
+import { assistantRoutes } from './modules/assistant/routes'
+export function mountRoutes(app: Hono<ApiEnv>, services: Services) {
+  const { db, config, limits, store, hub } = services
+  app.route('/api/v1/auth', authRoutes(db, config, limits))
+  app.route('/api/v1/public/shares', publicShareRoutes(db, limits))
+  app.use('/api/v1/*', sessionGuard(db, config))
+  app.use('/api/v1/*', memberTraffic(limits))
+  app.route('/api/v1/users', userRoutes(db))
+  app.route('/api/v1/teams', teamRoutes(db))
+  app.route('/api/v1/projects', projectRoutes(db, config))
+  app.route('/api/v1/projects', assistantRoutes(services))
+  app.route('/api/v1/templates', templateRoutes(db, config))
+  app.route('/api/v1/projects', collaborationRoutes(db))
+  app.route('/api/v1/projects', versionRoutes(db, config.MAX_PROJECT_BYTES))
+  app.route('/api/v1/projects', assetRoutes(db, config, store))
+  app.route('/api/v1/projects', optimizedUploadRoutes(db, config, store))
+  app.route('/api/v1/projects', sourceRoutes(db))
+  app.route('/api/v1/projects', commentRoutes(db))
+  app.route('/api/v1/projects', issueRoutes(db))
+  app.route('/api/v1/projects', approvalRoutes(db))
+  app.route(
+    '/api/v1',
+    analysisRoutes(db, config, (id) => services.requestedAnalysis?.start(id)),
+  )
+  app.route('/api/v1/projects', presentationRoutes(db))
+  app.route('/api/v1/projects', shareRoutes(db))
+  app.route('/api/v1/library', libraryRoutes(db))
+  app.route('/api/v1/projects', exportRoutes(db, store))
+  app.route('/api/v1/projects', auditRoutes(db))
+  app.route('/api/v1/realtime', realtimeRoutes(hub, limits))
 }

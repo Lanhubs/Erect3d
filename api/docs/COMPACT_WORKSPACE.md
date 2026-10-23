@@ -5,35 +5,35 @@
 The existing editor components remain mounted in their drawers. Their fields,
 validation, permission checks, counts and review actions remain in those components.
 
-| Existing controls | Location |
-| --- | --- |
-| Projects, project name, device-save state | Quiet file bar |
-| Undo, Redo, Save | Floating drawing dock; Redo in More on phones |
-| Select, Pan, Wall, Curve, Ramp, Door, Window, Room, Measure | Floating labeled drawing dock; Build menu on tablet/phone |
-| 2D, Split, 3D | Floating view dock |
-| Walk / Exit walk, Analyze, Present | Floating view dock; Analyze/Present in its More menu |
-| Tool discovery | Find a control; Ctrl/Cmd+K; searchable panel keywords |
-| Floor selection, visibility, isolation, lock, name, elevation, floor height | Levels drawer |
-| Level duplication/deletion/creation, underlay, plan offsets, represented storeys | Levels drawer |
-| Import/replace plan, source filename/dimensions, PDF page selection, source warnings | Source & reconstruction drawer |
-| Estimated span, reuse ground scale, optional point calibration | Source & reconstruction drawer |
+| Existing controls                                                                                                  | Location                                                       |
+| ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------- |
+| Projects, project name, device-save state                                                                          | Quiet file bar                                                 |
+| Undo, Redo, Save                                                                                                   | Floating drawing dock; Redo in More on phones                  |
+| Select, Pan, Wall, Curve, Ramp, Door, Window, Room, Measure                                                        | Floating labeled drawing dock; Build menu on tablet/phone      |
+| 2D, Split, 3D                                                                                                      | Floating view dock                                             |
+| Walk / Exit walk, Analyze, Present                                                                                 | Floating view dock; Analyze/Present in its More menu           |
+| Tool discovery                                                                                                     | Find a control; Ctrl/Cmd+K; searchable panel keywords          |
+| Floor selection, visibility, isolation, lock, name, elevation, floor height                                        | Levels drawer                                                  |
+| Level duplication/deletion/creation, underlay, plan offsets, represented storeys                                   | Levels drawer                                                  |
+| Import/replace plan, source filename/dimensions, PDF page selection, source warnings                               | Source & reconstruction drawer                                 |
+| Estimated span, reuse ground scale, optional point calibration                                                     | Source & reconstruction drawer                                 |
 | Reconstruct, view result, local detection choices, detection overlays, accept/discard, opening/room/detail reviews | Source & reconstruction drawer; existing backend review dialog |
-| Slabs, slab openings, columns, stairs, guides, flight connections, ramps, seating | Structure drawer |
-| Railings, screens, fins, canopies, parapets, pergolas, arches | Architectural details drawer |
-| Furniture detection, candidates/review, visibility, placement and type | Furniture drawer |
-| Selected wall/door/window/room/slab/column/stair/ramp/detail/furniture fields | Right Properties drawer, opened on selection |
-| Roof design, sections, materials, shape, pitch, footprint, construction | Properties drawer |
-| Fence enable/generate/edit and architectural systems, linked floors and detachment | Properties drawer |
-| Grid, snap, fit plan | Plan viewport header |
-| Orbit/top, roof visibility, zoom +/-/fit | 3D viewport header and overlay |
-| Render quality, full/isolated/exploded building, sections, ceilings, surroundings, furniture, door opening | 3D View options |
-| Walk speed/start/viewpoints/minimap and walkthrough input | Walk/View options; existing walkthrough controls |
-| Level, counts, units and sync | Compact footer; full sync details in its menu |
-| Retry sync, conflict review, device draft export, secondary-tab recovery | Footer sync menu |
-| Project tools, access/sharing/history and backend review controls | Existing Project tools drawer |
-| Reconstruction progress, errors, cancellation and details | Existing footer progress trigger/popover and review dialog |
-| Phone Split preview, swap, enlarge/shrink | Canvas preview and its two controls |
-| Editing/zoom shortcut guidance | File-bar Help; More on phones |
+| Slabs, slab openings, columns, stairs, guides, flight connections, ramps, seating                                  | Structure drawer                                               |
+| Railings, screens, fins, canopies, parapets, pergolas, arches                                                      | Architectural details drawer                                   |
+| Furniture detection, candidates/review, visibility, placement and type                                             | Furniture drawer                                               |
+| Selected wall/door/window/room/slab/column/stair/ramp/detail/furniture fields                                      | Right Properties drawer, opened on selection                   |
+| Roof design, sections, materials, shape, pitch, footprint, construction                                            | Properties drawer                                              |
+| Fence enable/generate/edit and architectural systems, linked floors and detachment                                 | Properties drawer                                              |
+| Grid, snap, fit plan                                                                                               | Plan viewport header                                           |
+| Orbit/top, roof visibility, zoom +/-/fit                                                                           | 3D viewport header and overlay                                 |
+| Render quality, full/isolated/exploded building, sections, ceilings, surroundings, furniture, door opening         | 3D View options                                                |
+| Walk speed/start/viewpoints/minimap and walkthrough input                                                          | Walk/View options; existing walkthrough controls               |
+| Level, counts, units and sync                                                                                      | Compact footer; full sync details in its menu                  |
+| Retry sync, conflict review, device draft export, secondary-tab recovery                                           | Footer sync menu                                               |
+| Project tools, access/sharing/history and backend review controls                                                  | Existing Project tools drawer                                  |
+| Reconstruction progress, errors, cancellation and details                                                          | Existing footer progress trigger/popover and review dialog     |
+| Phone Split preview, swap, enlarge/shrink                                                                          | Canvas preview and its two controls                            |
+| Editing/zoom shortcut guidance                                                                                     | File-bar Help; More on phones                                  |
 
 One overlay drawer opens at a time. Levels, Source and building tools open on the
 left; Properties opens on the right. A panel selector retains access to all six

@@ -77,6 +77,6 @@ export function useSnackbar() {
     deleteSuccess,
     loadingError,
     validationError,
-    networkError
+    networkError,
   }
 }

@@ -1,8 +1,13 @@
 import type { Operation, Project, Snapshot } from '../../../api/client'
 export type Pending = { operation: Operation; after: Project }
 export type CloudRecord = {
-  key: string; userId: string; base: Snapshot; draft: Project
-  pending?: Pending; conflict?: Snapshot; error?: string
+  key: string
+  userId: string
+  base: Snapshot
+  draft: Project
+  pending?: Pending
+  conflict?: Snapshot
+  error?: string
 }
 export type CloudRepository = {
   get: (key: string) => Promise<CloudRecord | undefined>

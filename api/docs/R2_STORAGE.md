@@ -3,7 +3,7 @@
 ## Configuration
 
 The production object store is Cloudflare R2. It uses R2's private S3-compatible API;
-no AWS account is required. Copy the variables from `api/.env.r2.example` into the
+no AWS account is required. Copy the optional R2 variables from `api/.env.example` into the
 server's ignored environment file. Use the account API endpoint, a private bucket,
 `R2_REGION=auto`, and a bucket-scoped token with object read/write/delete permission.
 Keep `r2.dev` access and public custom-domain access disabled. Never use `VITE_*` for keys.
