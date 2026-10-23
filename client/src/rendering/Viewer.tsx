@@ -1,7 +1,6 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { PCFShadowMap } from 'three'
-import { PerspectiveCamera } from 'three'
 import type { Building, Level, Selection } from '../domain/types'
 import { zoomEvent, type ZoomDetail } from '../app/useWorkspaceZoom'
 import { drawWalkMap } from './walkMap'
@@ -25,7 +24,7 @@ import { useViewportActivity } from './useViewportActivity'
 import {ViewportOptions} from './ViewportOptions'
 
 function CanvasSizeSync() {
-  const { camera, gl } = useThree()
+  const { gl, get, setSize, invalidate } = useThree()
   useLayoutEffect(() => {
     const host = gl.domElement.closest('.canvas-wrap')
     if (!host) return
@@ -33,17 +32,17 @@ function CanvasSizeSync() {
       const { width, height } = host.getBoundingClientRect()
       if (width < 1 || height < 1) return
       gl.domElement.dataset.sizeSync = `${Math.round(width)}x${Math.round(height)}`
-      gl.setSize(Math.round(width), Math.round(height), false)
-      if (camera instanceof PerspectiveCamera) {
-        camera.aspect = width / height
-        camera.updateProjectionMatrix()
-      }
+      // R3F owns the drawing buffer and camera aspect. A second gl.setSize()
+      // clears an already drawn demand frame, leaving Split blank until navigation.
+      const current=get().size
+      if(Math.abs(current.width-width)>.5||Math.abs(current.height-height)>.5)setSize(width,height)
+      invalidate()
     }
     resize()
     const observer = new ResizeObserver(resize)
     observer.observe(host)
     return () => observer.disconnect()
-  }, [camera, gl])
+  }, [gl,get,setSize,invalidate])
   return null
 }
 

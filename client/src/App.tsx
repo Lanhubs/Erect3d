@@ -5,6 +5,7 @@ import './App.css'
 import {ConfirmationHost} from './app/ConfirmationHost'
 import {closeFloatingOverlay} from './app/overlayCoordinator'
 import './app/brandControls.css'
+import './app/controlPolish.css'
 const GraphicsBenchmark=import.meta.env.DEV?lazy(()=>import('./rendering/GraphicsBenchmark')):null
 function App() {
   const [route,setRoute]=useState(()=>window.location.pathname.replace(/\/$/,'') || '/')

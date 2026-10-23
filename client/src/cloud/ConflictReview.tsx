@@ -11,7 +11,7 @@ export function ConflictReview({ engine, close }: { engine: SyncEngine; close: (
   const [selected, setSelected] = useState(() => changes.map(change => JSON.stringify(atPath(base.document, change.path)) === JSON.stringify(atPath(conflict!.document, change.path))))
   const [busy, setBusy] = useState(false), [error, setError] = useState('')
   const apply = async (discard = false) => {
-    if (discard && !await confirmAction('Discard this device draft and load the server version? Export a copy first if you need it.','Use server version')) return
+    if(discard){void confirmAction({title:'Replace your device draft?',item:draft.name,message:'Your unsynced edits will be discarded and the server version loaded. Export a copy first if you need these edits.',label:'Use server version',destructive:true,onConfirm:async()=>{await engine.resolve([]);if(!engine.record.conflict)close()}});return}
     setBusy(true); setError('')
     try { await engine.resolve(discard ? [] : changes.filter((_, index) => selected[index])); if (!engine.record.conflict) close() }
     catch (error) { setError((error as Error).message) } finally { setBusy(false) }

@@ -1,8 +1,22 @@
 # Erect3D — From plan to place
 
-A 35-second browser film at `/motion/erect3d-film`. Start the existing client with
-`bun run dev` from `client`. The review server uses port 5190. No account, API,
-private source drawing, Gemini request or project mutation is needed.
+Independent 35-second browser film, separated from the editor.
+
+## Build and export
+
+From `motion-video`:
+
+- `bun install --frozen-lockfile`
+- `bun run dev` — review on http://127.0.0.1:5191/motion/erect3d-film/
+- `bun test` and `bun run typecheck`
+- `bun run build` — standalone site in `dist/`
+- `bun run preview` — production review on port 5192
+- `bun scripts/capture-film.mjs --url http://127.0.0.1:5192/motion/erect3d-film/ --out output/frames --frames all`
+- `bun run export:video -- --ffmpeg <path-to-ffmpeg>` — writes `output/erect3d-film.mp4`
+
+The encoder is an external local tool, not a production dependency. Output is 35 seconds, 1050 frames, 1920×1080, 30fps, H.264 CRF 18, yuv420p, silent, with fast-start playback. `FFMPEG_PATH` is also supported.
+
+The editor development server proxies the original film URL to port 5191. Its production build also builds this package and copies the standalone site to `client/dist/motion/erect3d-film/`. Nginx serves that directory before the editor fallback. Film assets are excluded from the editor service worker. Install both packages before a combined build. No account, backend, private drawing, project mutation or AI request is involved.
 
 ## Direction and source
 
@@ -61,12 +75,11 @@ change; no CSS keyframe clock, random effects, physics or live API affects frame
 Tests cover all 1051 inclusive timeline samples, seek-order independence, valid
 project geometry, connected stairs and the window/plan edit correspondence.
 Review the whole 35 seconds and inspect 1.8, 6, 10, 14, 17, 21, 26, 30.8 and 34
-seconds when adjusting direction. Still captures live in `.local/film/` at the
-repository root. The horizontal film is the delivered composition; a later 9:16
+seconds when adjusting direction. Review stills live in `.local/film/` at the repository root; encoded output lives in this package’s ignored `output/` directory. The horizontal film is the delivered composition; a later 9:16
 version should recompose the side copy and edit inset rather than crop them away.
 
-Verification: 232 client tests passed. Production build passed with the existing
+Verification: the film’s two tests cover 3179 assertions. Production build passed with the existing
 large-chunk warnings. Browser review confirmed a 1920×1080 drawing buffer and
 composition, and identical full-frame bytes when returning to the same timestamp.
-The film is implemented as a browser timeline; an encoded MP4 is not bundled.
+The standalone browser timeline is also encoded as `output/erect3d-film.mp4`. Generated builds, frames and video remain outside source control.
 

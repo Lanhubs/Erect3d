@@ -1,6 +1,7 @@
 import type { Building, FenceMaterial, Point, SiteFence } from '../../domain/types'
 import { uid } from '../../domain/types'
 import { generateSiteFence, insertBoundaryPoint, updateFenceBoundary, repairGeneratedFence } from '../../geometry/site'
+import {fenceCrossesEnvelope} from '../../geometry/siteEnvelope'
 import { useProject } from '../../state/project'
 
 const materialOptions: Array<[FenceMaterial, string]> = [
@@ -12,7 +13,7 @@ export function SiteControls({ building }: { building: Building }) {
   const fence = building.siteFence
   const boundary = fence?.boundary || fence?.segments.map(segment => segment.start) || []
   const enabled = Boolean(fence && fence.enabled !== false)
-  const ground = [...building.levels].sort((a, b) => a.elevation - b.elevation)[0]
+  const intersects=Boolean(fence&&enabled&&fence.mode==='manual'&&fenceCrossesEnvelope(building,boundary,Math.max(fence.thickness,...fence.segments.map(s=>s.thickness))))
   const updateFence = (change: (current: SiteFence | undefined) => SiteFence | undefined) => editProject(project => {
     const target = project.buildings.find(item => item.id === building.id)
     if (target) { target.siteFence = change(target.siteFence); repairGeneratedFence(target) }
@@ -31,11 +32,11 @@ export function SiteControls({ building }: { building: Building }) {
   })
   const onToggle = () => updateFence(current => {
     if (current) return { ...current, enabled: current.enabled === false }
-    return generateSiteFence(ground)
+    return generateSiteFence(building)
   })
-  const onAutoGenerate = () => updateFence(current => generateSiteFence(ground, current?.setbacks, current))
+  const onAutoGenerate = () => updateFence(current => generateSiteFence(building, current?.setbacks, current))
   const setSetback = (side: 'front' | 'rear' | 'left' | 'right', value: number) => updateFence(current => {
-    const generated = generateSiteFence(ground, { front: 4, rear: 3, left: 3, right: 3, ...current?.setbacks,
+    const generated = generateSiteFence(building, { front: 4, rear: 3, left: 3, right: 3, ...current?.setbacks,
       [side]: Math.max(0, value) }, current)
     return generated
   })
@@ -43,7 +44,7 @@ export function SiteControls({ building }: { building: Building }) {
     <div className="panel-title">SITE · BOUNDARY & FENCE</div>
     <label className="site-toggle"><span>Site fence</span><input aria-label="Site fence" type="checkbox" checked={enabled} onChange={onToggle} /></label>
     <div className="site-actions">
-      <button type="button" disabled={!ground.walls.length && !ground.slabs?.length} onClick={onAutoGenerate}>{fence ? 'Fit around building' : 'Auto generate'}</button>
+      <button type="button" disabled={!building.levels.some(level=>level.walls.length||level.slabs?.length)} onClick={onAutoGenerate}>{fence ? 'Fit around building' : 'Auto generate'}</button>
       {fence && <label className="inspector-field"><span>Material</span><select value={fence.material}
         onChange={event => updateFence(current => current && { ...current, material: event.target.value as FenceMaterial,
           segments: current.segments.map(segment => ({ ...segment, material: event.target.value as FenceMaterial })) })}>
@@ -52,6 +53,7 @@ export function SiteControls({ building }: { building: Building }) {
       {fence && <label className="inspector-field"><span>Color</span><input aria-label="Fence color" type="color" value={fence.color || '#68716e'}
         onChange={event => updateFence(current => current && ({ ...current, color: event.target.value }))} /></label>}
     </div>
+    {intersects&&<p role="status" className="site-warning">The manual boundary crosses the building. Edit its points or use “Fit around building”.</p>}
     {fence && <>
       <div className="site-subtitle">FENCE</div>
       <label className="inspector-field"><span>Height · m</span><input aria-label="Fence height" type="number" min="0.4" step="0.1"

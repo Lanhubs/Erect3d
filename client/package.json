@@ -7,7 +7,7 @@
     "dev": "vite",
     "typecheck": "tsc -b",
     "test": "bun test",
-    "build": "tsc -b && vite build",
+    "build": "bun scripts/build.mjs",
     "lint": "oxlint",
     "preview": "vite preview"
   },

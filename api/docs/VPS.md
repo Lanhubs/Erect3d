@@ -11,17 +11,25 @@ and the API private to the server/network. If using native Redis protection, use
 supported. Use private Cloudflare R2 storage with public reads disabled. Original files
 use reversible ZIP storage; image pixels and PDF contents are not rewritten.
 
-Deploy the repository as `/opt/erect3d`, keeping **both** `api/` and `client/`. API imports
-use pure client geometry at runtime. Install pinned dependencies in each directory and
-build the frontend into `client/dist`:
+Deploy the repository as `/opt/erect3d`, keeping `api/`, `client/` and `motion-video/`.
+API imports use pure client geometry at runtime. Install pinned dependencies in each
+directory and build the frontend into `client/dist`:
 
 ```sh
-cd /opt/erect3d/client
+cd /opt/erect3d/motion-video
+bun install --frozen-lockfile
+cd ../client
 bun install --frozen-lockfile
 bun run build
 cd ../api
 bun install --frozen-lockfile
 ```
+
+The client build also builds the independent film and mounts it at
+`client/dist/motion/erect3d-film/`. The supplied Nginx configuration serves that
+directory before the editor fallback. The encoded MP4 and capture frames are local
+delivery artifacts, not required server assets. See `motion-video/README.md` for the
+independent web build and video export commands.
 
 Create a dedicated `erect3d` service account. The systemd examples expect Bun at
 `/usr/local/bin/bun`; adjust this to the actual installed path. Avoid running as root.

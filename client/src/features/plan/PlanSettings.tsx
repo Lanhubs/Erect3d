@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { GridSettings } from '../../state/project'
 import { toDisplay, toMetres, type Unit } from '../../geometry/units'
+import {useOverlay} from '../../app/useOverlay'
 
 export function PlanSettings({ grid, setGrid, unit }: {
   grid: GridSettings; setGrid: (change: Partial<GridSettings>) => void; unit: Unit
@@ -10,6 +11,7 @@ export function PlanSettings({ grid, setGrid, unit }: {
   const [position, setPosition] = useState({ top: 0, left: 0 })
   const trigger = useRef<HTMLButtonElement>(null)
   const panel = useRef<HTMLDivElement>(null)
+  useOverlay(panel,open,()=>setOpen(false),true,false)
   useLayoutEffect(() => {
     if (!open) return
     const place = () => {
@@ -29,16 +31,26 @@ export function PlanSettings({ grid, setGrid, unit }: {
   }, [open])
   useEffect(() => {
     if (!open) return
+    let timer:ReturnType<typeof setTimeout>|undefined,keyboard=false
+    const within=(target:EventTarget|null)=>target instanceof Node&&Boolean(panel.current?.contains(target)||trigger.current?.contains(target))
     const closeOutside = (event: PointerEvent) => {
+      keyboard=false
       const target = event.target as Node
       if (!panel.current?.contains(target) && !trigger.current?.contains(target)) setOpen(false)
     }
-    const closeEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') { event.stopPropagation(); setOpen(false); trigger.current?.focus() }
+    const key=()=>{keyboard=true}
+    const enter=(event:PointerEvent)=>{if(within(event.target))clearTimeout(timer)}
+    const leave=(event:PointerEvent)=>{
+      if(event.pointerType!=='mouse'||!within(event.target)||within(event.relatedTarget))return
+      clearTimeout(timer)
+      timer=setTimeout(()=>{
+        const active=document.activeElement,editing=active instanceof Element&&active.matches('input:not([type=checkbox]):not([type=radio]),select,textarea')
+        if(!((keyboard||editing)&&within(active)))setOpen(false)
+      },200)
     }
     document.addEventListener('pointerdown', closeOutside)
-    document.addEventListener('keydown', closeEscape, true)
-    return () => { document.removeEventListener('pointerdown', closeOutside); document.removeEventListener('keydown', closeEscape, true) }
+    document.addEventListener('keydown',key,true);document.addEventListener('pointerover',enter);document.addEventListener('pointerout',leave)
+    return () => {clearTimeout(timer);document.removeEventListener('pointerdown', closeOutside);document.removeEventListener('keydown',key,true);document.removeEventListener('pointerover',enter);document.removeEventListener('pointerout',leave)}
   }, [open])
   return <>
     <button ref={trigger} type="button" aria-haspopup="dialog" aria-expanded={open}

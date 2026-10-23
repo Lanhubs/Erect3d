@@ -1,5 +1,5 @@
 import { uid, type Building, type Level, type Point, type SiteFence } from '../domain/types'
-import { wallBoundsPoints } from './math'
+import {buildingEnvelope,envelopeRectangle} from './siteEnvelope'
 
 export type SiteSetbacks = { front: number; rear: number; left: number; right: number }
 const defaultSetbacks: SiteSetbacks = { front: 4, rear: 3, left: 3, right: 3 }
@@ -19,24 +19,15 @@ export function insertBoundaryPoint(boundary: Point[]): Point[] {
 }
 
 export function groundFootprint(level: Level): Point[] {
-  const points = [...(level.slabs || []).filter(slab => slab.elevation <= .05).flatMap(slab => slab.polygon),
-    ...level.rooms.flatMap(room => room.polygon), ...level.walls.flatMap(wall => {
-      const half = wall.thickness / 2
-      return wallBoundsPoints([wall]).flatMap(point => [{ x: point.x - half, z: point.z - half }, { x: point.x + half, z: point.z + half }])
-    })].filter(point => Number.isFinite(point.x) && Number.isFinite(point.z))
-  if (!points.length) return []
-  const xs = points.map(point => point.x)
-  const zs = points.map(point => point.z)
-  const minX = Math.min(...xs), maxX = Math.max(...xs)
-  const minZ = Math.min(...zs), maxZ = Math.max(...zs)
-  return [{ x: minX, z: minZ }, { x: maxX, z: minZ }, { x: maxX, z: maxZ }, { x: minX, z: maxZ }]
+  return envelopeRectangle(buildingEnvelope(level).flat())
 }
 
 export function segmentsFromBoundary(boundary: Point[], previous?: SiteFence): SiteFence['segments'] {
   return boundary.map((start, index) => ({
+    ...previous?.segments[index],
     id: previous?.segments[index]?.id || uid('fence-segment'), start: { ...start },
-    end: { ...boundary[(index + 1) % boundary.length] }, height: previous?.height || 1.5,
-    thickness: previous?.thickness || .12, material: previous?.material || 'metal',
+    end: { ...boundary[(index + 1) % boundary.length] }, height: previous?.segments[index]?.height ?? previous?.height ?? 1.5,
+    thickness: previous?.segments[index]?.thickness ?? previous?.thickness ?? .12, material: previous?.segments[index]?.material ?? previous?.material ?? 'metal',
   }))
 }
 
@@ -64,23 +55,24 @@ export function updateFenceBoundary(fence: SiteFence, boundary: Point[]): SiteFe
     if (!segment) return []
     const length = Math.hypot(segment.end.x - segment.start.x, segment.end.z - segment.start.z)
     return length > .1 ? [{ ...gate, segmentId: segment.id, width: Math.min(gate.width, length),
-      offset: Math.max(0, Math.min(offset, Math.max(0, length - gate.width))) }] : []
+      offset: Math.max(0, Math.min(offset, Math.max(0, length - Math.min(gate.width,length)))) }] : []
   })
   return { ...fence, mode: 'manual', boundary: boundary.map(point => ({ ...point })), segments, gates }
 }
 
-export function generateSiteFence(level: Level, setbacks: SiteSetbacks = defaultSetbacks, previous?: SiteFence): SiteFence | undefined {
+export function generateSiteFence(input: Level | Building, setbacks: SiteSetbacks = defaultSetbacks, previous?: SiteFence): SiteFence | undefined {
   setbacks = Object.fromEntries(Object.entries(defaultSetbacks).map(([side, fallback]) => [side,
     Number.isFinite(setbacks[side as keyof SiteSetbacks]) ? Math.max(0, setbacks[side as keyof SiteSetbacks]) : fallback])) as SiteSetbacks
-  const footprint = groundFootprint(level)
+  const footprint = envelopeRectangle(buildingEnvelope(input).flat())
   if (!footprint.length) return undefined
   const xs = footprint.map(point => point.x), zs = footprint.map(point => point.z)
-  const minX = Math.min(...xs) - setbacks.left, maxX = Math.max(...xs) + setbacks.right
-  const minZ = Math.min(...zs) - setbacks.front, maxZ = Math.max(...zs) + setbacks.rear
+  const clearance=Math.max(previous?.thickness||.12,...(previous?.segments.map(s=>s.thickness)||[]))/2+.02
+  const minX = Math.min(...xs) - Math.max(clearance,setbacks.left), maxX = Math.max(...xs) + Math.max(clearance,setbacks.right)
+  const minZ = Math.min(...zs) - Math.max(clearance,setbacks.front), maxZ = Math.max(...zs) + Math.max(clearance,setbacks.rear)
   const boundary = [{ x: minX, z: minZ }, { x: maxX, z: minZ }, { x: maxX, z: maxZ }, { x: minX, z: maxZ }]
   const base: SiteFence = previous || { id: uid('site-fence'), name: 'Site fence', height: 1.5, thickness: .12,
     material: 'metal', segments: [], gates: [] }
-  return { ...updateFenceBoundary(base, boundary), mode: 'automatic', enabled: true, setbacks: { ...setbacks } }
+  return { ...updateFenceBoundary(base, boundary), mode: 'automatic', enabled: previous?.enabled ?? true, setbacks: { ...setbacks } }
 }
 
 export function repairGeneratedFence(building: Building) {
@@ -97,8 +89,8 @@ export function repairGeneratedFence(building: Building) {
     return boundary.every((p, i) => Math.hypot(p.x - expected[i].x, p.z - expected[i].z) < 1e-5)
   })()
   if (fence.mode === 'automatic' || legacyPartial) {
-    const enabled = fence.enabled, fitted = generateSiteFence(ground, setback, fence)
-    if (fitted) building.siteFence = { ...fitted, enabled }
+    const enabled = fence.enabled, fitted = generateSiteFence(building, setback, fence)
+    if (fitted) {const next={...fitted,enabled};if(JSON.stringify(next)!==JSON.stringify(fence))building.siteFence=next}
   }
 }
 

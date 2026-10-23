@@ -23,6 +23,7 @@ type State = {
   editLocked: boolean; setEditLocked: (value: boolean) => void
 }
 const commit = (set: (change: Partial<State>) => void, state: State, next: Project) => {
+  next.buildings.forEach(repairGeneratedFence)
   confirmManualChanges(state.project!, next)
   const project = shareUnchanged(state.project!, { ...next, modified: Date.now() })
   set({ project, history: [...state.history.slice(-49), state.project!], future: [],

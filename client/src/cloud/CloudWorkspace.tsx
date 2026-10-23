@@ -1,3 +1,4 @@
+import {LoadingState} from '../app/LoadingState'
 import { useEffect,useState } from 'react'
 import { Workspace } from '../app/Workspace'
 import { useProject } from '../state/project'
@@ -13,6 +14,7 @@ import {useAssistant} from './useAssistant'
 import {AssistantDialog,AssistantPreviewBar} from './AssistantDialog'
 export function CloudWorkspace({ user, projectId, navigate }: { user: User; projectId: string; navigate: (path: string) => void }) {
   const session = useCloudProject(user, projectId), project = useProject(state => state.project)
+  const [toolsTab,setToolsTab]=useState<'source'|'people'>('source')
   const [tools, setTools] = useState(false), [conflict, setConflict] = useState(false), [error, setError] = useState('')
   const [chat,setChat]=useState(false),[preview,setPreview]=useState(false),[proposed,setProposed]=useState(true)
   const assistant=useAssistant(user.id,projectId,session,chat)
@@ -43,20 +45,20 @@ export function CloudWorkspace({ user, projectId, navigate }: { user: User; proj
     try { useProject.getState().finishPreview(); await session.engine?.flush(); navigate('/projects') }
     catch (error) { setError((error as Error).message) }
   }
-  if (!project || !session.record) return <main className="cloud-page"><button onClick={() => navigate('/projects')}>Projects</button><p role={session.error ? 'alert' : 'status'}>{session.error || 'Opening project…'}</p><button onClick={() => window.location.reload()}>Retry</button></main>
+  if (!project || !session.record) return <main className="cloud-page"><button onClick={() => navigate('/projects')}>Projects</button>{session.error?<><p role="alert">{session.error}</p><button onClick={()=>window.location.reload()}>Retry</button></>:<LoadingState label="Opening your project" detail="Preparing the saved building and workspace."/>}</main>
   return <div className="cloud-workspace" key={generation}>
     <Workspace project={previewDocument&&proposed?previewDocument:project} back={() => { void back() }} reconstructing={reconstructing}
-      assistant={()=>setChat(value=>!value)} assistantOpen={chat} previewing={!!previewDocument||editLocked}
+      collaborate={()=>{setToolsTab('people');setTools(true)}} assistant={()=>setChat(value=>!value)} assistantOpen={chat} previewing={!!previewDocument||editLocked}
       previewControls={previewDocument&&<AssistantPreviewBar assistant={assistant} proposed={proposed} toggle={setProposed} close={()=>setPreview(false)} chat={()=>setChat(true)}/>}
       statusContent={<WorkspaceDock session={session} projectId={projectId} offlineReady={offlineReady} error={error || session.error}
         onError={setError} reviewConflict={()=>setConflict(true)} toolsOpen={tools}
-        toggleTools={()=>{resetRequest();setTools(value=>!value)}} showDetails={()=>setTools(true)}/>}
+        toggleTools={()=>{setToolsTab('source');resetRequest();setTools(value=>!value)}} showDetails={()=>{setToolsTab('source');setTools(true)}}/>}
       onBackendAnalysis={()=>{
       if(!context?.sourceId)return
       const current=useReconstruction.getState().current;if(sameReconstructionSource(current,context) && current?.status==='pending')return
       useReconstruction.getState().update({...context,status:'pending',job_status:'queued',startedAt:Date.now(),message:'Preparing your floor plan…'});setRequest(previous=>({...context,token:previous.token+1}))
     }} />
-    <CloudTools session={session} open={tools} reconstructRequest={reconstructRequest} close={() => {resetRequest();setTools(false)}} />
+    <CloudTools initialTab={toolsTab} session={session} open={tools} reconstructRequest={reconstructRequest} close={() => {resetRequest();setTools(false)}} />
     <AssistantDialog assistant={assistant} open={chat} close={()=>setChat(false)} preview={()=>{useProject.getState().setTool('select');setChat(false);setProposed(true);setPreview(true)}}/>
     {conflict && session.engine && session.record.conflict && <ConflictReview key={session.record.conflict.revision} engine={session.engine} close={() => setConflict(false)} />}
   </div>

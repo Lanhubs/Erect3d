@@ -22,7 +22,7 @@ export function useOverlay(ref:RefObject<HTMLElement|null>,open:boolean,close:()
       if(event.key==='Escape'){if(dismissMenu(event,ref.current?.getAttribute('aria-modal')==='true'?ref.current:document))return;event.preventDefault();event.stopImmediatePropagation();latest.current();return}
       if(trap&&event.key==='Tab'){
         const items=controls(),first=items[0],last=items.at(-1)
-        if(!first)return
+        if(!first){event.preventDefault();ref.current?.focus();return}
         if(event.shiftKey&&(!ref.current?.contains(document.activeElement)||document.activeElement===first)){event.preventDefault();last?.focus()}
         else if(!event.shiftKey&&(!ref.current?.contains(document.activeElement)||document.activeElement===last)){event.preventDefault();first.focus()}
       }

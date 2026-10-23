@@ -54,7 +54,7 @@ export function CloudDashboard({navigate}:{navigate:(path:string)=>void}) {
       Object.assign(project.buildings[0].levels[0],{walls:[],doors:[],windows:[],rooms:[],slabs:[]})
       return createRemote(user.id,project,'new')
     })}
-    remove={id=>{setBusy(true);void api.request(`/projects/${id}`,'DELETE').then(refresh).catch(error=>setError(error.message)).finally(()=>setBusy(false))}}
+    remove={async id=>{setBusy(true);try{await api.request(`/projects/${id}`,'DELETE');await refresh()}finally{setBusy(false)}}}
     notice={<>{offline && <p role="status">Offline · Open a previously opened project. Your edits will sync automatically when the connection returns.</p>}
       {error && <p role="alert">{error}</p>}
       {retryCreate && <button onClick={()=>void run(()=>createRemote(user.id,fixtureProject('Project'),'new'))}>Retry pending project creation</button>}

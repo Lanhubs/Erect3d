@@ -1,3 +1,4 @@
+import {LoadingState} from './LoadingState'
 import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { activeLevel, type Calibration, type Project, type Selection } from '../domain/types'
 import { acceptInterpretation } from '../domain/acceptInterpretation'
@@ -39,7 +40,7 @@ import './compactWorkspace.css'
 import './studioWorkspace.css'
 import {dismissMenu} from './useOverlay'
 const Viewer = lazy(() => import('../rendering/Viewer').then(module => ({ default: module.Viewer })))
-export function Workspace({ project, back,onBackendAnalysis,reconstructing=false,statusContent,assistant,assistantOpen,previewing=false,previewControls }: { project: Project; back: () => void;onBackendAnalysis?:()=>void;reconstructing?:boolean;statusContent?:ReactNode;assistant?:()=>void;assistantOpen?:boolean;previewing?:boolean;previewControls?:ReactNode }) {
+export function Workspace({ project, back,onBackendAnalysis,reconstructing=false,statusContent,collaborate,assistant,assistantOpen,previewing=false,previewControls }: { project: Project; back: () => void;onBackendAnalysis?:()=>void;reconstructing?:boolean;statusContent?:ReactNode;collaborate?:()=>void;assistant?:()=>void;assistantOpen?:boolean;previewing?:boolean;previewControls?:ReactNode }) {
   const selection = useProject(s => s.selection), select = useProject(s => s.setSelection)
   const tool = useProject(s => s.tool), setTool = useProject(s => s.setTool)
   const view = useProject(s => s.view), setView = useProject(s => s.setView)
@@ -160,7 +161,7 @@ export function Workspace({ project, back,onBackendAnalysis,reconstructing=false
     if (!backend && url) analysis.analyze(url, next, source)
   }
   const walk=()=>{setMode('edit');chooseView('model');setWalkRequest(value=>value+1)}
-  const commands=[...(assistant?[{id:'assistant',label:'Design assistant',keywords:'chat prompt improve building',run:assistant}]:[]),...panels.map(item=>({id:item.id,label:item.label,keywords:item.keywords,run:()=>setPanel(item.id)})),
+  const commands=[...(assistant?[{id:'assistant',label:'Design assistant',keywords:'chat prompt improve building',run:assistant}]:[]),...(collaborate?[{id:"collaborate",label:"Collaborate",keywords:"people access sharing comments",run:collaborate}]:[]),...panels.map(item=>({id:item.id,label:item.label,keywords:item.keywords,run:()=>setPanel(item.id)})),
     ...drawingTools.map(item=>({id:item.id,label:`Draw / ${item.label}`,run:()=>{setMode('edit');setTool(item.id)},disabled:readOnly&&!['select','pan','measure'].includes(item.id)})),
     {id:'undo',label:'Undo',run:undo,disabled:readOnly},{id:'redo',label:'Redo',run:redo,disabled:readOnly},{id:'save',label:'Save',run:save,disabled:readOnly},
     ...(['plan','split','model'] as const).map((next,i)=>({id:`view-${next}`,label:['2D plan','Split view','3D model'][i],run:()=>{setMode('edit');chooseView(next)}})),
@@ -170,7 +171,7 @@ export function Workspace({ project, back,onBackendAnalysis,reconstructing=false
       tool={tool} setTool={setTool} view={view} setView={chooseView} mode={mode} setMode={next => { setShowImport(false); setMode(next) }}
       walk={walk} walking={walking}
       selection={selection} inspectorOpen={inspectorOpen} toggleInspector={() => { setShowImport(false); setInspectorOpen(value => !value) }}
-      inspectorAvailable={mode === 'edit'} search={()=>setSearching(true)} openPanel={setPanel} assistant={assistant} assistantOpen={assistantOpen} previewing={previewing}/>
+      inspectorAvailable={mode === 'edit'} search={()=>setSearching(true)} openPanel={setPanel} collaborate={collaborate} assistant={assistant} assistantOpen={assistantOpen} previewing={previewing}/>
     <div className="workspace-body">
       <PanelRail active={panel} open={id=>setPanel(before=>before===id?null:id)} levelName={level.name} warning={Boolean(error||analysis.error)}/>
       <div className="work-main">
@@ -182,7 +183,7 @@ export function Workspace({ project, back,onBackendAnalysis,reconstructing=false
                 rooms: analysis.rooms, spaceChoices: analysis.spaceChoices, selectedSpace: analysis.selectedSpace, selectSpace: analysis.setSelectedSpace,
                 details: analysis.details, detailChoices: analysis.detailChoices,
                 setSelected: setSelectedDetection, setCandidates: analysis.setCandidates } : undefined} />}
-          viewer={<Suspense fallback={<div className="viewer-loading">Preparing 3D model...</div>}><Viewer building={project.buildings[0]} activeLevelId={level.id} isolateId={isolateId}
+          viewer={<Suspense fallback={<LoadingState label="Preparing your model" detail="Loading the 3D workspace."/>}><Viewer building={project.buildings[0]} activeLevelId={level.id} isolateId={isolateId}
             selection={mode==='present'||previewing?null:selection} select={selectEntity} previewOnly={previewing} roofShown={roofShown} setRoofShown={setRoofShown} walkRequest={walkRequest} onWalkChange={setWalking}
             active={mode!=='analyze'&&(mode==='present'||view!=='plan')} presentation={mode==='present'} onExitPresentation={exitPresentation}/></Suspense>}/>
         <WorkspaceStatus level={level} units={project.units} extra={statusContent} onLevels={()=>setPanel('levels')}

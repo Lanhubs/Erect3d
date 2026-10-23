@@ -13,7 +13,7 @@ self.addEventListener('activate',event=>event.waitUntil((async()=>{
 })()));
 self.addEventListener('fetch',event=>{
   const request=event.request,url=new URL(request.url);
-  if(request.method!=='GET'||url.origin!==self.location.origin||url.pathname.startsWith('/api/')||url.pathname.startsWith('/private-assets/')||url.pathname==='/ready')return;
+  if(request.method!=='GET'||url.origin!==self.location.origin||url.pathname.startsWith('/motion/erect3d-film')||url.pathname.startsWith('/api/')||url.pathname.startsWith('/private-assets/')||url.pathname==='/ready')return;
   if(request.mode==='navigate'){
     event.respondWith(fetch(request).then(async response=>{
       if(response.ok&&response.headers.get('Content-Type')?.includes('text/html')&&/^\\/(projects|cloud)(\\/|$)/.test(url.pathname)){

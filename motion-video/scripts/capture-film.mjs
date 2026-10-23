@@ -3,15 +3,15 @@
  * Deterministic frame grabber for the Erect3D motion film.
  *
  * Drives headless Chrome over the DevTools Protocol with no dependencies
- * beyond Node 18+ (global WebSocket). For every frame it asks the film to
+ * beyond Bun or Node 22+ (global WebSocket). For every frame it asks the film to
  * render that exact timestamp, then takes the screenshot, so the output is
  * frame-for-frame reproducible.
  *
- *   node scripts/capture-film.mjs --url http://127.0.0.1:5199/motion/erect3d-film \
+ *   node scripts/capture-film.mjs --url http://127.0.0.1:5192/motion/erect3d-film \
  *        --out .local/film-frames --frames 0,150,300
  *
  * Options:
- *   --url      film url (the script appends ?capture=1)
+ *   --url      film url (the script appends ?capture=true)
  *   --out      output directory for PNG frames
  *   --frames   comma separated frame numbers, or "all"
  *   --step     frame step when using --frames all (default 1)
@@ -24,7 +24,7 @@ import { spawn } from 'node:child_process'
 import { mkdir, writeFile, rm } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { join, resolve, sep, basename } from 'node:path'
 
 const args = process.argv.slice(2)
 const option = (name, fallback) => {
@@ -33,9 +33,10 @@ const option = (name, fallback) => {
 }
 const flag = name => args.includes(`--${name}`)
 
-const FILM_URL = option('url', 'http://127.0.0.1:5199/motion/erect3d-film')
+const FILM_URL = option('url', 'http://127.0.0.1:5192/motion/erect3d-film')
 const OUT = resolve(option('out', '.local/film-frames'))
 const FPS = Number(option('fps', '30'))
+if(FPS!==30)throw new Error('This film is authored at 30fps.')
 const PORT = Number(option('port', '9333'))
 const FRAME_SPEC = option('frames', 'all')
 const STEP = Number(option('step', '1'))
@@ -68,9 +69,6 @@ const browser = spawn(
     '--window-size=1920,1080',
     '--hide-scrollbars',
     '--force-device-scale-factor=1',
-    '--enable-unsafe-swiftshader',
-    '--use-angle=swiftshader',
-    '--no-sandbox',
     '--disable-dev-shm-usage',
     '--mute-audio',
     'about:blank',
@@ -132,7 +130,7 @@ class Session {
 }
 
 const url = new URL(FILM_URL)
-url.searchParams.set('capture', '1')
+url.searchParams.set('capture', 'true')
 
 const socket = new WebSocket(await endpoint())
 await new Promise((resolveOpen, rejectOpen) => {
@@ -165,7 +163,7 @@ const evaluate = async expression => {
 
 let ready = false
 for (let attempt = 0; attempt < 240; attempt += 1) {
-  ready = await evaluate('Boolean(window.__erect3dFilm && window.__erect3dFilm.ready)')
+  ready = await evaluate("document.querySelector('.film-root')?.dataset.ready === 'true'")
   if (ready) break
   await sleep(500)
 }
@@ -176,7 +174,7 @@ if (!ready) {
   process.exit(1)
 }
 
-const total = await evaluate('window.__erect3dFilm.frames')
+const total = 1050
 const frames =
   FRAME_SPEC === 'all'
     ? Array.from({ length: Math.ceil(total / STEP) }, (_, index) => index * STEP).filter(frame => frame < total)
@@ -185,8 +183,7 @@ const frames =
 await mkdir(OUT, { recursive: true })
 for (let index = 0; index < frames.length; index += 1) {
   const frame = frames[index]
-  await evaluate(`window.__erect3dFilm.renderFrame(${frame})`)
-  await sleep(24)
+  await evaluate(`window.erectFilm.seek(${frame}/30)`)
   const shot = await session.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false }, sessionId)
   const file = join(OUT, `frame-${String(frame).padStart(5, '0')}.png`)
   await writeFile(file, Buffer.from(shot.data, 'base64'))
@@ -199,5 +196,6 @@ console.log(`done: ${frames.length} frames in ${OUT}`)
 if (!flag('keep')) {
   await session.send('Target.closeTarget', { targetId }).catch(() => {})
   browser.kill()
+  if(!resolve(profile).startsWith(resolve(tmpdir())+sep)||!basename(profile).startsWith('erect3d-film-'))throw new Error('Unexpected capture profile path')
   await rm(profile, { recursive: true, force: true }).catch(() => {})
 }

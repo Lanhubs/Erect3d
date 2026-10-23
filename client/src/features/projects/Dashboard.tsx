@@ -12,7 +12,7 @@ import './projectBrowser.css'
 export type DashboardProject=Pick<Project,'id'|'name'|'modified'|'sources'>&{pending?:boolean;revision?:number;offline?:boolean}
 type Props={projects:DashboardProject[];open:(project:DashboardProject)=>void;samples:ArchitecturalSample[];
   openSample:(sample:ArchitecturalSample,duplicate:boolean)=>void;create:(name:string,sample:boolean,building:string,units:Project['units'])=>void;
-  remove:(id:string)=>void;account?:ReactNode;notice?:ReactNode;busy?:boolean;createBlocked?:boolean;samplesError?:string;
+  remove:(id:string)=>Promise<void>;account?:ReactNode;notice?:ReactNode;busy?:boolean;createBlocked?:boolean;samplesError?:string;
   createError?:string;loading?:boolean;loadTemplates?:()=>void;loadPreview?:(project:DashboardProject)=>Promise<PlanPreview>}
 function savedView(){try{return localStorage.getItem('erect-project-view')==='grid'?'grid':'list'}catch{return 'list'}}
 export function visibleProjects(projects:DashboardProject[],query:string,sort:string){
@@ -42,7 +42,7 @@ export function Dashboard({projects,samples,open,openSample,create,remove,accoun
           {layout==='grid'&&<ProjectPreview project={project} load={loadPreview}/>}
           <div className="project-item-info"><button className="project-name" disabled={busy} onClick={()=>open(project)}>{project.name}</button><span>{project.sources[0]?.name||'Building model'}</span><time dateTime={new Date(project.modified).toISOString()}>Updated {new Date(project.modified).toLocaleDateString()}</time></div>
           <span className={`project-sync ${project.pending?'pending':''}`}>{project.pending?'Changes waiting to sync':project.offline?'Available offline':'Saved'}</span>
-          <div className="project-item-actions"><button disabled={busy} onClick={()=>open(project)}>Open</button><details><summary aria-label={`Actions for ${project.name}`}>•••</summary><button disabled={busy} onClick={()=>void confirmAction(`Delete ${project.name}?`,'Delete project').then(yes=>{if(yes)remove(project.id)})}>Delete</button></details></div>
+          <div className="project-item-actions"><button disabled={busy} onClick={()=>open(project)}>Open</button><details><summary aria-label={`Actions for ${project.name}`}>•••</summary><button disabled={busy} onClick={()=>void confirmAction({title:'Delete project?',item:project.name,message:'This removes the project and its shared access. This action cannot be undone.',label:'Delete project',destructive:true,onConfirm:()=>remove(project.id)})}>Delete</button></details></div>
         </article>)}</div>:!loading&&<div className="project-empty"><h2>{query?'No matching projects':'Your next building starts here'}</h2><p>{query?'Try a different project name.':'Create a project or explore an editable template.'}</p>{!query&&<button onClick={()=>chooseTab('templates')}>Browse templates</button>}</div>}
       </section>:<SampleLibrary samples={samples} openSample={openSample} busy={busy} createBlocked={createBlocked} samplesError={samplesError}/>}
     </div>

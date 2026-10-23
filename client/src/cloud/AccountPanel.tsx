@@ -1,3 +1,4 @@
+import {LoadingState} from '../app/LoadingState'
 import { useState } from 'react'
 import { refreshAccount, signIn, signOut, useAccount } from './account'
 import { registrationEnabled } from './config'
@@ -12,9 +13,10 @@ export function AccountPanel() {
   if (user) return <div className="cloud-account"><span>{user.name} · {user.email}</span>
     <button disabled={busy} onClick={() => void submit(signOut)}>Sign out</button>{error && <p role="alert">{error}</p>}</div>
   return <section className="cloud-signin" aria-label="Account">
+    <div className="signin-brand"><img src="/favicon.svg" alt="Erect3D"/><span>ERECT3D</span></div><p className="signin-eyebrow">YOUR DESIGN WORKSPACE</p>
     <h2>{register ? 'Create your account' : 'Sign in to your projects'}</h2>
     <p>Your projects save to your account. Opened projects remain editable offline and sync when you reconnect.</p>
-    {checking ? <p role="status">Checking your session…</p> : <form onSubmit={event => {
+    {checking ? <LoadingState compact label="Checking your session"/> : <form onSubmit={event => {
       event.preventDefault(); void submit(() => signIn(email, password, register ? name : undefined))
     }}>
       {register && <label>Name<input required autoComplete="name" value={name} maxLength={200} onChange={e => setName(e.target.value)} /></label>}

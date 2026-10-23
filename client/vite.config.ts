@@ -8,6 +8,7 @@ export default defineConfig({
   css: { postcss: { plugins: [] } },
   server: {
     proxy: {
+      '/motion/erect3d-film': { target: process.env.ERECT_FILM_PROXY || 'http://127.0.0.1:5191', changeOrigin: true },
       '/api': { target: process.env.ERECT_API_PROXY || 'http://127.0.0.1:4000', ws: true },
       '/ready': process.env.ERECT_API_PROXY || 'http://127.0.0.1:4000', '/private-assets': process.env.ERECT_API_PROXY || 'http://127.0.0.1:4000'
     }
