@@ -28,10 +28,14 @@
   left: 8px;
   width: min(430px, calc(100vw - 16px));
   max-height: min(65vh, 650px);
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-width: 0;
+  box-sizing: border-box;
   overscroll-behavior: contain;
   padding: 12px;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px;
   background: #f7f8f5;
   border: 1px solid #b9c4b9;
@@ -61,6 +65,20 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.structure-row > label {
+  flex: 1 1 120px;
+}
+.structure-body > *,
+.structure-card > * {
+  min-width: 0;
+}
+.structure-body button {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .structure-card {
   border: 1px solid #d9dedb;
@@ -80,9 +98,22 @@
   cursor: pointer;
   font-size: 11px;
   color: #526354;
+  overflow-wrap: anywhere;
+}
+.structure-outline .structure-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding-block: 6px;
+}
+.structure-outline .structure-row > span {
+  grid-column: 1 / -1;
+}
+.structure-outline .structure-row label {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
 }
 .structure-outline input {
-  max-width: 58px;
+  width: 100%;
 }
 .structure-panel label {
   display: flex;
@@ -90,11 +121,14 @@
   justify-content: space-between;
   gap: 8px;
   font-size: 11px;
+  min-width: 0;
+  flex-wrap: wrap;
 }
 .structure-panel input,
 .structure-panel select {
   min-width: 0;
-  max-width: 145px;
+  max-width: min(145px, 100%);
+  box-sizing: border-box;
   padding: 4px 6px;
   border: 1px solid #ccd2cf;
   border-radius: 5px;

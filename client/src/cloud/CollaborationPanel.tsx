@@ -4,7 +4,7 @@ import { useAccount } from './account'
 import { useProject } from '../state/project'
 import type { CloudSession } from './useCloudProject'
 import { confirmAction } from '../app/ConfirmationHost'
-type Member = { id: string; name: string; role: string }
+type Member = { id: string; name: string; email: string; role: string }
 type Comment = {
   id: string
   text: string
@@ -20,7 +20,7 @@ export function CollaborationPanel({ session }: { session: CloudSession }) {
     readOnly = useProject((state) => state.readOnly)
   const [members, setMembers] = useState<Member[]>([]),
     [comments, setComments] = useState<Comment[]>([])
-  const [accountId, setAccountId] = useState(''),
+  const [email, setEmail] = useState(''),
     [role, setRole] = useState('VIEWER'),
     [text, setText] = useState('')
   const [busy, setBusy] = useState(false),
@@ -70,13 +70,13 @@ export function CollaborationPanel({ session }: { session: CloudSession }) {
     <section aria-label="Project collaboration">
       <h3>People and access</h3>
       <p>
-        Your account ID: <code>{user.id}</code>{' '}
+        Signed in as {user.email}{' '}
         <button
           onClick={() => {
-            void navigator.clipboard.writeText(user.id).catch((error) => setError(error.message))
+            void navigator.clipboard.writeText(user.email).catch((error) => setError(error.message))
           }}
         >
-          Copy ID
+          Copy email
         </button>
       </p>
       <p>
@@ -86,7 +86,7 @@ export function CollaborationPanel({ session }: { session: CloudSession }) {
       <ul>
         {members.map((member) => (
           <li key={member.id}>
-            {member.name} · {member.role}
+            {member.name} · {member.email} · {member.role}
             {manage && (
               <>
                 <select
@@ -128,27 +128,48 @@ export function CollaborationPanel({ session }: { session: CloudSession }) {
         ))}
       </ul>
       {manage && (
-        <div className="cloud-inline">
+        <form
+          className="cloud-inline"
+          onSubmit={(event) => {
+            event.preventDefault()
+            if (busy || !email.trim()) return
+            void run(async () => {
+              await api.request(`${path}/members`, 'POST', { email: email.trim(), role })
+              setEmail('')
+            })
+          }}
+        >
           <label>
-            Existing account ID
-            <input value={accountId} maxLength={128} onChange={(e) => setAccountId(e.target.value)} />
+            Collaborator email
+            <input
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              maxLength={254}
+              placeholder="name@example.com"
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={busy}
+            />
           </label>
-          <select aria-label="New collaborator role" value={role} onChange={(e) => setRole(e.target.value)}>
+          <select
+            aria-label="New collaborator role"
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            disabled={busy}
+          >
             {['EDITOR', 'REVIEWER', 'CLIENT', 'VIEWER'].map((role) => (
               <option key={role}>{role}</option>
             ))}
           </select>
-          <button
-            disabled={busy || !accountId.trim()}
-            onClick={() =>
-              void run(() =>
-                api.request(`${path}/members/${encodeURIComponent(accountId.trim())}`, 'PUT', { role }),
-              )
-            }
-          >
+          <button type="submit" disabled={busy || !email.trim()}>
             Grant access
           </button>
-        </div>
+          <small>
+            Add an existing Erect3D account by email. Access is available immediately; no invitation email is
+            sent.
+          </small>
+        </form>
       )}
       <h3>Live collaborators</h3>
       <p>

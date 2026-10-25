@@ -265,11 +265,19 @@
   font-size: 12px;
 }
 .drawer-content {
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   min-height: 0;
+  min-width: 0;
   padding: 10px;
   overscroll-behavior: contain;
   font-size: 12px;
+}
+.drawer-content > *,
+.drawer-content fieldset {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 .drawer-content input,
 .drawer-content select,

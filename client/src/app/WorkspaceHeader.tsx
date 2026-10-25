@@ -114,7 +114,7 @@ export function WorkspaceHeader({
       key={item.id}
       className={`${mobile ? 'mobile-tool' : 'desktop-tool'} ${['select', 'pan'].includes(item.id) ? 'navigation-tool' : ''}`}
       disabled={readOnly && !['select', 'pan', 'measure'].includes(item.id)}
-      title={item.label}
+      data-tooltip={item.label}
       aria-label={item.label}
       aria-pressed={tool === item.id}
       onClick={(event) => choose(event, () => draw(item.id))}
@@ -126,7 +126,7 @@ export function WorkspaceHeader({
   return (
     <>
       <header className="studio-filebar">
-        <button className="studio-home" aria-label="Projects" title="Back to projects" onClick={back}>
+        <button className="studio-home" aria-label="Projects" data-tooltip="Back to projects" onClick={back}>
           <img src="/favicon.svg" alt="" />
           <FiArrowLeft />
         </button>
@@ -136,7 +136,7 @@ export function WorkspaceHeader({
         </div>
         <span
           className={`studio-save-state${dirty ? ' saving' : ''}`}
-          title={
+          data-tooltip={
             permissionReadOnly
               ? 'Read only'
               : previewing
@@ -155,19 +155,20 @@ export function WorkspaceHeader({
           {collaborate && (
             <button
               className="studio-collaborate"
+              aria-label="Collaborate"
               onClick={collaborate}
-              title="People, access and discussion"
+              data-tooltip="People, access and discussion"
             >
               <FiUsers />
               <span>Collaborate</span>
             </button>
           )}
-          <button aria-label="Find a control" title="Find a control · Ctrl/Cmd K" onClick={search}>
+          <button aria-label="Find a control" data-tooltip="Find a control · Ctrl/Cmd K" onClick={search}>
             <FiSearch />
             <kbd>Ctrl K</kbd>
           </button>
           <details className="studio-menu studio-help">
-            <summary aria-label="Workspace help" title="Workspace help">
+            <summary aria-label="Workspace help" data-tooltip="Workspace help">
               <FiHelpCircle />
             </summary>
             <div>
@@ -186,7 +187,7 @@ export function WorkspaceHeader({
           <button
             className="studio-assistant"
             aria-label="Assistant"
-            title="Design assistant"
+            data-tooltip="Design assistant"
             aria-pressed={assistantOpen}
             onClick={assistant}
           >
@@ -222,21 +223,21 @@ export function WorkspaceHeader({
           </div>
         </details>
         <div className="studio-history">
-          <button disabled={readOnly} title="Undo · Ctrl/Cmd Z" aria-label="Undo" onClick={undo}>
+          <button disabled={readOnly} data-tooltip="Undo · Ctrl/Cmd Z" aria-label="Undo" onClick={undo}>
             <FiRotateCcw />
             <span>Undo</span>
           </button>
           <button
             className="studio-redo"
             disabled={readOnly}
-            title="Redo · Ctrl/Cmd Shift Z"
+            data-tooltip="Redo · Ctrl/Cmd Shift Z"
             aria-label="Redo"
             onClick={redo}
           >
             <FiRotateCw />
             <span>Redo</span>
           </button>
-          <button disabled={readOnly} title="Save" aria-label="Save" onClick={save}>
+          <button disabled={readOnly} data-tooltip="Save" aria-label="Save" onClick={save}>
             <FiSave />
             <span>Save</span>
           </button>
@@ -292,18 +293,20 @@ export function WorkspaceHeader({
         </div>
         <button
           className="studio-walk"
+          aria-label={walking ? 'Exit walk' : 'Walk'}
           aria-pressed={walking}
           onClick={walk}
-          title={walking ? 'Exit walkthrough' : 'Walk through the building'}
+          data-tooltip={walking ? 'Exit walkthrough' : 'Walk through the building'}
         >
           <FiNavigation />
           <span>{walking ? 'Exit walk' : 'Walk'}</span>
         </button>
         <button
           className="studio-present"
+          aria-label="Present"
           aria-pressed={mode === 'present'}
           onClick={() => setMode('present')}
-          title="Present building"
+          data-tooltip="Present building"
         >
           <FiPlay />
           <span>Present</span>
@@ -331,7 +334,7 @@ export function WorkspaceHeader({
           <button
             className="studio-properties-trigger"
             aria-label="Toggle properties"
-            title={selection ? 'Selected element properties' : 'Properties'}
+            data-tooltip={selection ? 'Selected element properties' : 'Properties'}
             aria-pressed={inspectorOpen}
             onClick={toggleInspector}
           >

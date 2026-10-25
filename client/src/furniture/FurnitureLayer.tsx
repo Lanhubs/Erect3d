@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import type { Level, Selection } from '../domain/types'
 import { useProject } from '../state/project'
+import { bindDragBoundary } from '../features/editing/dragBoundary'
 import { furnitureFootprint } from './entities'
 import { furnitureLabel } from './types'
 import { useFurnitureReview } from './reviewState'
@@ -50,12 +51,15 @@ export function FurnitureLayer({
             const escape = (e: KeyboardEvent) => {
               if (e.key === 'Escape') cancel()
             }
+            let releaseBoundary = () => {}
             const release = () => {
+              releaseBoundary()
               window.removeEventListener('pointermove', move)
               window.removeEventListener('pointerup', finish)
               window.removeEventListener('pointercancel', cancel)
               window.removeEventListener('keydown', escape)
             }
+            releaseBoundary = bindDragBoundary(svg, event.pointerId, finish, cancel)
             editing.setCleanup(release)
             window.addEventListener('pointermove', move)
             window.addEventListener('pointerup', finish, { once: true })
@@ -153,12 +157,15 @@ export function FurnitureLayer({
                 status: 'uncertain',
               })
             }
+            let releaseBoundary = () => {}
             const release = () => {
+              releaseBoundary()
               window.removeEventListener('pointermove', move)
               window.removeEventListener('pointerup', release)
               window.removeEventListener('pointercancel', release)
               cleanup.current = null
             }
+            releaseBoundary = bindDragBoundary(svg, event.pointerId, release, release)
             cleanup.current = release
             svg.setPointerCapture(event.pointerId)
             window.addEventListener('pointermove', move)

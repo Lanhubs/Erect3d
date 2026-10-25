@@ -1,0 +1,28 @@
+.tool-hint {
+  position: fixed;
+  z-index: 10000;
+  max-width: min(280px, calc(100vw - 24px));
+  box-sizing: border-box;
+  padding: 8px 11px;
+  border: 1px solid #54483b;
+  border-radius: 6px;
+  background: #342e28;
+  color: #fffaf3;
+  font:
+    500 12px/1.45 'DM Sans',
+    sans-serif;
+  letter-spacing: 0;
+  text-align: left;
+  overflow-wrap: anywhere;
+  box-shadow: 0 2px 8px #211a141a;
+  pointer-events: none;
+}
+
+@media (forced-colors: active) {
+  .tool-hint {
+    background: Canvas;
+    color: CanvasText;
+    border-color: CanvasText;
+    box-shadow: none;
+  }
+}

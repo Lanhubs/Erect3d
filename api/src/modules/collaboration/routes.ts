@@ -6,7 +6,7 @@ import { body, param, parse } from '../../contracts/http'
 import { id, pagination } from '../../contracts/primitives'
 import { authorize } from '../../security/permissions'
 import { audit } from '../audit/service'
-import { ApiError, requireValue } from '../../security/errors'
+import { collaboratorEmail, collaboratorRole, grantProjectAccess } from './membership'
 export function collaborationRoutes(db: Database) {
   const routes = new Hono<ApiEnv>()
   routes.get('/:projectId/members', async (context) => {
@@ -14,33 +14,29 @@ export function collaborationRoutes(db: Database) {
     await authorize(db, context.get('actor'), projectId)
     const query = parse(pagination, context.req.query())
     return context.json(
-      await db`SELECT u.id,u.name,pm.role FROM project_members pm JOIN users u ON u.id=pm.user_id
+      await db`SELECT u.id,u.name,u.email,pm.role FROM project_members pm JOIN users u ON u.id=pm.user_id
       WHERE pm.project_id=${projectId} AND u.id>${query.cursor || ''} ORDER BY u.id LIMIT ${query.limit}`,
     )
+  })
+  routes.post('/:projectId/members', async (context) => {
+    const projectId = param(context, 'projectId')
+    const input = await body(context, collaboratorEmail)
+    await grantProjectAccess(
+      db,
+      context.get('actor'),
+      projectId,
+      { email: input.email },
+      input.role,
+      context.get('requestId'),
+    )
+    return context.body(null, 204)
   })
   routes.put('/:projectId/members/:userId', async (context) => {
     const projectId = param(context, 'projectId'),
       userId = param(context, 'userId'),
       actor = context.get('actor')
-    const input = await body(
-      context,
-      z.object({ role: z.enum(['EDITOR', 'REVIEWER', 'CLIENT', 'VIEWER']) }).strict(),
-    )
-    await db.begin(async (tx) => {
-      await tx`SELECT id FROM projects WHERE id=${projectId} FOR UPDATE`
-      await authorize(tx, actor, projectId, 'manage')
-      const [owner] = await tx`SELECT owner_id FROM projects WHERE id=${projectId}`
-      if (owner.owner_id === userId)
-        throw new ApiError(409, 'OWNER_TRANSFER_REQUIRED', 'Use ownership transfer for the project owner')
-      const [user] = await tx`SELECT id FROM users WHERE id=${userId}`
-      requireValue(user)
-      await tx`INSERT INTO project_members(project_id,user_id,role) VALUES (${projectId},${userId},${input.role})
-        ON CONFLICT(project_id,user_id) DO UPDATE SET role=EXCLUDED.role`
-      await audit(tx, actor, projectId, 'project.role_changed', context.get('requestId'), {
-        userId,
-        role: input.role,
-      })
-    })
+    const input = await body(context, z.object({ role: collaboratorRole }).strict())
+    await grantProjectAccess(db, actor, projectId, { userId }, input.role, context.get('requestId'))
     return context.body(null, 204)
   })
   routes.delete('/:projectId/members/:userId', async (context) => {

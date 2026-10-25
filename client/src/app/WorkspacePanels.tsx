@@ -56,7 +56,7 @@ export function PanelRail({
       {panels.map((panel) => (
         <button
           key={panel.id}
-          title={`${panel.label}${panel.id === 'levels' ? ` · ${levelName}` : ''}`}
+          data-tooltip={`${panel.label}${panel.id === 'levels' ? ` · ${levelName}` : ''}`}
           aria-label={panel.label}
           aria-pressed={active === panel.id}
           onClick={() => open(panel.id)}

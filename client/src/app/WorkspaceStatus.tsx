@@ -18,7 +18,7 @@ export function WorkspaceStatus({
   return (
     <div className={`statusbar${extra ? ' statusbar-with-tools' : ''}`}>
       <span
-        title={`${level.name} · ${level.walls.length} walls · ${level.doors.length} doors · ${level.windows.length} windows · ${units.toUpperCase()} · 1:1 MODEL`}
+        data-tooltip={`${level.name} · ${level.walls.length} walls · ${level.doors.length} doors · ${level.windows.length} windows · ${units.toUpperCase()} · 1:1 MODEL`}
       >
         <button className="level-status" onClick={onLevels}>
           <FiBox /> {level.name}

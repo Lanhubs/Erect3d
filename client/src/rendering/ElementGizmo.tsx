@@ -5,6 +5,7 @@ import type { Building, Selection } from '../domain/types'
 import { selectedElement, pointsCenter, canRotate, canAdjustHeight } from '../domain/elementGeometry'
 import { useElementEditing, type EditHandle } from '../features/editing/useElementEditing'
 import { useProject } from '../state/project'
+import { bindDragBoundary } from '../features/editing/dragBoundary'
 
 export const manipulationEvent = 'erect3d:manipulating'
 export function ElementGizmo({
@@ -76,7 +77,9 @@ export function ElementGizmo({
       const p = point(next)
       if (p) editing.move(p, next.shiftKey, (event.clientY - next.clientY) * 0.01)
     }
+    let releaseBoundary = () => {}
     const cleanup = () => {
+      releaseBoundary()
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerup', finish)
       window.removeEventListener('pointercancel', cancel)
@@ -94,6 +97,7 @@ export function ElementGizmo({
     const keydown = (next: KeyboardEvent) => {
       if (next.key === 'Escape') cancel()
     }
+    releaseBoundary = bindDragBoundary(gl.domElement, event.pointerId, finish, cancel)
     editing.setCleanup(cleanup)
     window.addEventListener('pointermove', move)
     window.addEventListener('pointerup', finish, { once: true })

@@ -85,7 +85,7 @@ export function WorkspaceDock({
         <summary
           className={`cloud-sync-trigger${warning ? ' needs-attention' : ''}`}
           aria-label={`Project sync: ${label} · r${record.base.revision} · ${record.base.role}`}
-          title={`${label} · r${record.base.revision} · ${record.base.role}${offlineReady ? ' · Offline ready' : ''}`}
+          data-tooltip={`${label} · r${record.base.revision} · ${record.base.role}${offlineReady ? ' · Offline ready' : ''}`}
         >
           <Icon aria-hidden="true" />
           <span role="status">
@@ -155,7 +155,7 @@ export function WorkspaceDock({
         className="cloud-tools-trigger"
         aria-expanded={toolsOpen}
         onClick={toggleTools}
-        title="Project tools"
+        data-tooltip="Project tools"
         aria-label={`Project tools${session.peers.length ? ` · ${session.peers.length} online` : ''}`}
       >
         <FiSliders aria-hidden="true" />

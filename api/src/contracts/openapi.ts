@@ -11,6 +11,7 @@ import { sourceLinkSchema } from '../modules/assets/sources'
 import { guestCommentSchema, guestApprovalSchema } from '../modules/shares/public'
 import { createProjectSchema } from '../modules/projects/routes'
 import { credentials, registration } from '../modules/auth/routes'
+import { collaboratorEmail } from '../modules/collaboration/membership'
 const contracts: Record<string, z.ZodType> = {
   Project: projectSchema,
   Operation: operationSchema,
@@ -29,6 +30,7 @@ const contracts: Record<string, z.ZodType> = {
   CreateProject: createProjectSchema,
   Login: credentials,
   Registration: registration,
+  CollaboratorEmail: collaboratorEmail,
 }
 const requestContracts: Record<string, string> = {
   operations: 'Operation',
@@ -40,6 +42,7 @@ const requestContracts: Record<string, string> = {
   views: 'SavedView',
   shares: 'Share',
   library: 'LibraryItem',
+  members: 'CollaboratorEmail',
 }
 export function buildOpenApi(app: Hono<ApiEnv>, cookieName = 'erect_session') {
   const paths: Record<string, Record<string, unknown>> = {}

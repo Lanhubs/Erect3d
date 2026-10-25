@@ -4,6 +4,7 @@ import { selectedElement, pointsCenter, canRotate, canAdjustHeight } from '../do
 import { useProject } from '../state/project'
 import { useElementEditing, type EditHandle } from '../features/editing/useElementEditing'
 import { projectSoftware, unprojectSoftware } from './softwareProjection'
+import { bindDragBoundary } from '../features/editing/dragBoundary'
 
 export function SoftwareElementHandles({
   svg,
@@ -46,7 +47,9 @@ export function SoftwareElementHandles({
           canvas.setPointerCapture(event.pointerId)
           const move = (next: PointerEvent) =>
             editing.move(point(next), next.shiftKey, (event.clientY - next.clientY) * 0.01)
+          let releaseBoundary = () => {}
           const cleanup = () => {
+            releaseBoundary()
             window.removeEventListener('pointermove', move)
             window.removeEventListener('pointerup', finish)
             window.removeEventListener('pointercancel', cancel)
@@ -63,6 +66,7 @@ export function SoftwareElementHandles({
           const keydown = (next: KeyboardEvent) => {
             if (next.key === 'Escape') cancel()
           }
+          releaseBoundary = bindDragBoundary(canvas, event.pointerId, finish, cancel)
           editing.setCleanup(cleanup)
           window.addEventListener('pointermove', move)
           window.addEventListener('pointerup', finish, { once: true })

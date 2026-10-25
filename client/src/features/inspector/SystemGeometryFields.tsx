@@ -117,12 +117,12 @@ export function SystemGeometryFields({
   return (
     <>
       {systemPoints(system).map((point, index) => (
-        <label className="inspector-field" key={index}>
-          <span>Point {index + 1} · X / Z m</span>
-          <span>
-            {(['x', 'z'] as const).map((axis) => (
+        <fieldset className="system-coordinate-field" key={index}>
+          <legend>Point {index + 1} · m</legend>
+          {(['x', 'z'] as const).map((axis) => (
+            <label key={axis}>
+              <span>{axis.toUpperCase()}</span>
               <input
-                key={axis}
                 type="number"
                 aria-label={`Point ${index + 1} ${axis}`}
                 step=".1"
@@ -144,9 +144,9 @@ export function SystemGeometryFields({
                   )
                 }}
               />
-            ))}
-          </span>
-        </label>
+            </label>
+          ))}
+        </fieldset>
       ))}
     </>
   )

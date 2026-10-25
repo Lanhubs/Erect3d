@@ -243,13 +243,13 @@ function ViewerComponent({
           <button
             className="primary walk-trigger"
             onClick={toggleWalk}
-            title="Use WASD to move. Drag or lock the pointer to look around."
+            data-tooltip="Use WASD to move. Drag or lock the pointer to look around."
           >
             {walk ? 'Exit walk' : 'Walk'}
           </button>
           <button
             disabled={walk}
-            title="Switch between overhead and orbit views"
+            data-tooltip="Switch between overhead and orbit views"
             onClick={() => setTop((value) => !value)}
           >
             {top ? 'Orbit' : 'Top'}
@@ -314,24 +314,24 @@ function ViewerComponent({
             )}
             <button
               aria-pressed={contextShown}
-              title="Illustrative parking and planting, separate from the imported plan"
+              data-tooltip="Illustrative parking and planting, separate from the imported plan"
               onClick={() => setContextShown((value) => !value)}
             >
               {contextShown ? 'Hide surroundings' : 'Show surroundings'}
             </button>
-            <button title="Toggle the interior ceiling" onClick={() => setCeiling((value) => !value)}>
+            <button data-tooltip="Toggle the interior ceiling" onClick={() => setCeiling((value) => !value)}>
               {ceiling ? 'No ceiling' : 'Ceiling'}
             </button>
             <button
               aria-pressed={sectionHeight !== null}
-              title="Cut the model horizontally"
+              data-tooltip="Cut the model horizontally"
               onClick={() => setSectionHeight((value) => (value === null ? 1.4 : null))}
             >
               {sectionHeight === null ? 'Horizontal cut' : 'Clear H cut'}
             </button>
             <button
               aria-pressed={verticalSection !== null}
-              title="Cut the model vertically"
+              data-tooltip="Cut the model vertically"
               onClick={() => setVerticalSection((value) => (value === null ? (minX + maxX) / 2 : null))}
             >
               {verticalSection === null ? 'Vertical cut' : 'Clear V cut'}
@@ -342,7 +342,7 @@ function ViewerComponent({
               </button>
             )}
             <button
-              title="Show or hide the walkthrough minimap"
+              data-tooltip="Show or hide the walkthrough minimap"
               onClick={() => setMapShown((value) => !value)}
             >
               {mapShown ? 'Map on' : 'Map off'}
@@ -478,7 +478,7 @@ function ViewerComponent({
             <button
               type="button"
               aria-label="Zoom in"
-              title="Zoom in"
+              data-tooltip="Zoom in"
               onClick={() => zoomCamera({ factor: 0.8 })}
             >
               +
@@ -486,7 +486,7 @@ function ViewerComponent({
             <button
               type="button"
               aria-label="Zoom out"
-              title="Zoom out"
+              data-tooltip="Zoom out"
               onClick={() => zoomCamera({ factor: 1.25 })}
             >
               −
@@ -494,7 +494,7 @@ function ViewerComponent({
             <button
               type="button"
               aria-label="Fit model"
-              title="Fit model"
+              data-tooltip="Fit model"
               onClick={() => zoomCamera({ reset: true })}
             >
               Fit

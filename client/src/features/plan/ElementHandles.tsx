@@ -4,6 +4,7 @@ import { selectedElement, pointsCenter, canRotate, canAdjustHeight } from '../..
 import { useProject } from '../../state/project'
 import { useElementEditing, type EditHandle } from '../editing/useElementEditing'
 import { pointerPlanPoint } from './planBounds'
+import { bindDragBoundary } from '../editing/dragBoundary'
 
 export function ElementHandles({
   svg,
@@ -53,12 +54,15 @@ export function ElementHandles({
         const keydown = (next: KeyboardEvent) => {
           if (next.key === 'Escape') cancel()
         }
+        let releaseBoundary = () => {}
         const cleanup = () => {
+          releaseBoundary()
           window.removeEventListener('pointermove', move)
           window.removeEventListener('pointerup', finish)
           window.removeEventListener('pointercancel', cancel)
           window.removeEventListener('keydown', keydown)
         }
+        releaseBoundary = bindDragBoundary(canvas, event.pointerId, finish, cancel)
         editing.setCleanup(cleanup)
         window.addEventListener('pointermove', move)
         window.addEventListener('pointerup', finish, { once: true })

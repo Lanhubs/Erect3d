@@ -27,6 +27,7 @@ import { ElementHandles } from './ElementHandles'
 import { StructureEditLayer } from './StructureEditLayer'
 import { useElementEditing } from '../editing/useElementEditing'
 import { FurnitureLayer } from '../../furniture/FurnitureLayer'
+import { bindDragBoundary } from '../editing/dragBoundary'
 type Props = {
   level: Level
   selection: Selection
@@ -107,7 +108,7 @@ export function PlanEditor({
         )
     if (event.button === 1 || tool === 'pan') {
       setPan(raw)
-      svg.current?.setPointerCapture(event.pointerId)
+      captureDrag(event.pointerId)
       return
     }
     if (previewOnly) return
@@ -201,6 +202,19 @@ export function PlanEditor({
     if (tool === 'select') select(null)
   }
   const move = (event: ReactPointerEvent<SVGSVGElement>) => {
+    if (event.pointerType === 'mouse' && (pan || dragMatrix.current)) {
+      const bounds = svg.current!.getBoundingClientRect()
+      if (
+        event.clientX < bounds.left ||
+        event.clientX > bounds.right ||
+        event.clientY < bounds.top ||
+        event.clientY > bounds.bottom
+      ) {
+        setSnapGuide(null)
+        finishDrag()
+        return
+      }
+    }
     const p = point(event)
     const aligned = event.shiftKey
       ? p
@@ -240,6 +254,16 @@ export function PlanEditor({
     setPan(null)
     editing.finish()
   }
+  const cancelDrag = () => {
+    dragMatrix.current = null
+    setPan(null)
+    editing.cancel()
+  }
+  const captureDrag = (pointerId: number) => {
+    const canvas = svg.current!
+    canvas.setPointerCapture(pointerId)
+    editing.setCleanup(bindDragBoundary(canvas, pointerId, finishDrag, cancelDrag))
+  }
   return (
     <section className="plan-editor">
       <div className="viewport-head">
@@ -266,8 +290,8 @@ export function PlanEditor({
         tabIndex={0}
         aria-label="Editable floor plan"
         onKeyDown={(event) => {
-          editing.keyboard(event)
-          if (event.key === 'Escape') dragMatrix.current = null
+          if (event.key === 'Escape') cancelDrag()
+          else editing.keyboard(event)
         }}
         onPointerDownCapture={(event) => {
           svg.current?.focus()
@@ -282,10 +306,7 @@ export function PlanEditor({
         onPointerMove={move}
         onPointerLeave={() => setSnapGuide(null)}
         onPointerUp={finishDrag}
-        onPointerCancel={() => {
-          dragMatrix.current = null
-          editing.cancel()
-        }}
+        onPointerCancel={cancelDrag}
         onDoubleClick={finishRoom}
       >
         <defs>
@@ -352,14 +373,14 @@ export function PlanEditor({
               event.stopPropagation()
               select({ kind: 'wall', id: wall.id })
               editing.start('move', point(event))
-              svg.current?.setPointerCapture(event.pointerId)
+              captureDrag(event.pointerId)
             }}
             onEndDown={(event, wall, end) => {
               dragMatrix.current = svg.current!.getScreenCTM()!.inverse()
               event.stopPropagation()
               select({ kind: 'wall', id: wall.id })
               editing.start(end === 'start' ? 0 : 1, point(event))
-              svg.current?.setPointerCapture(event.pointerId)
+              captureDrag(event.pointerId)
             }}
           />
         )}

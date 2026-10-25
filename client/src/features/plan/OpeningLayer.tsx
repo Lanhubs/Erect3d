@@ -4,6 +4,7 @@ import type { Level, Selection, Wall } from '../../domain/types'
 import { nearestWallOffset, wallLength, wallSubpath } from '../../geometry/math'
 import { validateOpening } from '../../geometry/openingValidation'
 import { useProject, type Tool } from '../../state/project'
+import { bindDragBoundary } from '../editing/dragBoundary'
 
 type Drag = {
   kind: 'doors' | 'windows' | 'passages'
@@ -23,6 +24,8 @@ type Props = {
 export function OpeningLayer({ svg, level, selection, select, tool }: Props) {
   const edit = useProject((state) => state.edit)
   const dragging = useRef<Drag | null>(null)
+  const boundaryCleanup = useRef<(() => void) | null>(null)
+  const handlers = useRef<{ finish: () => void; cancel: () => void } | null>(null)
   const offsetRef = useRef<number | null>(null)
   const [preview, setPreview] = useState<{ id: string; offset: number } | null>(null)
   const project = useCallback(
@@ -54,6 +57,8 @@ export function OpeningLayer({ svg, level, selection, select, tool }: Props) {
       setPreview({ id: drag.id, offset })
     }
     const up = () => {
+      boundaryCleanup.current?.()
+      boundaryCleanup.current = null
       const drag = dragging.current,
         offset = offsetRef.current
       if (drag && offset !== null && Math.abs(offset - drag.original) > 0.01)
@@ -65,11 +70,29 @@ export function OpeningLayer({ svg, level, selection, select, tool }: Props) {
       offsetRef.current = null
       setPreview(null)
     }
+    const cancel = () => {
+      boundaryCleanup.current?.()
+      boundaryCleanup.current = null
+      dragging.current = null
+      offsetRef.current = null
+      setPreview(null)
+    }
+    handlers.current = { finish: up, cancel }
+    const key = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') cancel()
+    }
     window.addEventListener('pointermove', move)
     window.addEventListener('pointerup', up)
+    window.addEventListener('pointercancel', cancel)
+    window.addEventListener('keydown', key)
     return () => {
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerup', up)
+      window.removeEventListener('pointercancel', cancel)
+      window.removeEventListener('keydown', key)
+      boundaryCleanup.current?.()
+      boundaryCleanup.current = null
+      handlers.current = null
     }
   }, [edit, level, project])
   const begin = (
@@ -85,6 +108,13 @@ export function OpeningLayer({ svg, level, selection, select, tool }: Props) {
     if (tool !== 'select') return
     dragging.current = { kind, id, wall, width, original: offset }
     svg.current?.setPointerCapture(event.pointerId)
+    if (svg.current && handlers.current)
+      boundaryCleanup.current = bindDragBoundary(
+        svg.current,
+        event.pointerId,
+        handlers.current.finish,
+        handlers.current.cancel,
+      )
   }
   return (
     <g className="opening-layer">
