@@ -31,13 +31,6 @@ type Props = {
   loadTemplates?: () => void
   loadPreview?: (project: DashboardProject) => Promise<PlanPreview>
 }
-function savedView() {
-  try {
-    return localStorage.getItem('erect-project-view') === 'grid' ? 'grid' : 'list'
-  } catch {
-    return 'list'
-  }
-}
 export function visibleProjects(projects: DashboardProject[], query: string, sort: string) {
   return projects
     .filter((p) => p.name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()))
@@ -68,7 +61,6 @@ export function Dashboard({
   loading = false,
 }: Props) {
   const [tab, setTab] = useState<'projects' | 'templates'>('projects'),
-    [layout, setLayout] = useState(savedView),
     [query, setQuery] = useState(''),
     [sort, setSort] = useState('recent'),
     [creating, setCreating] = useState(false)
@@ -81,12 +73,6 @@ export function Dashboard({
     window.addEventListener('keydown', key)
     return () => window.removeEventListener('keydown', key)
   }, [])
-  const chooseLayout = (next: string) => {
-    setLayout(next)
-    try {
-      localStorage.setItem('erect-project-view', next)
-    } catch {}
-  }
   const chooseTab = (next: typeof tab) => {
     setTab(next)
     if (next === 'templates') loadTemplates?.()
@@ -155,22 +141,6 @@ export function Dashboard({
                 <option value="oldest">Oldest updated</option>
                 <option value="name">Name</option>
               </select>
-              <div aria-label="Project layout">
-                <button
-                  aria-label="List view"
-                  aria-pressed={layout === 'list'}
-                  onClick={() => chooseLayout('list')}
-                >
-                  List
-                </button>
-                <button
-                  aria-label="Grid view"
-                  aria-pressed={layout === 'grid'}
-                  onClick={() => chooseLayout('grid')}
-                >
-                  Grid
-                </button>
-              </div>
             </div>
             <div className="project-result-count" role="status">
               {loading
@@ -178,10 +148,10 @@ export function Dashboard({
                 : `${shown.length} ${shown.length === 1 ? 'project' : 'projects'}${query ? ' found' : ''}`}
             </div>
             {shown.length ? (
-              <div className={`project-results ${layout}`}>
+              <div className="project-results grid">
                 {shown.map((project) => (
                   <article className="project-item" key={project.id}>
-                    {layout === 'grid' && <ProjectPreview project={project} load={loadPreview} />}
+                    <ProjectPreview project={project} load={loadPreview} />
                     <div className="project-item-info">
                       <button className="project-name" disabled={busy} onClick={() => open(project)}>
                         {project.name}

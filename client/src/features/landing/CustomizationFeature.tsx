@@ -1,20 +1,19 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import type { ComponentAnchors } from './ExplodedBuildingPreview'
 
 const ExplodedBuildingPreview = lazy(() => import('./ExplodedBuildingPreview'))
 
 function CustomizationVisual() {
   const frame = useRef<HTMLDivElement>(null)
   const [nearViewport, setNearViewport] = useState(false)
-  const [visible, setVisible] = useState(false)
+  const [anchors, setAnchors] = useState<ComponentAnchors | null>(null)
   useEffect(() => {
     if (!frame.current || !('IntersectionObserver' in window)) {
       setNearViewport(true)
-      setVisible(true)
       return
     }
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setVisible(entry.isIntersecting)
         if (entry.isIntersecting) setNearViewport(true)
       },
       { rootMargin: '220px' },
@@ -26,30 +25,36 @@ function CustomizationVisual() {
     <div
       className="customization-visual"
       ref={frame}
-      aria-label="Animated exploded building model with editable architectural components"
+      aria-label="Exploded building model with labeled editable architectural components"
     >
       {nearViewport && (
         <Suspense fallback={<div className="customization-model-loading" aria-hidden="true" />}>
-          <ExplodedBuildingPreview active={visible} />
+          <ExplodedBuildingPreview onAnchors={setAnchors} />
         </Suspense>
       )}
-      <svg
-        className="customization-leaders"
-        viewBox="0 0 1000 430"
-        preserveAspectRatio="none"
-        aria-hidden="true"
-      >
-        <path d="M190 66H316L404 104" />
-        <path d="M810 84H724L650 170" />
-        <path d="M824 214H740L656 242" />
-        <path d="M805 362H690L570 342" />
-        <path d="M202 355H307L380 317" />
-        <circle cx="404" cy="104" r="4" />
-        <circle cx="650" cy="170" r="4" />
-        <circle cx="656" cy="242" r="4" />
-        <circle cx="570" cy="342" r="4" />
-        <circle cx="380" cy="317" r="4" />
-      </svg>
+      {anchors && (
+        <svg
+          className="customization-leaders"
+          viewBox="0 0 1000 430"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          {(
+            [
+              ['roof', 'M190 66H316'],
+              ['window', 'M810 84H724'],
+              ['door', 'M190 214H270'],
+              ['floor', 'M202 362H307'],
+              ['fence', 'M805 355H690'],
+            ] as const
+          ).map(([name, start]) => (
+            <g key={name}>
+              <path d={`${start}L${anchors[name][0]} ${anchors[name][1]}`} />
+              <circle cx={anchors[name][0]} cy={anchors[name][1]} r="4" />
+            </g>
+          ))}
+        </svg>
+      )}
       <div className="callout callout-roof">
         <strong>Roof</strong>
         <span>covering / pitch</span>

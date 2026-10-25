@@ -64,6 +64,6 @@ test('Projects opens as a compact browser without rendering templates or a creat
   expect(html).not.toContain('Asterion Tower')
   expect(html).not.toContain('aria-label="Project name"')
   expect(html).toContain('3D renderer')
-  expect(html).toContain('List view')
-  expect(html).toContain('Grid view')
+  expect(html).not.toContain('List view')
+  expect(html).not.toContain('Grid view')
 })

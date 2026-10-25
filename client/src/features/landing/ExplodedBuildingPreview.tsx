@@ -1,6 +1,17 @@
-import { useEffect, useRef, useState } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
-import { PCFShadowMap, type Group } from 'three'
+import { useLayoutEffect, useRef } from 'react'
+import { Canvas, useThree } from '@react-three/fiber'
+import { PCFShadowMap, Vector3, type Group } from 'three'
+
+export type ComponentAnchors = Record<'roof' | 'window' | 'door' | 'floor' | 'fence', [number, number]>
+
+// Points on the displayed components, in assembly coordinates.
+const componentTargets = {
+  roof: [-2.2, 4.53, 0],
+  window: [5.25, 2.1, 0.25],
+  door: [5, 2.85, 4.22],
+  floor: [-3.3, -0.781, 6.528],
+  fence: [2.6, 0.05, 4.25],
+} as const
 
 function Part({
   position,
@@ -129,13 +140,24 @@ function SiteFence() {
   )
 }
 
-function ExplodedBuilding({ active }: { active: boolean }) {
+function ExplodedBuilding({ onAnchors }: { onAnchors: (anchors: ComponentAnchors) => void }) {
   const assembly = useRef<Group>(null)
-  useFrame((state, delta) => {
-    if (!active || !assembly.current) return
-    assembly.current.rotation.y += delta * 0.075
-    assembly.current.position.y = Math.sin(state.clock.elapsedTime * 0.55) * 0.035
-  })
+  const { camera, size, invalidate } = useThree()
+  useLayoutEffect(() => {
+    if (!assembly.current) return
+    assembly.current.updateWorldMatrix(true, false)
+    // Keep the entire assembly inside narrow cards as well as desktop cards.
+    camera.position.set(14, 12, 16).multiplyScalar(Math.max(1, (1.6 * size.height) / size.width))
+    camera.updateMatrixWorld()
+    const anchors = Object.fromEntries(
+      Object.entries(componentTargets).map(([name, point]) => {
+        const projected = assembly.current!.localToWorld(new Vector3(...point)).project(camera)
+        return [name, [(projected.x + 1) * 500, (1 - projected.y) * 215]]
+      }),
+    ) as ComponentAnchors
+    onAnchors(anchors)
+    invalidate()
+  }, [camera, size.width, size.height, onAnchors, invalidate])
   return (
     <group ref={assembly} rotation={[0, -0.5, 0]}>
       <mesh position={[0, -0.55, 0]} receiveShadow>
@@ -193,18 +215,15 @@ function ExplodedBuilding({ active }: { active: boolean }) {
   )
 }
 
-export default function ExplodedBuildingPreview({ active }: { active: boolean }) {
-  const [reducedMotion, setReducedMotion] = useState(false)
-  useEffect(() => {
-    const query = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const update = () => setReducedMotion(query.matches)
-    update()
-    query.addEventListener('change', update)
-    return () => query.removeEventListener('change', update)
-  }, [])
+export default function ExplodedBuildingPreview({
+  onAnchors,
+}: {
+  onAnchors: (anchors: ComponentAnchors) => void
+}) {
   return (
     <Canvas
       className="customization-model-canvas"
+      frameloop="demand"
       dpr={[1, 1.5]}
       camera={{ position: [14, 12, 16], fov: 36, near: 0.1, far: 100 }}
       shadows={{ type: PCFShadowMap }}
@@ -213,7 +232,7 @@ export default function ExplodedBuildingPreview({ active }: { active: boolean })
       <ambientLight intensity={0.72} />
       <hemisphereLight intensity={0.7} color="#fffaf0" groundColor="#69736a" />
       <directionalLight position={[-8, 15, 9]} intensity={2.1} castShadow shadow-mapSize={[1024, 1024]} />
-      <ExplodedBuilding active={active && !reducedMotion} />
+      <ExplodedBuilding onAnchors={onAnchors} />
     </Canvas>
   )
 }

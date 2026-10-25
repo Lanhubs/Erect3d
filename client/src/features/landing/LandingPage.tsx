@@ -12,22 +12,18 @@ type LandingPageProps = {
 
 const workflow = [
   {
-    number: '01',
     title: 'Draw or import',
     text: 'Start with a blank canvas or bring in an existing floor plan.',
   },
   {
-    number: '02',
     title: 'Edit the building',
     text: 'Define walls, doors, windows, floors, roofing and other architectural elements.',
   },
   {
-    number: '03',
     title: 'Build in 3D',
     text: 'The same architectural model becomes a complete three-dimensional building.',
   },
   {
-    number: '04',
     title: 'Step inside',
     text: 'Explore the result in first-person or inspect it from architectural views.',
   },
@@ -107,8 +103,7 @@ export function LandingPage({ projects, onStartDesigning, onOpenWorkspace }: Lan
 
           <div className="process-grid">
             {workflow.map((step) => (
-              <article className="process-card" key={step.number}>
-                <div className="process-number">{step.number}</div>
+              <article className="process-card" key={step.title}>
                 <h4>{step.title}</h4>
                 <p>{step.text}</p>
               </article>
