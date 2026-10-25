@@ -46,7 +46,12 @@ export function CloudTools({
     }
   }, [retry])
   return (
-    <aside ref={ref} hidden={!open} className="cloud-tools" aria-label="Project tools">
+    <aside
+      ref={ref}
+      hidden={!open}
+      className={`cloud-tools${tab === 'people' ? ' collaboration-tools' : ''}`}
+      aria-label="Project tools"
+    >
       <header>
         <strong>Project tools</strong>
         <button onClick={close} aria-label="Close project tools">

@@ -450,9 +450,10 @@ body .cloud-signin form > button:not(.primary) {
 
 @media (max-width: 700px) {
   body .studio-workspace.studio-workspace .studio-filebar .studio-home {
-    width: 44px;
-    min-width: 44px;
-    min-height: 44px;
+    width: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    height: 32px;
   }
 
   body .plan-settings-panel :is(label, select, input[type='number']) {
@@ -464,9 +465,17 @@ body .cloud-signin form > button:not(.primary) {
   }
 
   body .studio-workspace.studio-workspace .studio-collaborate {
-    min-height: 44px;
+    height: 30px;
+    min-height: 30px;
+    min-width: 0;
     font-size: 11px;
     padding-inline: 7px;
+  }
+
+  body .cloud-tools.collaboration-tools :is(button, select, input:not([type='checkbox'])) {
+    min-height: 34px;
+    padding: 5px 8px;
+    font-size: 12px;
   }
 
   body .studio-workspace.studio-workspace .furniture-tools :is(button, select),

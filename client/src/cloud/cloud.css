@@ -125,10 +125,11 @@
 }
 .cloud-tools {
   position: absolute;
-  top: 12px;
+  top: calc(var(--workspace-header-height, 44px) + 8px);
   right: 12px;
   bottom: 44px;
   width: min(440px, calc(100% - 24px));
+  box-sizing: border-box;
   overflow: auto;
   z-index: 40;
   background: #f9faf6;
@@ -137,6 +138,102 @@
   padding: 16px;
   border-radius: 6px;
   overscroll-behavior: contain;
+}
+.cloud-tools.collaboration-tools {
+  width: min(360px, calc(100% - 24px));
+  bottom: auto;
+  max-height: min(600px, calc(100dvh - 104px));
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 12px;
+}
+.cloud-tools.collaboration-tools nav {
+  gap: 5px;
+  margin: 8px 0;
+}
+.cloud-tools.collaboration-tools section {
+  font-size: 12px;
+}
+.cloud-tools.collaboration-tools h3 {
+  font-size: 13px;
+  margin: 12px 0 6px;
+}
+.collaboration-tools p {
+  margin: 6px 0;
+}
+.collaboration-tools .collaboration-account {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  overflow-wrap: anywhere;
+}
+.collaboration-account > span {
+  flex: 1;
+  min-width: 0;
+}
+.collaboration-tools .collaboration-account button {
+  flex: none;
+  margin: 0;
+}
+.cloud-tools.collaboration-tools form {
+  gap: 8px;
+}
+.collaboration-tools .collaboration-role {
+  font-size: 11px;
+  color: var(--control-muted, #766e64);
+}
+.collaboration-members {
+  list-style: none;
+  margin: 10px 0;
+  padding: 0;
+}
+.collaboration-members li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--control-border, #ded8ce);
+}
+.collaboration-person {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.collaboration-person span {
+  font-size: 11px;
+  color: var(--control-muted, #766e64);
+}
+.collaboration-member-actions {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+.collaboration-tools .collaboration-member-actions :is(button, select) {
+  margin: 0;
+  max-width: 100%;
+}
+.collaboration-tools .collaboration-add-person {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+.collaboration-add-person > :is(label, small) {
+  grid-column: 1 / -1;
+}
+.collaboration-tools .collaboration-add-person :is(input, select, button) {
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  margin: 0;
+}
+.collaboration-tools .collaboration-add-person small {
+  line-height: 1.45;
+  color: var(--control-muted, #766e64);
+}
+.cloud-tools.collaboration-tools textarea {
+  min-height: 60px;
 }
 .cloud-tools header {
   justify-content: space-between;
@@ -248,11 +345,16 @@
     padding: 16px;
   }
   .cloud-tools {
-    top: 12px;
-    right: 6px;
+    top: calc(var(--workspace-header-height, 44px) + 8px);
+    right: 8px;
     bottom: calc(50px + env(safe-area-inset-bottom));
-    width: calc(100% - 12px);
+    width: calc(100% - 16px);
     padding: 12px;
+  }
+  .cloud-tools.collaboration-tools {
+    width: min(340px, calc(100% - 16px));
+    max-height: min(520px, calc(100dvh - 200px - env(safe-area-inset-bottom, 0px)));
+    padding: 10px;
   }
   .cloud-dialog {
     padding: 14px;

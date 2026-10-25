@@ -67,10 +67,10 @@ export function CollaborationPanel({ session }: { session: CloudSession }) {
     }
   }
   return (
-    <section aria-label="Project collaboration">
+    <section className="collaboration-panel" aria-label="Project collaboration">
       <h3>People and access</h3>
-      <p>
-        Signed in as {user.email}{' '}
+      <p className="collaboration-account">
+        <span>Signed in as {user.email}</span>
         <button
           onClick={() => {
             void navigator.clipboard.writeText(user.email).catch((error) => setError(error.message))
@@ -79,16 +79,20 @@ export function CollaborationPanel({ session }: { session: CloudSession }) {
           Copy email
         </button>
       </p>
-      <p>
+      <p className="collaboration-role">
         Your effective role: {record.base.role}. Project owners and inherited team access are included in your
         effective role.
       </p>
-      <ul>
+      <ul className="collaboration-members">
         {members.map((member) => (
           <li key={member.id}>
-            {member.name} · {member.email} · {member.role}
+            <div className="collaboration-person">
+              <strong>{member.name}</strong>
+              <span>{member.email}</span>
+              {!manage && <small>{member.role}</small>}
+            </div>
             {manage && (
-              <>
+              <div className="collaboration-member-actions">
                 <select
                   aria-label={`Role for ${member.name}`}
                   value={member.role}
@@ -122,14 +126,14 @@ export function CollaborationPanel({ session }: { session: CloudSession }) {
                 >
                   Remove
                 </button>
-              </>
+              </div>
             )}
           </li>
         ))}
       </ul>
       {manage && (
         <form
-          className="cloud-inline"
+          className="cloud-inline collaboration-add-person"
           onSubmit={(event) => {
             event.preventDefault()
             if (busy || !email.trim()) return

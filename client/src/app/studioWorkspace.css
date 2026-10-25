@@ -791,8 +791,8 @@
   }
 
   .studio-filebar .studio-file-actions button {
-    height: 44px;
-    min-width: 44px;
+    height: 32px;
+    min-width: 32px;
   }
 
   .studio-file-actions {
@@ -805,13 +805,13 @@
 
   .studio-workspace .studio-tool-dock,
   .studio-workspace:has(.workspace-drawer:not([hidden])) .studio-tool-dock {
-    bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(46px + env(safe-area-inset-bottom, 0px));
     left: 50%;
-    width: calc(100% - 24px);
-    max-width: 390px;
-    padding: 5px;
+    width: calc(100% - 16px);
+    max-width: 360px;
+    padding: 4px;
     gap: 2px;
-    border-radius: 12px;
+    border-radius: 10px;
     justify-content: space-between;
   }
 
@@ -842,11 +842,22 @@
 
   .studio-tool-dock button,
   .studio-tool-dock > details > summary {
-    min-width: 44px;
-    height: 48px;
-    padding: 2px 4px;
+    min-width: 34px;
+    min-height: 40px;
+    height: 40px;
+    padding: 2px 3px;
     font-size: 10px;
-    gap: 4px;
+    gap: 2px;
+  }
+
+  .studio-tool-dock svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .studio-tool-dock .studio-assistant svg {
+    width: 24px;
+    height: 24px;
   }
 
   .studio-tool-dock .studio-history span {
@@ -895,8 +906,8 @@
 
   .studio-workspace .studio-view-dock,
   .studio-workspace:has(.workspace-drawer:not([hidden])) .studio-view-dock {
-    bottom: calc(128px + env(safe-area-inset-bottom, 0px));
-    right: 12px;
+    bottom: calc(104px + env(safe-area-inset-bottom, 0px));
+    right: 8px;
     gap: 1px;
     padding: 3px;
     border-radius: 9px;
@@ -904,10 +915,11 @@
 
   .studio-view-dock button,
   .studio-view-dock > details > summary {
-    height: 44px;
-    min-width: 44px;
+    height: 34px;
+    min-height: 34px;
+    min-width: 34px;
     padding: 0 6px;
-    font-size: 12px;
+    font-size: 11px;
   }
 
   .studio-properties-trigger {
@@ -934,34 +946,34 @@
 
   .studio-workspace .viewport-head button,
   .studio-workspace .view-options > summary {
-    min-width: 44px;
-    min-height: 44px;
-    height: 44px;
-    padding: 0 9px;
-    font-size: 12px;
+    min-width: 34px;
+    min-height: 34px;
+    height: 34px;
+    padding: 0 7px;
+    font-size: 11px;
   }
 
   .studio-workspace .viewer-zoom {
-    top: 68px;
-    right: 12px;
+    top: 52px;
+    right: 8px;
   }
 
   .studio-workspace .viewer-zoom button {
-    width: 44px;
-    height: 44px;
+    width: 34px;
+    height: 34px;
   }
 
   .studio-workspace .statusbar,
   .cloud-workspace .studio-workspace .statusbar-with-tools {
-    height: calc(44px + env(safe-area-inset-bottom, 0px));
-    min-height: 44px;
-    padding: 0 12px env(safe-area-inset-bottom, 0px);
+    height: calc(36px + env(safe-area-inset-bottom, 0px));
+    min-height: 36px;
+    padding: 0 8px env(safe-area-inset-bottom, 0px);
     font-size: 10px;
   }
 
   .studio-workspace .statusbar button,
   .studio-workspace .statusbar summary {
-    min-height: 44px;
+    min-height: 32px;
   }
 
   .studio-workspace .workspace-drawer,
@@ -1000,7 +1012,7 @@
 
   .studio-workspace .view-area.split.primary-model > .plan-pane,
   .studio-workspace .view-area.split.primary-plan > .model-pane {
-    inset: 64px auto auto 12px;
+    inset: 52px auto auto 8px;
     width: 30%;
     height: 20%;
     border-radius: 8px;
@@ -1015,20 +1027,20 @@
   }
 
   .studio-workspace .split-preview-actions {
-    left: 12px;
+    left: 8px;
     right: auto;
     bottom: auto;
-    top: calc(64px + 20% + 6px);
+    top: calc(52px + 20% + 6px);
     gap: 4px;
   }
 
   .studio-workspace .preview-expanded .split-preview-actions {
-    top: calc(64px + 45% + 6px);
+    top: calc(52px + 45% + 6px);
   }
 
   .studio-workspace .split-preview-actions button {
-    min-height: 44px;
-    min-width: 44px;
+    min-height: 32px;
+    min-width: 32px;
     border-color: #d5dfcf;
     background: #fcfdfbf5;
     border-radius: 7px;

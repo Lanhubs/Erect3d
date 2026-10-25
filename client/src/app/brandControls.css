@@ -202,21 +202,21 @@ body .studio-workspace.studio-workspace .viewer-zoom {
     z-index: 66;
   }
   body .studio-workspace.studio-workspace .viewport-head {
-    height: 46px;
-    min-height: 46px;
-    inset: 12px 12px auto;
+    height: 36px;
+    min-height: 36px;
+    inset: 8px 8px auto;
   }
   body .studio-workspace.studio-workspace .viewport-head > div {
-    height: 46px;
-    min-height: 46px;
+    height: 36px;
+    min-height: 36px;
     flex-wrap: nowrap;
     width: auto;
   }
   body .studio-workspace.studio-workspace .viewport-head :is(button, .view-options > summary) {
-    height: 44px;
-    min-height: 44px;
-    min-width: 44px;
-    font-size: 12px;
+    height: 34px;
+    min-height: 34px;
+    min-width: 34px;
+    font-size: 11px;
   }
   body .studio-workspace.studio-workspace .viewer-zoom {
     top: 70px;
