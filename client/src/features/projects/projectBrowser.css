@@ -1,3 +1,6 @@
+.project-browser .dashboard-head {
+  padding: 0 max(24px, calc((100% - 1240px) / 2));
+}
 .project-browser .dashboard-main {
   padding: 32px 0;
   width: min(1240px, calc(100% - 48px));
@@ -111,10 +114,9 @@
   padding: 6px;
 }
 .project-notices {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
+  display: grid;
+  gap: 12px;
+  align-items: start;
   margin: 12px 0;
   color: #617368;
   font-size: 12px;
@@ -203,8 +205,7 @@
   align-items: center;
   gap: 8px;
 }
-.project-item-actions > button,
-.project-item-actions summary {
+.project-item-actions > button {
   padding: 7px 11px;
   border: 1px solid #c5d0c3;
   background: #fff;
@@ -212,20 +213,8 @@
   color: #49614f;
   font-size: 12px;
   cursor: pointer;
-  list-style: none;
 }
-.project-item-actions details {
-  position: relative;
-}
-.project-item-actions details > button {
-  position: absolute;
-  z-index: 5;
-  right: 0;
-  top: calc(100% + 4px);
-  padding: 9px 20px;
-  border: 1px solid #c6cec4;
-  background: #fff;
-  border-radius: 4px;
+.project-item-actions > button.project-delete {
   color: #925542;
 }
 .project-results.grid {
@@ -392,8 +381,7 @@
   .project-browser-nav button {
     min-height: 44px;
   }
-  .project-item-actions > button,
-  .project-item-actions summary {
+  .project-item-actions > button {
     min-height: 44px;
     box-sizing: border-box;
     display: flex;
@@ -402,8 +390,13 @@
   .project-browser .dashboard-head {
     padding: 0 14px;
     gap: 8px;
+    flex-wrap: nowrap;
   }
   .project-browser .dashboard-head small {
+    display: none;
+  }
+  .dashboard-head .account-name-rest,
+  .dashboard-head .account-email {
     display: none;
   }
   .project-results.grid {

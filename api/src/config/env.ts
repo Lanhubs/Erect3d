@@ -34,6 +34,7 @@ const schema = z
     ASSET_OPTIMIZE_TIMEOUT_MS: z.coerce.number().int().min(1000).max(120000).default(30000),
     GEMINI_API_KEY: optionalText,
     GEMINI_MODEL_AGENT: optionalText,
+    GEMINI_MODEL_REPAIR: optionalText,
     GEMINI_MODEL_PLAN: z.string().default('gemini-3.8-flash'),
     GEMINI_MODEL_FAST: z.string().default('gemini-3.5-flash-lite'),
     GEMINI_MODEL_COMPLEX: z.string().default('gemini-3.8-flash'),

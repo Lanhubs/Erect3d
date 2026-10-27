@@ -224,7 +224,7 @@ test('resuming a stored pending request starts the same leased job and repeated 
   expect((await request(app, user, `/analysis/${id}/resume`, 'POST')).status).toBe(202)
   expect((await terminal(id)).status).toBe('ready')
   const [counts] = await h.db`SELECT (SELECT count(*)::int FROM ai_calls WHERE analysis_id=${id}) AS calls,
-    (SELECT count(*)::int FROM analysis_passes WHERE analysis_id=${id}) AS passes`
+    (SELECT count(*)::int FROM analysis_passes WHERE analysis_id=${id} AND pass<>'read-source-text') AS passes`
   expect(counts.calls).toBe(8)
   expect(counts.passes).toBe(8)
 })

@@ -4,6 +4,7 @@ import { furnitureTypes } from '../../../../client/src/furniture/types'
 import { sourceCoverage } from './source-coverage'
 import { openingCoverage } from './opening-coverage'
 import { fixtureCoverage } from './fixture-coverage'
+import { labelCoverage } from './label-coverage'
 export type ModelQuality = {
   status: 'ready' | 'needs-review' | 'blocked'
   issues: { code: string; severity: 'warning' | 'error'; message: string; candidateId?: string }[]
@@ -17,6 +18,7 @@ export function modelQuality(
   reviewFixtures = false,
 ): ModelQuality {
   const issues: ModelQuality['issues'] = []
+  issues.push(...labelCoverage(proposal, dimensions))
   const add = (code: string, message: string, candidateId?: string) =>
     issues.push({ code, severity: 'warning', message, candidateId })
   const unknown = proposal.candidates.filter((item) => item.kind === 'unknown').length
@@ -82,7 +84,16 @@ export function modelQuality(
     issues.push(...sourceCoverage(proposal, project, levelId, manualScale ? undefined : dimensions))
   if (project && levelId) issues.push(...openingCoverage(proposal, project, levelId, dimensions))
   if (project && levelId && reviewFixtures) issues.push(...fixtureCoverage(project, levelId))
-  return { status: issues.length ? 'needs-review' : 'ready', issues: issues.slice(0, 100) }
+  return {
+    status: issues.some((issue) => issue.severity === 'error')
+      ? 'blocked'
+      : issues.length
+        ? 'needs-review'
+        : 'ready',
+    issues: issues
+      .toSorted((a, b) => Number(b.severity === 'error') - Number(a.severity === 'error'))
+      .slice(0, 100),
+  }
 }
 export const buildableCandidates = (candidates: Candidate[]) =>
   candidates.filter(

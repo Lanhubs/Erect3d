@@ -1,0 +1,163 @@
+/* Shared native-select theme; keep form values, validation and keyboard behavior. */
+body select:not([multiple]):not([size]),
+body select[size='1']:not([multiple]) {
+  appearance: none;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 7px 30px 7px 10px;
+  border: 1px solid var(--control-border, #ded8ce);
+  border-radius: 6px;
+  background-color: var(--control-surface, #fcfbf8);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='m3 4.5 3 3 3-3' stroke='%23766e64' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  color: var(--control-ink, #38332d);
+  font-family: inherit;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: none;
+}
+body select:not([multiple]):not([size]):hover:not(:disabled),
+body select[size='1']:not([multiple]):hover:not(:disabled) {
+  border-color: #b8a58e;
+}
+body select:not([multiple]):not([size]):focus-visible,
+body select[size='1']:not([multiple]):focus-visible {
+  border-color: var(--brand-strong, #87582d);
+  outline: 2px solid var(--control-focus, #b17b43);
+  outline-offset: 2px;
+}
+body select:not([multiple]):not([size]):disabled,
+body select[size='1']:not([multiple]):disabled {
+  color: #938b80;
+  background-color: #f1eee8;
+  cursor: not-allowed;
+}
+body select option {
+  background-color: var(--control-surface, #fcfbf8);
+  color: var(--control-ink, #38332d);
+}
+
+/* Customizable native pickers progressively enhance supported browsers. */
+@supports (appearance: base-select) {
+  body select:not([multiple]):not([size]),
+  body select[size='1']:not([multiple]),
+  body select:not([multiple]):not([size])::picker(select),
+  body select[size='1']:not([multiple])::picker(select) {
+    appearance: base-select;
+  }
+  body select:not([multiple]):not([size]),
+  body select[size='1']:not([multiple]) {
+    position: relative;
+    background-image: none;
+    overflow: hidden;
+  }
+  body select::picker-icon {
+    content: '';
+    position: absolute;
+    inset-inline-end: 12px;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    margin: 0;
+    border-inline-end: 1.5px solid currentColor;
+    border-block-end: 1.5px solid currentColor;
+    color: var(--control-muted, #766e64);
+    translate: 0 -70%;
+    rotate: 45deg;
+  }
+  body select:open {
+    border-color: var(--brand-strong, #87582d);
+  }
+  body select:open::picker-icon {
+    rotate: 225deg;
+    translate: 0 -30%;
+  }
+  body select::picker(select) {
+    inline-size: max-content;
+    min-inline-size: anchor-size(self-inline);
+    max-inline-size: min(360px, calc(100vw - 24px));
+    max-block-size: min(320px, 60dvh);
+    margin-block: 5px;
+    padding: 5px;
+    box-sizing: border-box;
+    overflow: auto;
+    overscroll-behavior: contain;
+    border: 1px solid var(--control-border, #ded8ce);
+    border-radius: 8px;
+    background: var(--control-surface, #fcfbf8);
+    color: var(--control-ink, #38332d);
+    box-shadow: 0 8px 24px #39271824;
+    font:
+      400 12px/1.4 'DM Sans',
+      sans-serif;
+    scrollbar-width: thin;
+    scrollbar-color: #baa389 #f1ede6;
+  }
+  body select option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 34px;
+    padding: 8px 10px;
+    margin: 1px 0;
+    border-radius: 4px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    font-weight: 400;
+    cursor: pointer;
+  }
+  body select option:checked {
+    background: var(--brand-tint, #f1e6d8);
+    color: var(--brand-strong, #87582d);
+    font-weight: 500;
+  }
+  body select option:hover:not(:disabled),
+  body select option:focus-visible {
+    background: #ede5da;
+    color: var(--control-ink, #38332d);
+  }
+  body select option:focus-visible {
+    outline: 2px solid var(--control-focus, #b17b43);
+    outline-offset: -2px;
+  }
+  body select option::checkmark {
+    order: 1;
+    margin-inline-start: auto;
+    color: var(--brand-strong, #87582d);
+  }
+  body select option:disabled {
+    color: #a39b90;
+    background: transparent;
+    cursor: not-allowed;
+  }
+  body select optgroup {
+    padding: 5px;
+    color: var(--control-muted, #766e64);
+    font-size: 11px;
+    font-weight: 600;
+  }
+  body select :is(option, optgroup)[hidden] {
+    display: none;
+  }
+}
+
+@media (pointer: coarse) {
+  body select option {
+    min-height: 40px;
+  }
+}
+@media (forced-colors: active) {
+  body select:not([multiple]):not([size]),
+  body select[size='1']:not([multiple]),
+  body select::picker(select) {
+    appearance: auto;
+    background-image: none;
+    background-color: Canvas;
+    border-color: ButtonText;
+    color: ButtonText;
+  }
+}

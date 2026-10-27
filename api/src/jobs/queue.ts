@@ -3,6 +3,7 @@ import type { Actor } from '../modules/auth/session'
 import { newId } from '../security/tokens'
 import { emit } from '../modules/audit/service'
 import { assistantEvent } from '../modules/assistant/events'
+import { assistantJobFailure } from '../modules/assistant/failure'
 export type Job = {
   id: string
   project_id: string
@@ -70,15 +71,10 @@ export async function fail(db: Database, job: Job, code: string, retry: boolean)
       failure_code: code,
     })
   if (changed.length && job.kind === 'assistant.edit') {
-    await db`UPDATE assistant_runs SET status='failed',failure_code=${code},progress='The request could not be completed. Your model is unchanged.' WHERE id=${job.id} AND status IN ('queued','running')`
-    await assistantEvent(
-      db,
-      job.project_id,
-      job.actor_id,
-      job.id,
-      'The request could not be completed. Your model is unchanged.',
-      'failed',
-    )
+    const message = assistantJobFailure(code)
+    const runs =
+      await db`UPDATE assistant_runs SET status='failed',failure_code=${code},progress=${message} WHERE id=${job.id} AND status IN ('queued','running') RETURNING id`
+    if (runs.length) await assistantEvent(db, job.project_id, job.actor_id, job.id, message, 'failed')
   }
 }
 export async function recoverExhausted(db: Database, requestedId?: string) {

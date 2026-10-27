@@ -131,6 +131,17 @@ export function AssistantDialog({
             {run.status === 'applied' && (
               <p>Changes are saved to the model. Use Undo to restore the previous version.</p>
             )}
+            {run.status === 'failed' && (
+              <button
+                disabled={a.busy || !a.online}
+                onClick={() => {
+                  const message = a.thread.messages.findLast((message) => message.role === 'user')
+                  if (message) a.setDraft(message.content)
+                }}
+              >
+                Edit and retry
+              </button>
+            )}
           </section>
         )}
         <div ref={end} />
@@ -157,6 +168,7 @@ export function AssistantDialog({
         <p className="assistant-context">
           {a.scope?.mode === 'building' ? a.building?.name : a.level?.name}
           {a.scope?.mode === 'selection' ? ' · selected element' : ''}
+          {a.targetFromMessage ? ' · from your message' : ''}
         </p>
         {a.level?.sourceId && (
           <label className="assistant-reference">

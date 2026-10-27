@@ -123,6 +123,7 @@ export async function requestAnalysis(
       input: payload,
       model,
       fastModel: config.GEMINI_MODEL_FAST,
+      repairModel: config.GEMINI_MODEL_REPAIR || model,
       promptVersion,
       schemaVersion: 5,
     })

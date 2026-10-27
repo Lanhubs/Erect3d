@@ -1,11 +1,19 @@
 import { useEffect, useRef, type RefObject } from 'react'
 import { activateOverlay, releaseOverlay, overlayIsActive } from './overlayCoordinator'
 const overlays: symbol[] = []
+function selectPickerOpen(root: ParentNode = document) {
+  return (
+    typeof CSS !== 'undefined' &&
+    CSS.supports('selector(select:open)') &&
+    Boolean(root.querySelector('select:open'))
+  )
+}
 export function dismissMenu(event: KeyboardEvent, root: ParentNode = document) {
   if (event.key !== 'Escape') return false
+  if (selectPickerOpen(root)) return false
   const menus = [
     ...root.querySelectorAll<HTMLDetailsElement>(
-      '.studio-menu[open],.command-more[open],.view-options[open],.cloud-session-menu[open],.graphics-preference[open],.project-item-actions details[open]',
+      '.studio-menu[open],.command-more[open],.view-options[open],.cloud-session-menu[open],.graphics-preference[open]',
     ),
   ].filter((e) => e.getClientRects().length)
   const menu = menus.find((e) => e.contains(document.activeElement)) || menus.at(-1)
@@ -42,6 +50,7 @@ export function useOverlay(
     const key = (event: KeyboardEvent) => {
       if (overlays.at(-1) !== token || (exclusive && !overlayIsActive(token))) return
       if (event.key === 'Escape') {
+        if (selectPickerOpen()) return
         if (dismissMenu(event, ref.current?.getAttribute('aria-modal') === 'true' ? ref.current : document))
           return
         event.preventDefault()

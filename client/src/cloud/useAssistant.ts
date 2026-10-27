@@ -8,12 +8,15 @@ import type { CloudSession } from './useCloudProject'
 import type { AssistantRun, AssistantScope, ChatCache, Thread } from './assistantTypes'
 import { pendingRun } from './assistantTypes'
 import { applyAssistantProposal, finishAssistantApply } from './assistantApply'
+import { resolveAssistantFloor } from '../domain/assistantFloor'
+import { assistantRequestId } from './assistantDelivery'
 export function useAssistant(userId: string, projectId: string, session: CloudSession, open: boolean) {
   const key = `${userId}/assistant/${projectId}`,
     path = `/projects/${projectId}/assistant`
   const [thread, setThread] = useState<Thread>({ messages: [], run: null, nextCursor: null }),
     [draft, setDraft] = useState(''),
     [choice, setChoice] = useState<AssistantScope['mode'] | null>(null),
+    [targetFloorId, setTargetFloorId] = useState<string | null>(null),
     [attach, setAttach] = useState(false)
   const [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
@@ -22,8 +25,8 @@ export function useAssistant(userId: string, projectId: string, session: CloudSe
     [loaded, setLoaded] = useState(false)
   const latest = useRef({ thread, session })
   latest.current = { thread, session }
-  const cached = useRef({ key, loaded, value: { ...thread, draft, choice, attach } })
-  cached.current = { key, loaded, value: { ...thread, draft, choice, attach } }
+  const cached = useRef({ key, loaded, value: { ...thread, draft, choice, attach, targetFloorId } })
+  cached.current = { key, loaded, value: { ...thread, draft, choice, attach, targetFloorId } }
   useEffect(
     () => () => {
       const last = cached.current
@@ -38,20 +41,32 @@ export function useAssistant(userId: string, projectId: string, session: CloudSe
     dirty = useProject((s) => s.dirty)
   const building =
       project?.buildings.find((b) => b.levels.some((l) => l.id === activeId)) || project?.buildings[0],
-    level = building?.levels.find((l) => l.id === activeId) || building?.levels[0]
-  const referenceName =
-    project?.sources.find((source) => source.id === level?.sourceId)?.name || 'this floor’s imported plan'
-  const scope: AssistantScope | undefined =
-    building && level
+    activeLevel = building?.levels.find((l) => l.id === activeId) || building?.levels[0]
+  const previousActive = useRef(activeId)
+  useEffect(() => {
+    if (previousActive.current !== activeId) setTargetFloorId(null)
+    previousActive.current = activeId
+  }, [activeId])
+  const scopedLevel =
+    choice === 'selection' || (!choice && selection)
+      ? activeLevel
+      : building?.levels.find((level) => level.id === targetFloorId) || activeLevel
+  const baseScope: AssistantScope | undefined =
+    building && scopedLevel
       ? {
           mode: choice || (selection?.id ? 'selection' : 'level'),
           buildingId: building.id,
-          levelId: level.id,
+          levelId: scopedLevel.id,
           ...(choice === 'selection' || (!choice && selection)
             ? { entityId: selection?.id, floorIndex: selection?.floorIndex }
             : {}),
         }
       : undefined
+  const target = building && baseScope ? resolveAssistantFloor(building, baseScope, draft) : undefined
+  const scope = baseScope && { ...baseScope, levelId: target?.levelId || baseScope.levelId }
+  const level = building?.levels.find((level) => level.id === scope?.levelId)
+  const referenceName =
+    project?.sources.find((source) => source.id === level?.sourceId)?.name || 'this floor’s imported plan'
   const stale =
     thread.run?.status === 'ready' &&
     (thread.run.base_revision !== session.record?.base.revision ||
@@ -75,6 +90,7 @@ export function useAssistant(userId: string, projectId: string, session: CloudSe
             setDraft(cache.draft)
             setChoice(cache.choice)
             setAttach(cache.attach)
+            setTargetFloorId(cache.targetFloorId || null)
           }
           setLoaded(true)
         }
@@ -96,11 +112,11 @@ export function useAssistant(userId: string, projectId: string, session: CloudSe
   useEffect(() => {
     if (!loaded) return
     const timer = setTimeout(
-      () => void putTask(key, { ...thread, draft, choice, attach }).catch(() => {}),
+      () => void putTask(key, { ...thread, draft, choice, attach, targetFloorId }).catch(() => {}),
       200,
     )
     return () => clearTimeout(timer)
-  }, [key, loaded, thread, draft, choice, attach])
+  }, [key, loaded, thread, draft, choice, attach, targetFloorId])
   useEffect(() => {
     if (open && loaded && online) void refresh().catch((e) => setError(e.message))
   }, [open, loaded, online, refresh])
@@ -147,6 +163,7 @@ export function useAssistant(userId: string, projectId: string, session: CloudSe
     action(async () => {
       if (!scope || !draft.trim() || readOnly || !online)
         throw new Error('Connect and choose an editable part of the building first.')
+      if (target?.question) throw new Error(target.question)
       if (scope.mode === 'selection' && !scope.entityId)
         throw new Error('Select an element or choose This floor.')
       const engine = session.engine
@@ -166,13 +183,16 @@ export function useAssistant(userId: string, projectId: string, session: CloudSe
         planSourceIds: attach && level?.sourceId ? [level.sourceId] : [],
         previousRunId: previous,
       }
-      const old = await getTask<{ input: unknown; id: string }>(`${key}/send`),
-        id = JSON.stringify(old?.input) === JSON.stringify(input) ? old!.id : crypto.randomUUID()
+      const old = await getTask<{ input: typeof input; id: string } | null>(`${key}/send`),
+        lastMessage = thread.messages.findLast((message) => message.role === 'user')?.content,
+        id = assistantRequestId(input, old, thread.run, lastMessage)
       await putTask(`${key}/send`, { input, id })
       try {
         const result = await api.request<{ runId: string }>(`${path}/messages`, 'POST', input, id)
+        await putTask(`${key}/send`, null).catch(() => {})
         const run = await api.request<AssistantRun>(`${path}/runs/${result.runId}`)
         setThread((before) => ({ ...before, run }))
+        if (scope.mode === 'level') setTargetFloorId(scope.levelId)
         setDraft('')
         await refresh()
       } catch (e) {
@@ -212,7 +232,11 @@ export function useAssistant(userId: string, projectId: string, session: CloudSe
     draft,
     setDraft,
     scope,
-    chooseScope: setChoice,
+    targetFromMessage: scope?.levelId !== baseScope?.levelId,
+    chooseScope: (mode: AssistantScope['mode']) => {
+      setChoice(mode)
+      setTargetFloorId(null)
+    },
     attach,
     setAttach,
     level,

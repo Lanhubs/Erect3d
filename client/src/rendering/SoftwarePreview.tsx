@@ -40,6 +40,7 @@ export function SoftwarePreview({
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const drag = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null)
+  const clickMoved = useRef(false)
   const geometry = useMemo(() => {
     const points = wallBoundsPoints(level.walls)
     const minX = points.length ? Math.min(...points.map((p) => p.x)) : 0
@@ -209,6 +210,9 @@ export function SoftwarePreview({
         aria-label="Software-rendered 3D building preview"
         viewBox={`${frame.centerX + pan.x - width / 2} ${frame.centerY + pan.y - height / 2} ${width} ${height}`}
         preserveAspectRatio="xMidYMid meet"
+        onPointerDownCapture={(event) => {
+          clickMoved.current = Boolean((event.target as Element).closest('.element-handle'))
+        }}
         onWheel={(event) => {
           event.preventDefault()
           event.stopPropagation()
@@ -216,13 +220,18 @@ export function SoftwarePreview({
         }}
         onPointerDown={(event) => {
           if (event.button !== 0 && event.button !== 1) return
+          clickMoved.current = false
           drag.current = { x: event.clientX, y: event.clientY, panX: pan.x, panY: pan.y }
-          event.currentTarget.setPointerCapture(event.pointerId)
         }}
         onPointerMove={(event) => {
           if (!drag.current) return
           const rect = event.currentTarget.getBoundingClientRect(),
             start = drag.current
+          if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > 4) {
+            clickMoved.current = true
+            if (!event.currentTarget.hasPointerCapture(event.pointerId))
+              event.currentTarget.setPointerCapture(event.pointerId)
+          }
           setPan({
             x: start.panX - ((event.clientX - start.x) * width) / rect.width,
             y: start.panY - ((event.clientY - start.y) * height) / rect.height,
@@ -230,6 +239,18 @@ export function SoftwarePreview({
         }}
         onPointerUp={() => {
           drag.current = null
+        }}
+        onPointerCancel={() => {
+          drag.current = null
+          clickMoved.current = true
+        }}
+        onClick={(event) => {
+          if (
+            event.button === 0 &&
+            !clickMoved.current &&
+            !(event.target as Element).closest('.element-handle')
+          )
+            select(null)
         }}
       >
         <rect
@@ -250,7 +271,8 @@ export function SoftwarePreview({
             style={{ cursor: face.select ? 'pointer' : undefined }}
             onClick={(event) => {
               event.stopPropagation()
-              if (face.select) select(face.select)
+              if (clickMoved.current) return
+              select(face.select || null)
             }}
           />
         ))}

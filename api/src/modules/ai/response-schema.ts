@@ -2,10 +2,17 @@ import { z } from 'zod'
 import { intelligenceSchema } from '../../contracts/analysis'
 import { furnitureTypes } from '../../../../client/src/furniture/types'
 import { architecturalWireSchema } from './architectural-wire'
+import { labelReadingGeneration } from './label-wire'
 // Keep the generation grammar small; the full strict contract validates every response.
-export function responseSchema(pass: string, measurementIds?: string[]): Record<string, unknown> {
+export function responseSchema(
+  pass: string,
+  measurementIds?: string[],
+  withText = false,
+): Record<string, unknown> {
   const schema = z.toJSONSchema(intelligenceSchema) as any
+  if (withText && pass === 'validated-model-repair') schema.required.push('labelReadings')
   delete schema.properties.vision
+  delete schema.properties.sourceText
   // Removal operations are synthesized by the server from reviewed rejection evidence.
   delete schema.properties.candidates.items.properties.action
   schema.properties.candidates.items.properties.furnitureType = { type: 'string', enum: [...furnitureTypes] }
@@ -48,6 +55,7 @@ export function responseSchema(pass: string, measurementIds?: string[]): Record<
     return result
   }
   const result = compact(schema)
+  result.properties.labelReadings = labelReadingGeneration
   result.properties.architecturalRequirements = architecturalWireSchema(
     result.properties.architecturalRequirements,
   )

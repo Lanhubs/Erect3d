@@ -19,14 +19,15 @@ import { reconstructionScale } from '../modules/plan-analysis/reconstruction-sca
 import { modelQuality } from '../modules/plan-analysis/quality'
 import { validatedReconstruction, inspectReconstruction } from './validated-reconstruction'
 import { loadDocument } from '../modules/projects/documents'
-import { measureSource, classifiedMeasurements } from './source-measurements'
+import { classifiedMeasurements } from './source-measurements'
 import { sourceEnvelope } from './source-envelope'
 import { alignOpeningHosts } from './opening-hosts'
 import { guardMeasurementAudit } from './measurement-audit'
 import { analysisProgress } from './analysis-progress'
 import { retainDetailWarning } from '../modules/plan-analysis/detail-regression'
 import { readDesignReference } from './design-reference'
-import { inSourceRegion } from './source-region'
+import { withPlanContext, readPlanEvidence } from './plan-evidence'
+import { reconstructionPlacement } from '../modules/plan-analysis/floor-placement'
 export async function analyze(
   db: Database,
   config: Config,
@@ -69,13 +70,7 @@ export async function analyze(
     input,
     config.MAX_UPLOAD_BYTES,
   )
-  const nativeMeasurements = backend ? await measureSource(bytes, input.options.region) : undefined
-  const measurements = nativeMeasurements
-    ? {
-        ...nativeMeasurements,
-        candidates: nativeMeasurements.candidates.filter((c) => inSourceRegion(c, input.options.region)),
-      }
-    : undefined
+  const measurements = await readPlanEvidence(backend, bytes, input.options.region, db, job, stages, signal)
   const complex = input.options.complex || Boolean(measurements?.complex)
   stages = analysisPasses(input.options.mode, complex, input.options.architectureCompletion, backend, direct)
   if (complex !== input.options.complex)
@@ -88,6 +83,7 @@ export async function analyze(
   let auditBaseline: Intelligence | undefined
   let auditPrepared = false
   const current = backend && rebuilding ? await loadDocument(db, job.project_id) : undefined
+  provider = withPlanContext(provider, current?.document, input.levelId, measurements?.sourceText)
   for (const pass of stages) {
     signal.throwIfAborted()
     const auditing = pass.startsWith('native-measurement-audit'),
@@ -329,8 +325,10 @@ export async function analyze(
   const result = {
     proposal,
     quality,
-    calibration: reconstructionScale(input, proposal, asset.metadata.width, asset.metadata.height)
-      .calibration,
+    calibration: (current
+      ? reconstructionPlacement(current.document, input, proposal, asset.metadata).input
+      : reconstructionScale(input, proposal, asset.metadata.width, asset.metadata.height)
+    ).calibration,
     dimensions: { width: asset.metadata.width, height: asset.metadata.height, orientation: 1 },
     provenance: {
       analysisId: job.id,

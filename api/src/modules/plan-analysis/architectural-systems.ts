@@ -7,6 +7,7 @@ import { validateSystems } from '../../../../client/src/domain/systemValidation'
 import { imageToWorld } from './conversion'
 import { digest } from '../../security/tokens'
 import { ApiError } from '../../security/errors'
+import { sourceVoid } from './source-void'
 export function applyArchitecturalSystems(
   project: Project,
   input: AnalysisInput,
@@ -113,14 +114,7 @@ export function applyArchitecturalSystems(
           height: p.height,
           thickness: p.thickness || 0.2,
         }
-      if (requirement.kind === 'void')
-        system = {
-          ...base,
-          kind: requirement.kind,
-          polygon: points,
-          height: p.height,
-          role: requirement.role || 'atrium',
-        }
+      if (requirement.kind === 'void') system = sourceVoid(base, points, requirement, level.slabThickness)
       if (requirement.kind === 'massing')
         system = {
           ...base,

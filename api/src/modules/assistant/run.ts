@@ -3,7 +3,8 @@ import type { Database } from '../../db/connection'
 import type { Config } from '../../config/env'
 import type { Job } from '../../jobs/queue'
 import type { ObjectStore } from '../../storage/objects'
-import type { EditingProvider } from './provider'
+import { assistantModel, type EditingProvider } from './provider'
+import { assistantFailure } from './failure'
 import { EditWorkspace } from './edits'
 import { editingTools, executeTool } from './tools'
 import { assistantEvent } from './events'
@@ -66,6 +67,8 @@ export async function runAssistant(
           activeLevelId: run.scope.levelId,
           units: 'metres',
           model: executeTool(work, 'inspect_model', {}),
+          targetFloor: executeTool(work, 'inspect_level', { levelId: run.scope.levelId }),
+          furnitureCatalog: executeTool(work, 'inspect_schema', { kind: 'furniture' }),
           note: 'This is the actual current working model summary. Batch any further inspections and schemas together. You have only three model responses. Earlier proposals are conversation context only.',
         }),
       },
@@ -109,12 +112,7 @@ export async function runAssistant(
             },
           ],
         })
-      const reply = await provider.next(
-        config.GEMINI_MODEL_AGENT || config.GEMINI_MODEL_PLAN,
-        history,
-        editingTools,
-        signal,
-      )
+      const reply = await provider.next(assistantModel(config), history, editingTools, signal)
       history.push(reply.content) // Preserve complete SDK content, including function-call thought signatures.
       for (const [key, value] of Object.entries(reply.usage || {}))
         usage[key] = (usage[key] || 0) + (value || 0)
@@ -192,20 +190,7 @@ export async function runAssistant(
     }
     throw new ApiError(422, 'ASSISTANT_LIMIT', 'The request could not be completed within its limit')
   } catch (error) {
-    const code =
-      error instanceof ApiError
-        ? error.code
-        : timeout.aborted
-          ? 'ASSISTANT_TIMEOUT'
-          : outer.aborted
-            ? 'ASSISTANT_CANCELLED'
-            : 'ASSISTANT_FAILED'
-    const message =
-      code === 'ASSISTANT_TIMEOUT'
-        ? 'This request took too long. Try a smaller change.'
-        : error instanceof ApiError
-          ? error.message
-          : 'The request could not be completed. Your model is unchanged.'
+    const { code, message } = assistantFailure(error, timeout.aborted, outer.aborted)
     const failed =
       await db`UPDATE assistant_runs SET status=${code === 'ASSISTANT_STALE' ? 'stale' : 'failed'},progress=${message},failure_code=${code} WHERE id=${run.id} AND status IN ('queued','running') RETURNING id`
     if (failed.length)

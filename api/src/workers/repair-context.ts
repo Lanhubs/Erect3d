@@ -1,7 +1,13 @@
 import type { Candidate, Intelligence } from '../contracts/analysis'
 import type { IntelligenceInput } from '../modules/ai/provider'
 import type { ModelQuality } from '../modules/plan-analysis/quality'
+import { labelRepairTargets } from './label-targets'
 const coverageCodes = [
+  'SOURCE_LABEL_UNACCOUNTED',
+  'SOURCE_SPACE_UNMODELED',
+  'SOURCE_SPACE_MISNAMED',
+  'SOURCE_LABEL_AS_GEOMETRY',
+  'SOURCE_TEXT_UNCLEAR',
   'NO_WINDOWS',
   'NO_DOORS',
   'ROOM_NO_ACCESS',
@@ -18,14 +24,19 @@ export function repairContext(
   proposal: Intelligence,
   quality: ModelQuality,
 ): IntelligenceInput {
-  const coverage = quality.issues.some((issue) => coverageCodes.includes(issue.code))
-  const failed = new Set(
-    quality.issues
-      .filter((issue) => issue.severity === 'error' || coverageCodes.includes(issue.code))
-      .map((issue) => issue.candidateId)
-      .filter(Boolean),
+  // Resolve invalid geometry before asking for a broad fixture/facade audit.
+  // Mixing both tasks made the bounded repair redraw rooms while leaving the
+  // exact invalid opening unchanged.
+  const blocked = quality.issues.some((issue) => issue.severity === 'error')
+  const relevant = quality.issues.filter(
+    (issue) => issue.severity === 'error' || (!blocked && coverageCodes.includes(issue.code)),
   )
-  const targets = proposal.candidates.filter((candidate) => failed.has(candidate.id))
+  const coverage = !blocked && relevant.some((issue) => coverageCodes.includes(issue.code))
+  const failed = new Set(relevant.map((issue) => issue.candidateId).filter(Boolean))
+  const targets = [
+    ...proposal.candidates.filter((candidate) => failed.has(candidate.id)),
+    ...labelRepairTargets(proposal, failed),
+  ]
   const anchors = targets.flatMap((candidate) => candidate.points)
   const hosts = new Set(targets.map((candidate) => candidate.wallId).filter(Boolean))
   const distance = (candidate: Candidate) =>
@@ -48,6 +59,7 @@ export function repairContext(
     designReference: undefined,
     candidates: [...targets, ...nearby],
     understanding: proposal.understanding,
+    labelReadings: proposal.labelReadings?.filter((reading) => failed.has(reading.sourceId)),
     architecturalRequirements: proposal.architecturalRequirements,
     details: coverage
       ? source.details
@@ -61,15 +73,13 @@ export function repairContext(
           ),
         ),
     validationIssues: [
-      ...quality.issues
-        .filter((issue) => issue.severity === 'error' || coverageCodes.includes(issue.code))
-        .map((issue) => `${issue.code}: ${issue.message}`),
+      ...relevant.map((issue) => `${issue.code}: ${issue.message}`),
       ...(coverage
         ? [
             'Audit the complete circulation: every enclosed bedroom, bathroom, closet, garage and service room needs its depicted entrance. Use the source swing/leaf and frame marks to distinguish doors, windows and open-plan boundaries. Correct the named rooms and dimension reference; keep existing candidate IDs for corrections. Inspect all facades, not just one. Do not add speculative doors or change walls solely to pass a check.',
           ]
         : []),
-      ...(quality.issues.some((issue) => issue.code === 'ROOM_FIXTURES_UNCHECKED')
+      ...(coverage && relevant.some((issue) => issue.code === 'ROOM_FIXTURES_UNCHECKED')
         ? [
             'Return every clearly depicted missing sofa, armchair, table, chair, cabinet, sink, toilet, shower or bath in the named rooms as furniture candidates. Use source footprint corners, furnitureRotation, and type-specific heights. This is source interpretation, not automatic furnishing: do not fill genuinely empty space or invent a furniture package.',
           ]

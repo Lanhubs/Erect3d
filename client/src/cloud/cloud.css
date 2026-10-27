@@ -398,13 +398,17 @@
   margin-left: auto;
   justify-content: flex-end;
   min-width: 0;
-  max-width: 48%;
+  max-width: 60%;
   font-size: 12px;
+  flex-wrap: nowrap;
 }
 .dashboard-head .cloud-account span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.dashboard-head .cloud-account button {
+  flex-shrink: 0;
 }
 .dashboard-head .cloud-account button,
 .dashboard-main > button,
@@ -425,16 +429,12 @@
   cursor: pointer;
 }
 @media (max-width: 640px) {
-  .dashboard-head:has(.cloud-account) {
-    height: auto;
-    min-height: 72px;
-    flex-wrap: wrap;
-    padding-block: 12px;
-  }
   .dashboard-head .cloud-account {
-    flex-basis: 100%;
-    max-width: 100%;
-    margin-left: 0;
-    justify-content: space-between;
+    max-width: calc(100% - 95px);
+    gap: 8px;
+  }
+  .dashboard-head .account-name-rest,
+  .dashboard-head .account-email {
+    display: none;
   }
 }

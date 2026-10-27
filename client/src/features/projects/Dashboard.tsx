@@ -172,25 +172,23 @@ export function Dashboard({
                       <button disabled={busy} onClick={() => open(project)}>
                         Open
                       </button>
-                      <details>
-                        <summary aria-label={`Actions for ${project.name}`}>•••</summary>
-                        <button
-                          disabled={busy}
-                          onClick={() =>
-                            void confirmAction({
-                              title: 'Delete project?',
-                              item: project.name,
-                              message:
-                                'This removes the project and its shared access. This action cannot be undone.',
-                              label: 'Delete project',
-                              destructive: true,
-                              onConfirm: () => remove(project.id),
-                            })
-                          }
-                        >
-                          Delete
-                        </button>
-                      </details>
+                      <button
+                        className="project-delete"
+                        disabled={busy}
+                        onClick={() =>
+                          void confirmAction({
+                            title: 'Delete project?',
+                            item: project.name,
+                            message:
+                              'This removes the project and its shared access. This action cannot be undone.',
+                            label: 'Delete project',
+                            destructive: true,
+                            onConfirm: () => remove(project.id),
+                          })
+                        }
+                      >
+                        Delete
+                      </button>
                     </div>
                   </article>
                 ))}

@@ -111,6 +111,7 @@ the film mounted at `/motion/erect3d-film/`. The film's assets stay outside edit
 and offline caching. Use `bun run dev:film` for independent development.
 
 - [Film build, capture and MP4 export](motion-video/README.md)
+- [Detailed plan interpretation, model configuration and verification limits](api/docs/DETAILED_PLAN_INTERPRETATION.md)
 - [VPS deployment, TLS, backups and operations](api/docs/VPS.md)
 - [API architecture](api/docs/ARCHITECTURE.md) and [editor architecture](client/ARCHITECTURE.md)
 - [Observability](docs/OBSERVABILITY.md), [contributing](CONTRIBUTING.md) and [security](SECURITY.md)

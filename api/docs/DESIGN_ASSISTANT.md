@@ -8,8 +8,13 @@ messages, runs/proposals and recipient-scoped realtime events. It does not chang
 project documents or source files. Back up the database using the existing VPS
 procedure before any production migration.
 
-Use the existing `GEMINI_API_KEY`. Optional `GEMINI_MODEL_AGENT` overrides
-`GEMINI_MODEL_PLAN` for editing only. Existing `AI_TIMEOUT_MS`, `AI_DAILY_LIMIT`,
+Use the existing `GEMINI_API_KEY`. Assistant editing now defaults to
+`gemini-4-argon`; optional `GEMINI_MODEL_AGENT` selects another supported
+tool-calling model. Reconstruction retains its independent model settings.
+Argon requires paid Gemini API access; Google AI subscription access alone does
+not enable its API. See [Google's Argon migration guide](https://ai.google.dev/gemini-api/docs/latest-model).
+Argon uses low thinking, a 32,768-token response ceiling and no sampling override;
+the existing total request deadline still bounds all three rounds. Existing `AI_TIMEOUT_MS`, `AI_DAILY_LIMIT`,
 project size limits, permissions and entity locks apply. Start the existing worker
 with `bun run worker` on the VPS. Development starts only explicitly requested
 jobs; opening the requesting user's saved thread can resume its pending job.
@@ -65,6 +70,48 @@ existing transaction path. Any revision change requires a regenerated proposal.
 One quota row is recorded per accepted request, including idempotent retries.
 Progress/completion events target only the requesting account. The client recovers
 saved state on reconnect and does not run an assistant polling interval.
+
+## Furniture requests and failure recovery (25 October 2026)
+
+The saved failure behind the reported furniture prompt was `AI_NETWORK`. Provider
+errors now retain safe classifications and actionable messages for connectivity,
+credentials, model access, quotas and rejected requests. The worker does not
+overwrite a run's diagnostic with a second generic failure event. Empty or
+token-truncated provider responses cannot be treated as completed proposals.
+Raw SDK error bodies, credentials, prompts and project data are not exposed.
+
+The client clears its delivery key after an acknowledged request. An ambiguous
+delivery retains its key to recover the same request; an explicit retry of a
+known terminal run receives a fresh key. **Edit and retry** restores the last
+prompt. This fixes identical prompts reopening a failed run indefinitely.
+
+Explicit floor names and numeric/ordinal aliases resolve on client and server.
+For example, “add some furnitures like couch, tv and more to second floor” can
+target the existing Second floor while Ground floor is active. The target is
+shown before sending and retained for follow-up prompts. Choosing a scope or
+changing the editor's floor resets that conversational target. Floor names are
+never inferred from array order. Missing/ambiguous targets produce a focused
+question; selection scope is not silently widened, and locked floors stay locked.
+
+The initial context includes bounded target-floor geometry and the furniture
+catalogue, avoiding redundant inspection calls. The assistant understands couch
+as sofa and TV as television-unit. Architectural requests are not restricted to a
+prompt whitelist; unsupported operations require an explanation rather than
+invented success. Existing tools, validation, Preview/Apply, quotas and Undo remain
+the boundary for executable edits.
+
+Live verification used only a disposable authored three-floor house, no private
+plan files or R2 storage. The exact reported prompt produced a validated Argon
+proposal in 19.4 seconds with six second-floor objects: sofa, television unit,
+coffee table, two armchairs and storage cabinet. Other floors and the saved
+document remained unchanged. This is one measured local run, not a latency SLA
+or a guarantee that every architectural request is supported.
+
+Regression tests cover Argon wire settings, signed function history, safe errors,
+floor aliases/ambiguity, locks, retry keys, furnishing, Apply and save/reopen.
+Restart both API and worker after this update. Existing explicit
+`GEMINI_MODEL_AGENT` overrides remain in effect; set it to `gemini-4-argon` to use
+Argon when an older override is present. No database migration is required.
 
 ## Verification (22 October 2026)
 

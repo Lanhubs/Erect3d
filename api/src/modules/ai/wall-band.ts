@@ -2,6 +2,9 @@ import type { Candidate } from '../../contracts/analysis'
 import type { ImageScale } from './candidateChecks'
 export function sameWallBand(a: Candidate, b: Candidate, scale?: ImageScale) {
   if (!scale || !a.thickness || !b.thickness || a.points.length !== 2 || b.points.length !== 2) return false
+  // A misread coloured region must not absorb nearby real partitions merely
+  // because its apparent band is very wide. Retain both pieces for review.
+  if (Math.max(a.thickness, b.thickness) * scale.width * scale.metresPerPixel > 1.5) return false
   const pixel = (p: { x: number; y: number }) => ({ x: p.x * scale.width, y: p.y * scale.height })
   const [start, end] = a.points.map(pixel),
     [first, last] = b.points.map(pixel)

@@ -5,7 +5,8 @@ import { bytesHash } from '../src/modules/assets/validation'
 import { analyze } from '../src/workers/analyze'
 import { complete, type Job } from '../src/jobs/queue'
 import { loadDocument } from '../src/modules/projects/documents'
-import type { Candidate, Intelligence } from '../src/contracts/analysis'
+import type { Candidate } from '../src/contracts/analysis'
+import { expectDirectProgress } from './analysis-progress-expectations'
 import type { IntelligenceInput } from '../src/modules/ai/provider'
 import { defaultRoof } from '../../client/src/domain/types'
 const store = new MemoryStore(),
@@ -306,11 +307,7 @@ test('dense direct reconstruction reads the original PDF once and bounds a missi
   const [row] = await h.db`SELECT status,result FROM analyses WHERE id=${state.analysisId}`
   expect(row.status).toBe('ready')
   expect(row.result.quality.status).not.toBe('blocked')
-  const events =
-    await h.db`SELECT payload FROM realtime_events WHERE project_id=${state.project.id} AND type='analysis.progress' ORDER BY id`
-  expect(
-    events.map((event: { payload: { progress: { current: string } } }) => event.payload.progress.current),
-  ).toEqual(['measure-source', 'reconstruct-model', 'model-validation', 'validated-model-repair-1'])
+  await expectDirectProgress(h.db, state.project.id)
 }, 15000)
 
 test('dense image reconstruction preserves cross-region wall spans in a single coordinated result', async () => {

@@ -6,6 +6,9 @@ export type IntelligenceInput = {
   height: number
   candidates: Candidate[]
   pass: string
+  sourceText?: import('../../contracts/source-text').SourceText
+  labelReadings?: Intelligence['labelReadings']
+  levelContext?: import('./level-context').ReconstructionLevelContext
   region?: { x: number; y: number; width: number; height: number }
   model: string
   calibration?: { metresPerPixel: number; method?: string }

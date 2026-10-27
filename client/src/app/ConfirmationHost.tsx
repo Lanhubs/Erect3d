@@ -39,7 +39,7 @@ function Confirmation({ value }: { value: Confirmation }) {
   useOverlay(ref, true, close)
   return (
     <div
-      className="command-backdrop"
+      className="confirmation-backdrop "
       onPointerDown={(e) => {
         if (e.target === e.currentTarget) close()
       }}

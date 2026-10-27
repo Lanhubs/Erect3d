@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Candidate, Intelligence } from '../../../api/src/contracts/analysis'
+import { SourceTextReview } from './SourceTextReview'
 import { RemoteError } from '../../../api/client'
 import { api } from './api'
 import { getTask, putTask } from './cache'
@@ -300,6 +301,12 @@ export function ProposalReview({
                 </p>
               ))}
             </details>
+          )}
+          {analysis.result?.proposal && (
+            <SourceTextReview
+              proposal={analysis.result.proposal}
+              dimensions={{ width: source.width, height: source.height }}
+            />
           )}
           {rebuilding && (
             <p>

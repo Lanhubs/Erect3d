@@ -5,7 +5,9 @@ import { z } from 'zod'
 import { intelligenceSchema, type Candidate } from '../../contracts/analysis'
 import { furnitureTypes } from '../../../../client/src/furniture/types'
 import { visionSchema } from '../../contracts/vision'
-import { architecturalWireSchema } from './architectural-wire'
+import { compactGenerationSchema } from './compact-schema'
+import { classifyStrokes, confirmedSourceSymbols } from './stroke-classification'
+import { labelReadingWire, canonicalLabelReadings } from './label-wire'
 const coord = z.number().min(0).max(1),
   point = z.tuple([coord, coord]),
   points = z.array(point).min(1).max(1024)
@@ -20,6 +22,7 @@ const curve = z
   .strict()
 export const compactReconstruction = z
   .object({
+    labelReadings: labelReadingWire.optional(),
     architecturalRequirements: architecturalRequirements.optional(),
     buildingType: typology,
     footprint: points,
@@ -51,7 +54,10 @@ export const compactReconstruction = z
       )
       .max(1000),
     wallRefs: z.array(z.number().int().nonnegative().max(1999)).max(1000).optional(),
-    strokeLabels: z.record(z.string(), z.string().regex(/^[012]*$/)),
+    classification: z.literal('wall-refs-v1').optional(),
+    detailRefs: z.array(z.string().min(1).max(160)).max(200).optional(),
+    uncertainWallRefs: z.array(z.number().int().nonnegative().max(1999)).max(1000).optional(),
+    strokeLabels: z.record(z.string(), z.string().regex(/^[012]*$/)).optional(),
     openings: z
       .array(
         z
@@ -142,17 +148,8 @@ export function expandReconstruction(value: unknown, measurements: Candidate[] =
     needsReview: true,
   })
   const measured = measurements.filter((item) => item.kind === 'wall')
-  const groups = Array.from({ length: Math.ceil(measured.length / 25) }, (_, index) => index * 25)
-  if (
-    Object.keys(parsed.strokeLabels).length !== groups.length ||
-    groups.some(
-      (start) => parsed.strokeLabels[String(start)]?.length !== Math.min(25, measured.length - start),
-    )
-  )
-    throw new Error('Every source measurement requires classification')
-  const labels = measured.map((_, ref) => parsed.strokeLabels[String(Math.floor(ref / 25) * 25)][ref % 25])
-  const selected = labels.flatMap((label, ref) => (label === '1' ? [ref] : []))
-  const references = [...new Set([...selected, ...(parsed.wallRefs || [])])].map((ref) => {
+  const { labels, selected } = classifyStrokes(parsed, measured.length)
+  const references = selected.map((ref) => {
     const wall = measured[ref]
     if (!wall) throw new Error('Unknown measured wall reference')
     return {
@@ -164,6 +161,7 @@ export function expandReconstruction(value: unknown, measurements: Candidate[] =
   })
   const candidates = [
     ...references,
+    ...confirmedSourceSymbols(parsed.detailRefs, measurements),
     ...(parsed.boundaries || []).map((item) => candidate(item, 'architectural-boundary')),
     ...parsed.walls.map((item) => candidate(item, 'wall')),
     ...[
@@ -184,6 +182,7 @@ export function expandReconstruction(value: unknown, measurements: Candidate[] =
     coordinatesVersion: 1,
     coordinateSystem: 'normalized-image-top-left',
     candidates,
+    labelReadings: canonicalLabelReadings(parsed.labelReadings),
     warnings: parsed.warnings,
     vision: parsed.vision,
     architecturalRequirements: parsed.architecturalRequirements,
@@ -249,40 +248,9 @@ export function compactSourceFeatures(items: Candidate[]) {
   ])
 }
 // Gemini accepts homogeneous numeric arrays; full tuple lengths are checked locally.
-export function compactReconstructionSchema(_measurementCount?: number): Record<string, unknown> {
-  const schema = z.toJSONSchema(compactReconstruction) as any
-  const simplify = (value: any): any => {
-    if (Array.isArray(value)) return value.map(simplify)
-    if (!value || typeof value !== 'object') return value
-    if (value.prefixItems) return { type: 'array', items: { type: 'number', minimum: 0, maximum: 1 } }
-    return Object.fromEntries(
-      Object.entries(value)
-        .filter(([key]) => !['$schema', 'minLength', 'maxLength', 'minItems', 'maxItems'].includes(key))
-        .map(([key, item]) => [
-          key === 'const' ? 'enum' : key === 'oneOf' ? 'anyOf' : key,
-          key === 'const' ? [item] : simplify(item),
-        ]),
-    )
-  }
-  const result = simplify(schema)
-  result.properties.architecturalRequirements = architecturalWireSchema(
-    result.properties.architecturalRequirements,
-  )
-  // New requests must establish an annotated or explicitly inferred reference.
-  // The parser still accepts historical cached responses without this field.
-  result.required = [
-    ...new Set([...result.required, 'scale', 'architecturalRequirements', 'boundaries', 'windows']),
-  ]
-  result.properties.openings.items.properties.kind.enum = ['door', 'passage']
-  delete result.properties.vision
-  // Enumerating a property per measurement group makes Gemini's grammar exceed
-  // its complexity limit on dense drawings. Keep the wire grammar constant;
-  // expandReconstruction still checks every required key, label and group size.
-  result.properties.strokeLabels = {
-    type: 'object',
-    additionalProperties: { type: 'string' },
-    description:
-      'Classify every source measurement. Keys are starting refs 0,25,50,...; values have 25 characters (0=other,1=wall,2=uncertain), except the final remaining group. Use {} when there are zero measurements. expectedStrokeLabelsLength gives the total required characters.',
-  }
-  return result
+export function compactReconstructionSchema(
+  _measurementCount?: number,
+  withText = false,
+): Record<string, unknown> {
+  return compactGenerationSchema(z.toJSONSchema(compactReconstruction), withText)
 }

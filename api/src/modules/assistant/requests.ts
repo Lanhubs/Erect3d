@@ -11,6 +11,8 @@ import { loadDocument } from '../projects/documents'
 import { enqueue } from '../../jobs/queue'
 import { scopeContext } from './scope'
 import { assistantEvent } from './events'
+import { assistantModel } from './provider'
+import { resolveAssistantFloor } from '../../../../client/src/domain/assistantFloor'
 export async function requestAssistant(
   db: Database,
   config: Config,
@@ -26,10 +28,14 @@ export async function requestAssistant(
       snapshot = await loadDocument(tx, projectId)
     if (snapshot.revision !== input.baseRevision)
       throw new ApiError(409, 'REVISION_CONFLICT', 'Sync the current model before sending this request')
-    const { level } = scopeContext(snapshot.document, input.scope)
+    const context = scopeContext(snapshot.document, input.scope)
+    const target = resolveAssistantFloor(context.building, input.scope, input.message)
+    if (target.question) throw new ApiError(422, 'ASSISTANT_TARGET', target.question)
+    const scope = { ...input.scope, levelId: target.levelId }
+    const { level } = scopeContext(snapshot.document, scope)
     if (level.locked) throw new ApiError(409, 'LEVEL_LOCKED', 'Unlock this floor before requesting changes')
     for (const sourceId of input.planSourceIds) {
-      if (input.scope.mode !== 'building' && sourceId !== level.sourceId)
+      if (scope.mode !== 'building' && sourceId !== level.sourceId)
         throw new ApiError(422, 'ASSISTANT_SOURCE', 'Choose a reference from the selected floor')
       const [source] =
         await tx`SELECT source_id FROM source_plans WHERE project_id=${projectId} AND source_id=${sourceId}`
@@ -43,7 +49,7 @@ export async function requestAssistant(
         !previous ||
         previous.status !== 'ready' ||
         Number(previous.base_revision) !== input.baseRevision ||
-        checksum(previous.scope) !== checksum(input.scope)
+        checksum(previous.scope) !== checksum(scope)
       )
         throw new ApiError(409, 'ASSISTANT_STALE', 'The earlier proposal is no longer current')
     }
@@ -62,12 +68,12 @@ export async function requestAssistant(
       await tx`SELECT count(*)::int AS count FROM ai_usage WHERE actor_id=${actor.id} AND created_at>now()-interval '24 hours'`
     if (usage.count >= config.AI_DAILY_LIMIT)
       throw new ApiError(429, 'AI_QUOTA', 'Your daily design allowance is used')
-    const runId = await enqueue(tx, actor, projectId, 'assistant.edit', input, requestId)
+    const runId = await enqueue(tx, actor, projectId, 'assistant.edit', { ...input, scope }, requestId)
     await tx`UPDATE jobs SET max_attempts=1 WHERE id=${runId}`
     await tx`INSERT INTO assistant_runs(id,thread_id,project_id,actor_id,base_revision,scope,plan_source_ids)
-      VALUES (${runId},${thread.id},${projectId},${actor.id},${input.baseRevision},${input.scope}::jsonb,${input.planSourceIds}::jsonb)`
+      VALUES (${runId},${thread.id},${projectId},${actor.id},${input.baseRevision},${scope}::jsonb,${input.planSourceIds}::jsonb)`
     await tx`INSERT INTO assistant_messages(thread_id,run_id,role,content) VALUES (${thread.id},${runId},'user',${input.message})`
-    await tx`INSERT INTO ai_usage(actor_id,team_id,project_id,job_id,model,kind) VALUES (${actor.id},${project.team_id},${projectId},${runId},${config.GEMINI_MODEL_AGENT || config.GEMINI_MODEL_PLAN},'assistant.edit')`
+    await tx`INSERT INTO ai_usage(actor_id,team_id,project_id,job_id,model,kind) VALUES (${actor.id},${project.team_id},${projectId},${runId},${assistantModel(config)},'assistant.edit')`
     await assistantEvent(tx, projectId, actor.id, runId, 'Waiting to start', 'queued')
     return { runId }
   })

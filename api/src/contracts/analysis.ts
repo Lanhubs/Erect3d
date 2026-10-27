@@ -2,6 +2,7 @@ import { architecturalRequirements } from './architectural-requirements'
 import { typology } from './architecture'
 import { windowConstructionSchema } from './opening-construction'
 import { z } from 'zod'
+import { sourceTextSchema, labelReadingsSchema } from './source-text'
 import { calibration, id, point } from './primitives'
 import { designSchema } from './design'
 import { visionSchema } from './vision'
@@ -88,6 +89,8 @@ export const candidateSchema = z
   .strict()
 export const intelligenceSchema = z
   .object({
+    sourceText: sourceTextSchema.optional(),
+    labelReadings: labelReadingsSchema.optional(),
     architecturalRequirements: architecturalRequirements.optional(),
     coordinatesVersion: z.literal(1),
     coordinateSystem: z.literal('normalized-image-top-left'),

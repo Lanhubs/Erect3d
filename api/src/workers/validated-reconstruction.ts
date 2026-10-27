@@ -15,9 +15,11 @@ import { reconstructionScale } from '../modules/plan-analysis/reconstruction-sca
 import { buildableCandidates, modelQuality, type ModelQuality } from '../modules/plan-analysis/quality'
 import { sourceEnvelope } from './source-envelope'
 import { alignOpeningHosts } from './opening-hosts'
-import { repairContext, needsSourceRepair } from './repair-context'
+import { needsSourceRepair } from './repair-context'
+import { repairSourceContext } from './repair-details'
 import { assertBuildingScope } from '../modules/ai/building-scope'
 import { analysisProgress } from './analysis-progress'
+import { reconstructionPlacement } from '../modules/plan-analysis/floor-placement'
 
 export function inspectReconstruction(
   project: Project,
@@ -42,6 +44,11 @@ export function inspectReconstruction(
         dimensions,
         ['full', 'fixtures', 'furniture'].includes(input.options.mode),
       )
+      const placement = reconstructionPlacement(project, input, proposal, dimensions)
+      if (placement.note) {
+        quality.issues.push({ code: 'FLOOR_ALIGNMENT', severity: 'warning', message: placement.note })
+        if (quality.status === 'ready') quality.status = 'needs-review'
+      }
       return errors.length
         ? { status: 'blocked', issues: [...errors, ...quality.issues].slice(0, 100) }
         : quality
@@ -84,6 +91,7 @@ export async function validatedReconstruction(
   signal: AbortSignal,
 ) {
   assertBuildingScope(proposal)
+  source = { ...source, model: config.GEMINI_MODEL_REPAIR || source.model }
   const dimensions = { width: source.width, height: source.height }
   let quality = inspectReconstruction(project, input, job.id, proposal, dimensions)
   const direct =
@@ -117,7 +125,7 @@ export async function validatedReconstruction(
       let response
       try {
         response = await provider.interpret(
-          { ...repairContext(source, proposal, quality), pass: 'validated-model-repair' },
+          { ...(await repairSourceContext(source, proposal, quality)), pass: 'validated-model-repair' },
           AbortSignal.any([signal, AbortSignal.timeout(config.AI_TIMEOUT_MS)]),
         )
         repaired = parse(intelligenceSchema, response.proposal)

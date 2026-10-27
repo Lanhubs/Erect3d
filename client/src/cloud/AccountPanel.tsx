@@ -2,14 +2,18 @@ import { LoadingState } from '../app/LoadingState'
 import { useState } from 'react'
 import { refreshAccount, signIn, signOut, useAccount } from './account'
 import { registrationEnabled } from './config'
-export function AccountPanel() {
-  const { user, checking, error: sessionError } = useAccount()
+import type { User } from './account'
+export function AccountPanel({ user: propUser }: { user?: User | null } = {}) {
+  const accountState = useAccount()
+  const { checking, error: sessionError } = accountState
+  const user = propUser !== undefined ? propUser : accountState.user
   const [register, setRegister] = useState(false),
     [name, setName] = useState(''),
     [email, setEmail] = useState(''),
     [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false),
     [error, setError] = useState('')
+
   const submit = async (action: () => Promise<unknown>) => {
     setBusy(true)
     setError('')
@@ -22,11 +26,16 @@ export function AccountPanel() {
       setBusy(false)
     }
   }
-  if (user)
+  if (user) {
+    const nameParts = user.name.trim().split(/\s+/).filter(Boolean)
+    const firstName = nameParts[0] || user.name || user.email.split('@')[0]
+    const restName = nameParts.slice(1).join(' ')
     return (
       <div className="cloud-account">
-        <span>
-          {user.name} · {user.email}
+        <span className="account-user">
+          <span className="account-name-first">{firstName}</span>
+          {restName && <span className="account-name-rest"> {restName}</span>}
+          <span className="account-email"> · {user.email}</span>
         </span>
         <button disabled={busy} onClick={() => void submit(signOut)}>
           Sign out
@@ -34,6 +43,7 @@ export function AccountPanel() {
         {error && <p role="alert">{error}</p>}
       </div>
     )
+  }
   return (
     <section className="cloud-signin" aria-label="Account">
       <div className="signin-brand">

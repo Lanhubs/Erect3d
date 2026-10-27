@@ -226,6 +226,15 @@ function ViewerComponent({
       : null
   const tool = useProject((state) => state.tool),
     editing = useElementEditing(!previewOnly && !walk && !presentation && tool === 'select')
+  const clearSelection = useCallback(
+    (event: MouseEvent) => {
+      if (event.button === 0 && active && !previewOnly && !walk && !presentation && tool === 'select') {
+        select(null)
+        if (event.target instanceof HTMLCanvasElement) event.target.style.cursor = ''
+      }
+    },
+    [active, previewOnly, walk, presentation, tool, select],
+  )
   return (
     <section
       className="viewer"
@@ -368,6 +377,7 @@ function ViewerComponent({
               frameloop={frames}
               camera={{ fov: 55, near: 0.03, far: 1000 }}
               gl={rendererFactory}
+              onPointerMissed={clearSelection}
             >
               <CanvasSizeSync />
               <GraphicsRuntime

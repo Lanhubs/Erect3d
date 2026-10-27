@@ -10,8 +10,9 @@
   color: #f0f0e9;
   display: flex;
   align-items: center;
+  flex-wrap: nowrap;
   gap: 13px;
-  padding: 0 max(30px, calc((100vw - 1120px) / 2));
+  padding: 0 max(24px, calc((100% - 1240px) / 2));
   border-bottom: 3px solid #b17b43;
 }
 .brand-mark {

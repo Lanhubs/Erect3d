@@ -2,6 +2,8 @@ import { expect, test } from 'bun:test'
 import ReactDOMServer from 'react-dom/server'
 import { Dashboard } from '../src/features/projects/Dashboard'
 import { SampleLibrary } from '../src/features/projects/SampleLibrary'
+import { AccountPanel } from '../src/cloud/AccountPanel'
+import { useAccount } from '../src/cloud/account'
 import { fixtureProject } from '../src/domain/fixture'
 import { createSampleLibrary } from '../src/domain/sampleLibrary'
 
@@ -67,3 +69,38 @@ test('Projects opens as a compact browser without rendering templates or a creat
   expect(html).not.toContain('List view')
   expect(html).not.toContain('Grid view')
 })
+test('Projects card renders Open and Delete action buttons directly without options details menu', () => {
+  const html = ReactDOMServer.renderToStaticMarkup(
+    <Dashboard
+      projects={[
+        {
+          id: 'proj-1',
+          name: 'Villa Aurelia',
+          modified: Date.now(),
+          sources: [],
+        },
+      ]}
+      samples={[]}
+      open={() => {}}
+      openSample={() => {}}
+      create={() => {}}
+      remove={async () => {}}
+    />,
+  )
+  expect(html).toContain('Villa Aurelia')
+  expect(html).toContain(
+    '<div class="project-item-actions"><button>Open</button><button class="project-delete">Delete</button></div>',
+  )
+  expect(html).not.toContain('•••')
+})
+test('AccountPanel renders user first name and email in distinct spans for mobile responsiveness', () => {
+  const html = ReactDOMServer.renderToStaticMarkup(
+    <AccountPanel user={{ id: 'u1', name: 'Habeeb Muhammed', email: 'idiagbon@gmail.com' }} />,
+  )
+  expect(html).toContain('<span class="account-name-first">Habeeb</span>')
+  expect(html).toContain('<span class="account-name-rest"> Muhammed</span>')
+  expect(html).toContain('<span class="account-email"> · idiagbon@gmail.com</span>')
+  expect(html).toContain('Sign out')
+})
+
+

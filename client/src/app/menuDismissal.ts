@@ -1,5 +1,5 @@
 export const floatingMenus =
-  '.studio-menu,.view-options,.cloud-session-menu,.graphics-preference,.project-item-actions details,.reconstruction-popover'
+  '.studio-menu,.view-options,.cloud-session-menu,.graphics-preference,.reconstruction-popover'
 
 /** Trigger and popup share a details element. Ignore touch and keyboard focus. */
 export function installMenuDismissal(root: Document) {

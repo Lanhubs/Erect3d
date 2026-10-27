@@ -2,6 +2,7 @@ import type { Candidate, Intelligence } from '../../contracts/analysis'
 import { ProviderFailure } from './provider'
 import { checkCandidate, type ImageScale } from './candidateChecks'
 import { sameWallBand, mergeWallBand } from './wall-band'
+import { mergeLabelEvidence } from './label-evidence'
 export { analysisPasses } from './passes'
 const distance = (a: { x: number; y: number }, b: { x: number; y: number }) =>
   Math.hypot(a.x - b.x, a.y - b.y)
@@ -103,12 +104,14 @@ export function reconcile(
         ...candidate.uncertainties,
         'Host wall is missing; choose a valid wall before acceptance',
       ].slice(0, 20)
-      delete candidate.wallId
+      if (candidate.targetId || decisions.get(candidate.wallId)?.decision !== 'reject')
+        delete candidate.wallId
       candidate.confidence = Math.min(candidate.confidence, 0.35)
     }
   }
   if (map.size > 2000) throw new ProviderFailure('AI_TOO_MANY_CANDIDATES', false)
   return {
+    ...mergeLabelEvidence(proposals),
     coordinatesVersion: 1,
     coordinateSystem: 'normalized-image-top-left',
     candidates: [...map.values()],

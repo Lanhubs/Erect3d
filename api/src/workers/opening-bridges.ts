@@ -1,4 +1,5 @@
 import type { Intelligence, Candidate } from '../contracts/analysis'
+import { bridgeCornerOpening } from './opening-corners'
 // Native wall bands stop at a real opening. Reconnect two flanking, collinear
 // fragments only when the interpreted gap is anchored to both of their ends.
 export function bridgeOpeningHosts(input: Intelligence, width: number, height: number): Intelligence {
@@ -42,7 +43,18 @@ export function bridgeOpeningHosts(input: Intelligence, width: number, height: n
     const after = bands
       .filter((w) => w.max > length + 1 && Math.abs(w.min - length) < w.tolerance + 1)
       .sort((p, q) => Math.abs(p.min - length) - Math.abs(q.min - length))[0]
-    if (!before || !after || before.wall.id === after.wall.id) continue
+    if (!before || !after || before.wall.id === after.wall.id) {
+      const flank = before?.wall || after?.wall
+      if (flank)
+        bridgeCornerOpening(
+          opening,
+          flank,
+          proposal.candidates.filter((wall) => !removed.has(wall.id)),
+          width,
+          height,
+        )
+      continue
+    }
     const host: Candidate = opening.wallId === after.wall.id ? after.wall : before.wall,
       other = host === before.wall ? after.wall : before.wall
     host.points = [before.min, after.max].map((t) => ({

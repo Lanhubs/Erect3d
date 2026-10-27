@@ -31,6 +31,7 @@ export function SoftwareElementHandles({
       <g
         key={key}
         className="element-handle"
+        onClick={(event) => event.stopPropagation()}
         onPointerDown={(event) => {
           event.stopPropagation()
           event.preventDefault()

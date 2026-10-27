@@ -5,6 +5,17 @@ import { scanWallEdges } from '../../../client/src/workers/outlineWalls'
 import type { SourceRegion } from './source-region'
 import { coveredStroke } from './covered-stroke'
 import { respectMeasurementFootprint } from './measurement-footprint'
+import { inSourceRegion } from './source-region'
+import { neutralInk } from './neutral-ink'
+export async function measureReconstructionSource(
+  backend: boolean,
+  bytes: Uint8Array,
+  region?: SourceRegion,
+) {
+  if (!backend) return undefined
+  const result = await measureSource(bytes, region)
+  return { ...result, candidates: result.candidates.filter((candidate) => inSourceRegion(candidate, region)) }
+}
 export async function measureSource(bytes: Uint8Array, region?: SourceRegion) {
   const image = sharp(bytes, { limitInputPixels: 100_000_000 }),
     metadata = region ? await image.metadata() : undefined
@@ -22,7 +33,9 @@ export async function measureSource(bytes: Uint8Array, region?: SourceRegion) {
   const { data, info } = await image.ensureAlpha().raw().toBuffer({ resolveWithObject: true })
   const sourceWidth = width || info.width,
     sourceHeight = height || info.height
-  const result = await analyzePlan(new Uint8ClampedArray(data), info.width, info.height)
+  const ink = neutralInk(data, info.width, info.height),
+    pixels = ink.pixels
+  const result = await analyzePlan(pixels, info.width, info.height)
   const point = (x: number, y: number) => ({
     x: Math.max(0, Math.min(1, (left + x) / sourceWidth)),
     y: Math.max(0, Math.min(1, (top + y) / sourceHeight)),
@@ -45,9 +58,10 @@ export async function measureSource(bytes: Uint8Array, region?: SourceRegion) {
   const fine = new Uint8Array(info.width * info.height)
   for (let pixel = 0; pixel < fine.length; pixel++) {
     const at = pixel * 4,
-      alpha = data[at + 3] / 255
+      alpha = pixels[at + 3] / 255
     fine[pixel] =
-      (data[at] * 0.2126 + data[at + 1] * 0.7152 + data[at + 2] * 0.0722) * alpha + 255 * (1 - alpha) < 200
+      (pixels[at] * 0.2126 + pixels[at + 1] * 0.7152 + pixels[at + 2] * 0.0722) * alpha + 255 * (1 - alpha) <
+      200
         ? 1
         : 0
   }
@@ -122,6 +136,7 @@ export async function measureSource(bytes: Uint8Array, region?: SourceRegion) {
       fineEdges: edges.length,
       features: result.features.length,
       details: result.details.length,
+      suppressedColourFillPixels: ink.suppressed,
     },
   }
 }
@@ -141,12 +156,14 @@ export function classifiedMeasurements(
         (item) => item.kind !== 'unknown' || classified.has(item.id) || decisions.get(item.id) === 'confirm',
       )
       .map((item) =>
-        item.kind === 'wall' && decisions.get(item.id) !== 'confirm' && !classified.has(item.id)
+        (item.kind === 'wall' || /^cv_detail_/.test(item.id)) &&
+        decisions.get(item.id) !== 'confirm' &&
+        !classified.has(item.id)
           ? {
               ...item,
               kind: 'unknown' as const,
               confidence: 0.35,
-              uncertainties: ['Measured line was not established as a building wall'],
+              uncertainties: ['Native measurement was not established as a building element'],
             }
           : decisions.get(item.id) === 'confirm'
             ? { ...item, confidence: Math.max(0.65, item.confidence) }

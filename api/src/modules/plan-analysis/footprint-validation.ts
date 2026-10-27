@@ -4,6 +4,20 @@ import { containsPoint } from '../../../../client/src/geometry/polygons'
 import { ShapeUtils, Vector2 } from 'three'
 type Point = { x: number; z: number }
 const cross = (a: Point, b: Point, c: Point) => (b.x - a.x) * (c.z - a.z) - (b.z - a.z) * (c.x - a.x)
+function edgeDistance(point: Point, ring: Point[]) {
+  return Math.min(
+    ...ring.map((a, i) => {
+      const b = ring[(i + 1) % ring.length],
+        dx = b.x - a.x,
+        dz = b.z - a.z
+      const t = Math.max(
+        0,
+        Math.min(1, ((point.x - a.x) * dx + (point.z - a.z) * dz) / (dx * dx + dz * dz || 1)),
+      )
+      return Math.hypot(point.x - a.x - t * dx, point.z - a.z - t * dz)
+    }),
+  )
+}
 export function validRing(points: Point[]) {
   if (points.length < 3) return false
   let area = 0
@@ -80,15 +94,23 @@ export function validateFootprint(
       (candidate.kind === 'stair' && !candidate.targetLevelId)
     )
       continue
-    if (
-      candidate.kind === 'column' &&
-      porches.some((ring) =>
-        points.every(
-          (p) => containsPoint(ring, p) || ring.some((a, i) => Math.hypot(a.x - p.x, a.z - p.z) < 3),
-        ),
+    if (candidate.kind === 'column' && points.length >= 3) {
+      const centre = points.reduce(
+        (a, p) => ({ x: a.x + p.x / points.length, z: a.z + p.z / points.length }),
+        { x: 0, z: 0 },
       )
-    )
-      continue
+      const radius = Math.max(...points.map((p) => Math.hypot(p.x - centre.x, p.z - centre.z)))
+      // A real perimeter post can straddle a deck edge. Require actual contact
+      // with an owned platform; columns elsewhere in site margins remain invalid.
+      if (
+        porches.some(
+          (ring) =>
+            points.some((p) => containsPoint(ring, p) || edgeDistance(p, ring) <= 3) &&
+            points.every((p) => containsPoint(ring, p) || edgeDistance(p, ring) <= radius * 2 + 3),
+        )
+      )
+        continue
+    }
     const tolerance = Math.max(2, (candidate.thickness || 0.004) * width)
     const checked = [...points]
     if (candidate.kind === 'wall' && !candidate.curve)

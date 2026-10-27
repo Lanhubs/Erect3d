@@ -7,7 +7,7 @@ import { ApiError } from '../../security/errors'
 import { digest } from '../../security/tokens'
 import { convertCandidates, imageToWorld } from './conversion'
 import { validateGeometry } from '../projects/geometry-validation'
-import { reconstructionScale } from './reconstruction-scale'
+import { reconstructionPlacement } from './floor-placement'
 import { roofRegions } from '../../../../client/src/geometry/roofRegions'
 import { generatedRoof } from '../../../../client/src/domain/roofDesign'
 import { defaultRoof } from '../../../../client/src/domain/types'
@@ -112,7 +112,7 @@ export function buildReconstruction(
       (section) => section.levelId !== level.id || !generatedRoof(section),
     )
   }
-  const effective = reconstructionScale(input, proposal, dimensions.width, dimensions.height)
+  const effective = reconstructionPlacement(project, input, proposal, dimensions).input
   let converted = convertCandidates(document, effective, analysisId, candidates, dimensions)
   const next = converted.buildings.find((item) => item.id === building.id)!,
     floor = next.levels.find((item) => item.id === level.id)!
@@ -186,9 +186,9 @@ export function buildReconstruction(
       ]
       floor.autoRoof = regions.length > 0
     }
-    repairGeneratedFence(next)
   }
   applyArchitecturalSystems(converted, effective, analysisId, proposal, candidates, dimensions)
+  if (rebuilding) repairGeneratedFence(next)
   const validated = parse(projectSchema, converted)
   validateGeometry(validated)
   return validated

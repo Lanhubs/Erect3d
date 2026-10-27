@@ -1,5 +1,6 @@
 import type { AnalysisInput, Intelligence } from '../../contracts/analysis'
 import { inferredScale } from './inferred-scale'
+import { anchorRoomScale } from './room-scale'
 export function reconstructionScale(
   input: AnalysisInput,
   proposal: Intelligence,
@@ -7,7 +8,7 @@ export function reconstructionScale(
   height: number,
 ) {
   const result = structuredClone(input),
-    evidence = proposal.understanding?.scale
+    evidence = anchorRoomScale(proposal, width, height).understanding?.scale
   if (input.options.purpose !== 'rebuild' || input.calibration.method === 'manual') return result
   if (!evidence) {
     result.calibration = inferredScale(proposal, width, height) || result.calibration

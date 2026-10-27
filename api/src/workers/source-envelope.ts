@@ -3,6 +3,11 @@ import type { Intelligence } from '../contracts/analysis'
 import { containsPoint } from '../../../client/src/geometry/polygons'
 import { roofRegions } from '../../../client/src/geometry/roofRegions'
 import { validRing } from '../modules/plan-analysis/footprint-validation'
+import { uncrossSourceRing } from './source-rings'
+import { clipNativeWalls } from './clip-native-walls'
+import { fitSourceRooms } from './source-rooms'
+import { recoverSourceDoorLeaves } from './source-door-leaves'
+import { joinSourceWallEnds } from './wall-junctions'
 type Point = { x: number; z: number }
 function closest(ring: Point[], point: Point) {
   let best = { index: 0, distance: Infinity }
@@ -26,8 +31,10 @@ export async function sourceEnvelope(proposal: Intelligence, bytes: Uint8Array) 
     .toBuffer({ resolveWithObject: true })
   const ring = proposal.understanding.footprint.map((p) => ({ x: p.x * info.width, z: p.y * info.height }))
   const dark = (x: number, y: number) => {
-    if (x < 0 || y < 0 || x >= info.width || y >= info.height) return false
-    const at = (Math.round(y) * info.width + Math.round(x)) * 4,
+    const px = Math.round(x),
+      py = Math.round(y)
+    if (px < 0 || py < 0 || px >= info.width || py >= info.height) return false
+    const at = (py * info.width + px) * 4,
       alpha = data[at + 3] / 255
     return (
       (data[at] * 0.2126 + data[at + 1] * 0.7152 + data[at + 2] * 0.0722) * alpha + 255 * (1 - alpha) < 200
@@ -47,7 +54,9 @@ export async function sourceEnvelope(proposal: Intelligence, bytes: Uint8Array) 
     // A continuous host can cross a genuine door/window gap; require majority ink support.
     return hits / (count + 1) >= 0.55
   }
-  let changed = false
+  const uncrossed = uncrossSourceRing(ring, supported)
+  let changed = uncrossed !== ring
+  if (changed) ring.splice(0, ring.length, ...uncrossed)
   // A concave outline sometimes walks up both sides of an interior foyer and
   // leaves its whole floor outside. Fill only an identified indoor source room
   // whose vertices already lie inside/on the envelope; never expand to margins.
@@ -108,7 +117,14 @@ export async function sourceEnvelope(proposal: Intelligence, bytes: Uint8Array) 
         j = (i + 1) % ring.length,
         p = ring[i],
         q = ring[j]
-      if (near.distance < 1 || near.distance > Math.max(3, (wall.thickness || 0) * info.width * 0.75))
+      if (
+        near.distance < 1 ||
+        near.distance >
+          Math.min(
+            Math.min(info.width, info.height) * 0.03,
+            Math.max(3, (wall.thickness || 0) * info.width * 2),
+          )
+      )
         continue
       const dx = q.x - p.x,
         dz = q.z - p.z,
@@ -125,15 +141,41 @@ export async function sourceEnvelope(proposal: Intelligence, bytes: Uint8Array) 
       changed = true
     }
   }
-  if (!changed) return proposal
+  const cleaned = clipNativeWalls(
+    fitSourceRooms(
+      {
+        ...proposal,
+        understanding: {
+          ...proposal.understanding,
+          footprint: ring.map((p) => ({ x: p.x / info.width, y: p.z / info.height })),
+        },
+      },
+      info.width,
+      info.height,
+      supported,
+    ),
+    info.width,
+    info.height,
+  )
+  const joined = joinSourceWallEnds(cleaned, info.width, info.height, supported)
+  const recovered = recoverSourceDoorLeaves(joined, info.width, info.height, (x, y) => {
+    const px = Math.round(x),
+      py = Math.round(y)
+    if (px < 0 || py < 0 || px >= info.width || py >= info.height) return false
+    const at = (py * info.width + px) * 4,
+      high = Math.max(data[at], data[at + 1], data[at + 2]),
+      low = Math.min(data[at], data[at + 1], data[at + 2])
+    return (high - low < 50 || high < 90) && dark(px, py)
+  })
+  if (!changed) return recovered
   return {
-    ...proposal,
+    ...recovered,
     understanding: {
       ...proposal.understanding,
       footprint: ring.map((p) => ({ x: p.x / info.width, y: p.z / info.height })),
     },
     warnings: [
-      ...proposal.warnings,
+      ...recovered.warnings,
       'The estimated envelope was fitted locally to source-supported walls and columns. Review curved boundaries against the source.',
     ].slice(0, 100),
   }

@@ -1,4 +1,5 @@
 const stages: Record<string, string> = {
+  'read-source-text': 'Reading room labels, dimensions and drawing notes',
   'measure-source': 'Measuring the original drawing',
   'reconstruct-model': 'Reading the complete plan and building its geometry',
   'reconstruct-regions': 'Reading detailed regions in parallel',

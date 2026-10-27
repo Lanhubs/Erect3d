@@ -11,6 +11,7 @@ import { RecoverDrafts } from './RecoverDrafts'
 import { documentChanges } from '../../../api/client'
 import { useProject } from '../state/project'
 import { loadProjectPreview } from './projectPreviews'
+import { FiRefreshCw } from 'react-icons/fi'
 export function CloudDashboard({ navigate }: { navigate: (path: string) => void }) {
   const user = useAccount((state) => state.user)!
   const [items, setItems] = useState<DashboardProject[]>([]),
@@ -145,20 +146,23 @@ export function CloudDashboard({ navigate }: { navigate: (path: string) => void 
             </p>
           )}
           {error && <p role="alert">{error}</p>}
-          {retryCreate && (
-            <button onClick={() => void run(() => createRemote(user.id, fixtureProject('Project'), 'new'))}>
-              Retry pending project creation
+          <div className="project-notice-actions">
+            {retryCreate && (
+              <button onClick={() => void run(() => createRemote(user.id, fixtureProject('Project'), 'new'))}>
+                Retry pending project creation
+              </button>
+            )}
+            <button
+              disabled={busy || loading}
+              onClick={() => {
+                setError('')
+                void refresh()
+              }}
+            >
+              <FiRefreshCw aria-hidden="true" />
+              {loading ? 'Refreshing…' : 'Refresh projects'}
             </button>
-          )}
-          <button
-            disabled={busy}
-            onClick={() => {
-              setError('')
-              void refresh()
-            }}
-          >
-            Refresh projects
-          </button>
+          </div>
           <RecoverDrafts userId={user.id} open={(id) => navigate(`/projects/${id}`)} />
         </>
       }

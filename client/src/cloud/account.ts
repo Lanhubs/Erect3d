@@ -53,7 +53,9 @@ channel?.addEventListener('message', () => {
   useAccount.setState((state) => ({ user: null, generation: state.generation + 1 }))
   void refreshAccount()
 })
-window.addEventListener('erect-session-expired', () => {
-  rememberAccount(null)
-  useAccount.setState((state) => ({ user: null, generation: state.generation + 1 }))
-})
+if (typeof window !== 'undefined') {
+  window.addEventListener('erect-session-expired', () => {
+    rememberAccount(null)
+    useAccount.setState((state) => ({ user: null, generation: state.generation + 1 }))
+  })
+}
