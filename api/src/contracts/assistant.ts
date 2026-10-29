@@ -110,6 +110,7 @@ export type AssistantRun = {
     document: import('./project').Project
     changes: import('./operations').Change[]
     descriptions: string[]
+    focusLevelId?: string
   }
   applied_revision?: number
 }

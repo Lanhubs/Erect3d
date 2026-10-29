@@ -168,3 +168,27 @@ can still occur. Review is always required before Apply.
 The existing native WebGPU tower startup defect is a separate open graphics
 issue. These browser interaction checks use the explicit compatibility renderer
 and do not claim to resolve that defect. Nothing is pushed or deployed.
+
+## Floor shortcuts (28 October 2026)
+
+Review this floor, Improve this floor and Improve the roof now submit a request
+immediately. Each shortcut explicitly targets the active floor, starts a fresh
+proposal and preserves unsent composer text. A synchronous request guard prevents
+duplicate submissions. Offline, read-only and unavailable-server states disable
+the shortcuts; locked floors show an actionable error.
+
+The server supplies complete-floor diagnostics for floor review/improvement
+requests. `review_floor` checks all furniture, hosted openings and room access,
+including entities omitted from the capped `inspect_level` summary. Diagnostics
+are bounded in transport (80 findings) with the complete count retained. They
+are architectural checks, not code certification. Existing typed edits,
+validation, revision checks, Preview, Apply and Undo still own all mutations.
+A review finding no supported correction may explain its findings without
+creating a fabricated model change; no new run status or migration is required.
+
+Verification: deterministic integration tests exercise a misplaced sofa after
+20 other furniture entries for both shortcuts, checking private preview and
+Apply persistence. Live Gemini checks on an authored test floor prepared valid
+corrections for Review (10.2 seconds) and Improve (16.1 seconds). Those times are
+individual measured requests, not a latency guarantee. No private plan was sent
+for these checks.

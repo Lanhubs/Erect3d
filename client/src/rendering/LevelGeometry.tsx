@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import { DoubleSide } from 'three'
 import type { Level, Selection } from '../domain/types'
 import { DoorMesh } from './DoorMesh'
 import { WallMesh } from './WallMesh'
@@ -10,7 +9,8 @@ import { StairMesh } from './StairMesh'
 import { RampMesh } from './RampMesh'
 import { SeatingMesh } from './SeatingMesh'
 import { ArchitecturalDetailMesh } from './ArchitecturalDetailMesh'
-import { wallBoundsPoints } from '../geometry/math'
+import { ceilingPlan } from '../geometry/ceilings'
+import { CeilingSurface } from './CeilingSurface'
 import { VerandaMesh } from './VerandaMesh'
 import { FurnitureMeshes } from '../furniture/FurnitureMeshes'
 import { ArchitectureFacade, batchedFacadeIds } from './ArchitectureFacade'
@@ -58,26 +58,13 @@ export function LevelGeometry({
     [optimized, level.details, generatedIds, selection?.id],
   )
   const railIds = useMemo(() => new Set(rails.map((detail) => detail.id)), [rails])
-  const points = wallBoundsPoints(level.walls)
-  const bounds = points.length
-    ? {
-        minX: Math.min(...points.map((point) => point.x)),
-        maxX: Math.max(...points.map((point) => point.x)),
-        minZ: Math.min(...points.map((point) => point.z)),
-        maxZ: Math.max(...points.map((point) => point.z)),
-      }
-    : null
-  const height = Math.max(2.7, ...level.walls.map((wall) => wall.height))
   const floorOpenings = useMemo(
     () => level.slabs?.flatMap((slab) => slab.openings.map((opening) => opening.polygon)) || [],
     [level.slabs],
   )
-  const nextLevel = levels
-    .filter((item) => item.elevation > level.elevation)
-    .sort((a, b) => a.elevation - b.elevation)[0]
-  const ceilingOpenings = useMemo(
-    () => nextLevel?.slabs?.flatMap((slab) => slab.openings.map((opening) => opening.polygon)) || [],
-    [nextLevel?.slabs],
+  const ceilings = useMemo(
+    () => (ceiling || walk || roofShown ? ceilingPlan(level, levels) : []),
+    [ceiling, walk, roofShown, level, levels],
   )
   return (
     <>
@@ -149,31 +136,9 @@ export function LevelGeometry({
         .map((detail) => (
           <ArchitecturalDetailMesh key={detail.id} detail={detail} selection={selection} select={select} />
         ))}
-      {(ceiling || walk) &&
-        level.rooms.length > 0 &&
-        level.rooms
-          .filter(
-            (room) =>
-              room.category !== 'football-pitch' &&
-              room.category !== 'table-tennis-hall' &&
-              room.category !== 'basketball-court',
-          )
-          .map((room) => (
-            <RoomSurface key={`ceiling-${room.id}`} room={room} openings={ceilingOpenings} ceiling />
-          ))}
-      {(ceiling || walk) &&
-        level.autoSlab !== false &&
-        level.rooms.length === 0 &&
-        bounds &&
-        !ceilingOpenings.length && (
-          <mesh
-            position={[(bounds.minX + bounds.maxX) / 2, height + 0.04, (bounds.minZ + bounds.maxZ) / 2]}
-            receiveShadow
-          >
-            <boxGeometry args={[bounds.maxX - bounds.minX, 0.08, bounds.maxZ - bounds.minZ]} />
-            <meshStandardMaterial color="#e4e1d8" roughness={0.95} side={DoubleSide} />
-          </mesh>
-        )}
+      {ceilings.map((panel) => (
+        <CeilingSurface key={`ceiling-${panel.room.id}`} {...panel} />
+      ))}
     </>
   )
 }

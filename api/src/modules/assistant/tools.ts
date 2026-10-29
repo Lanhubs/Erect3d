@@ -6,7 +6,27 @@ import { EditWorkspace } from './edits'
 import { collections, findTarget, describeSchema } from './entities'
 import { scopeContext } from './scope'
 import { furnitureTypes } from '../../../../client/src/furniture/types'
+import { designFloor, floorDesign } from './design-floor'
+import { reviewFloor } from './floor-review'
+import { findElements } from './find-elements'
+import { buildingDesign } from './building-design-schema'
+import { designBuilding } from './design-building'
 const definitions = {
+  design_building: {
+    description:
+      'Prepare an entire new building from the creation brief in ONE atomic operation: actual layouts for every storey, connected stairs, roofs, architectural style/details and furniture. Requires Whole building creation intent. Floor refs and exact room names resolve server IDs. Reserve aligned clear stair halls on adjacent floors. The first floor starts at elevation zero; elevations stack automatically by floor height. Existing saved geometry is replaced only on approved Apply, with Undo.',
+    schema: buildingDesign,
+  },
+  review_floor: {
+    description:
+      'Check the COMPLETE target floor for misplaced furniture, blocked stairs/floor openings, missing room access and invalid hosted openings. Returns exact affected IDs, entities and counts; no edits are applied.',
+    schema: z.object({ levelId: id }).strict(),
+  },
+  design_floor: {
+    description:
+      'Author a complete editable layout on an EMPTY floor, without a source image. Provide actual room polygons and shared wall spans in metres, a unique ref per wall, and all doors/windows with hostRef. Interior doors must join rooms and exterior access must be included. The server resolves IDs and builds slabs from the exact room union, preserving courtyard holes. Existing layouts require edit_model. Additional floors use Whole building scope.',
+    schema: floorDesign,
+  },
   inspect_model: {
     description:
       'Get building/floor names, dimensions, selection, roof and linked floor groups. Read this before editing.',
@@ -54,6 +74,9 @@ export function executeTool(work: EditWorkspace, name: string, args: unknown) {
   if (!(name in definitions)) throw new Error('Unsupported assistant tool')
   const input: any = definitions[name as keyof typeof definitions].schema.parse(args)
   const { building, level } = scopeContext(work.document, work.scope)
+  if (name === 'design_floor') return designFloor(work, input)
+  if (name === 'design_building') return designBuilding(work, input)
+  if (name === 'review_floor') return reviewFloor(work, input.levelId)
   if (name === 'inspect_model')
     return {
       units: 'metres',
@@ -120,29 +143,7 @@ export function executeTool(work: EditWorkspace, name: string, args: unknown) {
       note: 'Collections are capped here; request a specific collection to paginate the rest. Prefer connect-stair to create its upper slab opening together.',
     }
   }
-  if (name === 'find_elements') {
-    const query = input.query.toLowerCase(),
-      matches: any[] = []
-    for (const floor of building.levels) {
-      if (`${floor.name} ${floor.id}`.toLowerCase().includes(query))
-        matches.push({ kind: 'level', id: floor.id, name: floor.name })
-      for (const [kind, collection] of Object.entries(collections))
-        for (const e of (floor as any)[collection] || [])
-          if (`${e.id} ${e.name || ''} ${e.type || ''} ${kind}`.toLowerCase().includes(query))
-            matches.push({ kind, levelId: floor.id, element: e })
-    }
-    for (const e of building.systems?.systems || [])
-      if (`${e.id} ${e.name} ${e.kind}`.toLowerCase().includes(query))
-        matches.push({ kind: 'system', element: e })
-    const kinds = [...new Set(matches.slice(0, 100).map((m) => m.kind as keyof typeof collections))].filter(
-      (k) => k in collections,
-    )
-    return {
-      items: matches.slice(0, 100),
-      total: matches.length,
-      schemas: Object.fromEntries(kinds.slice(0, 3).map((k) => [k, describeSchema(k)])),
-    }
-  }
+  if (name === 'find_elements') return findElements(work, input.query)
   if (name === 'edit_model') {
     const before = structuredClone(work.document),
       allowed = new Set(work.allowed),

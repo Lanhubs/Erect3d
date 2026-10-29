@@ -51,6 +51,8 @@ export function Workspace({
   assistantOpen,
   previewing = false,
   previewControls,
+  previewLevelId,
+  wholeBuildingRequest,
 }: {
   project: Project
   back: () => void
@@ -62,6 +64,8 @@ export function Workspace({
   assistantOpen?: boolean
   previewing?: boolean
   previewControls?: ReactNode
+  previewLevelId?: string
+  wholeBuildingRequest?: string
 }) {
   const selection = useProject((s) => s.selection),
     select = useProject((s) => s.setSelection)
@@ -76,8 +80,9 @@ export function Workspace({
     redo = useProject((s) => s.redo)
   const dirty = useProject((s) => s.dirty),
     save = useProjectAutosave(project)
-  const activeLevelId = useProject((s) => s.activeLevelId),
+  const savedActiveLevelId = useProject((s) => s.activeLevelId),
     analysis = useAnalysis()
+  const activeLevelId = previewLevelId || savedActiveLevelId
   const [localAnalysisMode, setLocalAnalysisMode] = useState(false),
     backend = Boolean(onBackendAnalysis) || !localAnalysisMode
   const { source, url, error, pages, busy, importFile, selectPage } = usePlanSource(
@@ -460,6 +465,7 @@ export function Workspace({
               >
                 <Viewer
                   building={project.buildings[0]}
+                  wholeBuildingRequest={wholeBuildingRequest}
                   activeLevelId={level.id}
                   isolateId={isolateId}
                   selection={mode === 'present' || previewing ? null : selection}

@@ -15,32 +15,19 @@ import { documentChanges } from '../../../client'
 import { validateEdits } from './validation'
 import { setBuildingRoof } from '../../../../client/src/domain/roofDesign'
 import { effectiveRoofSections } from '../../../../client/src/domain/roofCoverage'
-const protectedFields = new Set([
-  'id',
-  'sourceId',
-  'calibration',
-  'alignment',
-  'locked',
-  'visible',
-  'sourceDetectionId',
-])
-const levelFields = new Set([
-  'name',
-  'elevation',
-  'floorToFloorHeight',
-  'slabThickness',
-  'autoRoof',
-  'autoSlab',
-  'roof',
-])
+import { protectedFields, levelFields } from './edit-fields'
+import type { buildingCreationBrief } from '../../../../client/src/domain/assistantCreation'
 export class EditWorkspace {
   document: Project
   descriptions: string[] = []
   allowed: Set<string>
+  creation?: ReturnType<typeof buildingCreationBrief>
+  focusLevelId?: string
   constructor(
     readonly original: Project,
     readonly scope: AssistantScope,
   ) {
+    this.scope = { ...scope }
     this.document = structuredClone(original)
     this.allowed = scopeContext(original, scope).allowed
   }
@@ -224,6 +211,12 @@ export class EditWorkspace {
     const changes = documentChanges(this.original, document)
     if (!changes.length) throw new ApiError(422, 'ASSISTANT_EMPTY', 'No model changes were prepared')
     if (changes.length > 512) throw new ApiError(422, 'ASSISTANT_SIZE', 'Request a smaller group of changes')
-    return { document, changes, descriptions: this.descriptions, allowedIds: [...this.allowed] }
+    return {
+      document,
+      changes,
+      descriptions: this.descriptions,
+      allowedIds: [...this.allowed],
+      ...(this.focusLevelId ? { focusLevelId: this.focusLevelId } : {}),
+    }
   }
 }

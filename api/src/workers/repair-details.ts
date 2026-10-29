@@ -4,6 +4,7 @@ import type { ModelQuality } from '../modules/plan-analysis/quality'
 import { repairContext } from './repair-context'
 import { prepareAiImage } from './ai-image'
 import { labelRepairTargets } from './label-targets'
+import { spaceRepairTargets } from './space-targets'
 
 // Keep the full original and add a bounded number of lossless native-pixel
 // close-ups. Quadrants alone leave small door jambs hard to distinguish.
@@ -19,6 +20,7 @@ export async function repairSourceContext(
   const targets = [
     ...proposal.candidates.filter((candidate) => failed.has(candidate.id)),
     ...labelRepairTargets(proposal, failed),
+    ...spaceRepairTargets(quality),
   ]
   const regions: NonNullable<IntelligenceInput['details']>[number]['region'][] = []
   for (const target of targets) {

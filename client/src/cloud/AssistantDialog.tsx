@@ -3,6 +3,7 @@ import { useOverlay } from '../app/useOverlay'
 import type { useAssistant } from './useAssistant'
 import './assistant.css'
 import { FiArrowLeft, FiArrowRight } from 'react-icons/fi'
+import { assistantStarters, type AssistantStarter } from './assistantStarters'
 export type AssistantState = ReturnType<typeof useAssistant>
 export function AssistantDialog({
   assistant: a,
@@ -73,24 +74,16 @@ export function AssistantDialog({
                 Choose part of the model and describe the result you want. You can review every change before
                 applying it.
               </p>
-              <button
-                onClick={() =>
-                  a.setDraft(
-                    'Review this floor and propose corrections to any misplaced furniture or disconnected openings.',
-                  )
-                }
-              >
-                Review this floor
-              </button>
-              <button
-                onClick={() =>
-                  a.setDraft(
-                    'Suggest a coordinated roof design that fits this building and preserves its courtyards.',
-                  )
-                }
-              >
-                Improve the roof
-              </button>
+              {(Object.keys(assistantStarters) as AssistantStarter[]).map((starter) => (
+                <button
+                  key={starter}
+                  type="button"
+                  disabled={a.busy || a.pending || !a.online || a.readOnly || a.enabled === false}
+                  onClick={() => void a.start(starter)}
+                >
+                  {assistantStarters[starter].label}
+                </button>
+              ))}
             </div>
           )}
         </div>
@@ -117,11 +110,18 @@ export function AssistantDialog({
             )}
             {ready && (
               <>
-                <p className="assistant-proposal-note">Nothing has been applied.</p>
+                <p className="assistant-proposal-note">
+                  The proposed model is ready. Apply to save it, or describe a change.
+                </p>
                 <div className="assistant-proposal-actions">
-                  <button className="primary" onClick={preview}>
-                    Preview changes
+                  <button
+                    className="primary"
+                    disabled={a.busy || !a.online || a.readOnly}
+                    onClick={() => void a.apply()}
+                  >
+                    Apply changes
                   </button>
+                  <button onClick={preview}>Preview changes</button>
                   <button disabled={a.busy || !a.online} onClick={() => void a.cancel()}>
                     Discard
                   </button>
@@ -167,7 +167,7 @@ export function AssistantDialog({
         </div>
         <p className="assistant-context">
           {a.scope?.mode === 'building' ? a.building?.name : a.level?.name}
-          {a.scope?.mode === 'selection' ? ' · selected element' : ''}
+          {a.scope?.mode === 'selection' ? ` · ${a.selectionName || 'selected element'}` : ''}
           {a.targetFromMessage ? ' · from your message' : ''}
         </p>
         {a.level?.sourceId && (

@@ -13,6 +13,7 @@ import { scopeContext } from './scope'
 import { assistantEvent } from './events'
 import { assistantModel } from './provider'
 import { resolveAssistantFloor } from '../../../../client/src/domain/assistantFloor'
+import { creationScope } from '../../../../client/src/domain/assistantCreation'
 export async function requestAssistant(
   db: Database,
   config: Config,
@@ -28,10 +29,11 @@ export async function requestAssistant(
       snapshot = await loadDocument(tx, projectId)
     if (snapshot.revision !== input.baseRevision)
       throw new ApiError(409, 'REVISION_CONFLICT', 'Sync the current model before sending this request')
-    const context = scopeContext(snapshot.document, input.scope)
-    const target = resolveAssistantFloor(context.building, input.scope, input.message)
+    const intendedScope = creationScope(snapshot.document, input.scope, input.message)!
+    const context = scopeContext(snapshot.document, intendedScope)
+    const target = resolveAssistantFloor(context.building, intendedScope, input.message)
     if (target.question) throw new ApiError(422, 'ASSISTANT_TARGET', target.question)
-    const scope = { ...input.scope, levelId: target.levelId }
+    const scope = { ...intendedScope, levelId: target.levelId }
     const { level } = scopeContext(snapshot.document, scope)
     if (level.locked) throw new ApiError(409, 'LEVEL_LOCKED', 'Unlock this floor before requesting changes')
     for (const sourceId of input.planSourceIds) {

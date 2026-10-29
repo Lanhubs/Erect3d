@@ -62,6 +62,7 @@ function ViewerComponent({
   active = true,
   onWalkChange,
   previewOnly = false,
+  wholeBuildingRequest,
 }: {
   building: Building
   activeLevelId: string
@@ -76,6 +77,7 @@ function ViewerComponent({
   active?: boolean
   onWalkChange?: (walking: boolean) => void
   previewOnly?: boolean
+  wholeBuildingRequest?: string
   benchmark?: {
     renderer: RendererChoice
     optimized: boolean
@@ -111,6 +113,9 @@ function ViewerComponent({
       : 'current',
   )
   const previousLevelCount = useRef(building.levels.length)
+  useEffect(() => {
+    if (wholeBuildingRequest) setBuildingView('building')
+  }, [wholeBuildingRequest])
   const [sectionHeight, setSectionHeight] = useState<number | null>(null),
     [verticalSection, setVerticalSection] = useState<number | null>(null)
   const [quality, setQuality] = useState<'auto' | 'performance' | 'balanced' | 'high'>(

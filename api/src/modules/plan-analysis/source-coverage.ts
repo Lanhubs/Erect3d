@@ -14,7 +14,7 @@ function edgeDistance(p: Point, a: Point, b: Point) {
 const boundaryDistance = (p: Point, ring: Point[]) =>
   Math.min(...ring.map((a, i) => edgeDistance(p, a, ring[(i + 1) % ring.length])))
 export function sourceCoverage(
-  proposal: Intelligence,
+  proposal: Pick<Intelligence, 'understanding' | 'candidates'>,
   project: Project,
   levelId: string,
   dimensions?: { width: number; height: number },

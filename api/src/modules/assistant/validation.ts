@@ -3,12 +3,24 @@ import { ApiError } from '../../security/errors'
 import { validFootprint } from '../../../../client/src/domain/elementEditing'
 import { containsPolygon } from '../../../../client/src/geometry/polygons'
 import { stairPlacementValid } from '../../../../client/src/geometry/stairPlacement'
+import { furnitureFootprint } from '../../../../client/src/furniture/entities'
 // Preserve pre-existing geometry, but require edited footprints and affected stairs to fit.
 export function validateEdits(before: Project, after: Project) {
   for (const building of after.buildings) {
     const original = before.buildings.find((b) => b.id === building.id)
     for (const level of building.levels) {
       const previous = original?.levels.find((l) => l.id === level.id)
+      for (const item of level.furniture || []) {
+        const old = previous?.furniture?.find((e) => e.id === item.id)
+        if (JSON.stringify(item) === JSON.stringify(old) || !item.roomId) continue
+        const room = level.rooms.find((room) => room.id === item.roomId)
+        if (!room || !containsPolygon(room.polygon, furnitureFootprint(item)))
+          throw new ApiError(
+            422,
+            'ASSISTANT_GEOMETRY',
+            'Place the entire furniture footprint inside its target room, with clear circulation.',
+          )
+      }
       for (const item of [...level.rooms, ...(level.slabs || [])]) {
         const old = [...(previous?.rooms || []), ...(previous?.slabs || [])].find((e) => e.id === item.id)
         if (JSON.stringify(item) === JSON.stringify(old)) continue

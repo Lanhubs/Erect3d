@@ -10,6 +10,10 @@ import { pendingRun } from './assistantTypes'
 import { applyAssistantProposal, finishAssistantApply } from './assistantApply'
 import { resolveAssistantFloor } from '../domain/assistantFloor'
 import { assistantRequestId } from './assistantDelivery'
+import { approvesAssistantProposal } from './assistantIntent'
+import { assistantSelection } from '../domain/assistantSelection'
+import { assistantStarterRequest, type AssistantStarter } from './assistantStarters'
+import { creationScope } from '../domain/assistantCreation'
 export function useAssistant(userId: string, projectId: string, session: CloudSession, open: boolean) {
   const key = `${userId}/assistant/${projectId}`,
     path = `/projects/${projectId}/assistant`
@@ -39,9 +43,16 @@ export function useAssistant(userId: string, projectId: string, session: CloudSe
     selection = useProject((s) => s.selection),
     readOnly = useProject((s) => s.readOnly),
     dirty = useProject((s) => s.dirty)
+  const selected = assistantSelection(project, selection)
+  const usingSelection = choice === 'selection' || (!choice && !!selection)
   const building =
-      project?.buildings.find((b) => b.levels.some((l) => l.id === activeId)) || project?.buildings[0],
-    activeLevel = building?.levels.find((l) => l.id === activeId) || building?.levels[0]
+      (usingSelection && selected?.building) ||
+      project?.buildings.find((b) => b.levels.some((l) => l.id === activeId)) ||
+      project?.buildings[0],
+    activeLevel =
+      (usingSelection && selected?.level) ||
+      building?.levels.find((l) => l.id === activeId) ||
+      building?.levels[0]
   const previousActive = useRef(activeId)
   useEffect(() => {
     if (previousActive.current !== activeId) setTargetFloorId(null)
@@ -62,8 +73,9 @@ export function useAssistant(userId: string, projectId: string, session: CloudSe
             : {}),
         }
       : undefined
-  const target = building && baseScope ? resolveAssistantFloor(building, baseScope, draft) : undefined
-  const scope = baseScope && { ...baseScope, levelId: target?.levelId || baseScope.levelId }
+  const intendedScope = creationScope(project, baseScope, draft)
+  const target = building && intendedScope ? resolveAssistantFloor(building, intendedScope, draft) : undefined
+  const scope = intendedScope && { ...intendedScope, levelId: target?.levelId || intendedScope.levelId }
   const level = building?.levels.find((level) => level.id === scope?.levelId)
   const referenceName =
     project?.sources.find((source) => source.id === level?.sourceId)?.name || 'this floor’s imported plan'
@@ -148,7 +160,10 @@ export function useAssistant(userId: string, projectId: string, session: CloudSe
       window.removeEventListener('offline', connected)
     }
   }, [projectId, refresh])
+  const actionPending = useRef(false)
   const action = async (fn: () => Promise<void>) => {
+    if (actionPending.current) return
+    actionPending.current = true
     setBusy(true)
     setError('')
     try {
@@ -156,31 +171,47 @@ export function useAssistant(userId: string, projectId: string, session: CloudSe
     } catch (e) {
       setError((e as Error).message)
     } finally {
+      actionPending.current = false
       setBusy(false)
     }
   }
-  const send = () =>
+  const send = (request?: { message: string; scope?: AssistantScope; fresh?: boolean }) =>
     action(async () => {
-      if (!scope || !draft.trim() || readOnly || !online)
+      const message = (request?.message ?? draft).trim()
+      const requestScope = request?.scope || scope
+      if (!request && approvesAssistantProposal(message, thread.run)) {
+        if (stale) throw new Error('The model changed. Prepare a new proposal before applying.')
+        await applyAssistantProposal(session, key, projectId, thread.run!)
+        if (!request) setDraft('')
+        await refresh()
+        return
+      }
+      if (!requestScope || !message || readOnly || !online)
         throw new Error('Connect and choose an editable part of the building first.')
-      if (target?.question) throw new Error(target.question)
-      if (scope.mode === 'selection' && !scope.entityId)
+      if (!request?.scope && target?.question) throw new Error(target.question)
+      if (requestScope.mode === 'selection' && !requestScope.entityId)
         throw new Error('Select an element or choose This floor.')
       const engine = session.engine
       if (!engine) throw new Error('This project is read only.')
       await engine.sync()
       if (engine.state !== 'saved') throw new Error('Resolve pending edits before sending this request.')
       const previous =
+        !request?.fresh &&
         thread.run?.status === 'ready' &&
         thread.run.base_revision === engine.record.base.revision &&
-        JSON.stringify(thread.run.scope) === JSON.stringify(scope)
+        JSON.stringify(thread.run.scope) === JSON.stringify(requestScope)
           ? thread.run.id
           : undefined
       const input = {
-        message: draft.trim(),
-        scope,
+        message,
+        scope: requestScope,
         baseRevision: engine.record.base.revision,
-        planSourceIds: attach && level?.sourceId ? [level.sourceId] : [],
+        planSourceIds: attach
+          ? project?.buildings
+              .flatMap((b) => b.levels)
+              .filter((l) => l.id === requestScope.levelId && l.sourceId)
+              .map((l) => l.sourceId!) || []
+          : [],
         previousRunId: previous,
       }
       const old = await getTask<{ input: typeof input; id: string } | null>(`${key}/send`),
@@ -192,8 +223,8 @@ export function useAssistant(userId: string, projectId: string, session: CloudSe
         await putTask(`${key}/send`, null).catch(() => {})
         const run = await api.request<AssistantRun>(`${path}/runs/${result.runId}`)
         setThread((before) => ({ ...before, run }))
-        if (scope.mode === 'level') setTargetFloorId(scope.levelId)
-        setDraft('')
+        if (requestScope.mode === 'level') setTargetFloorId(requestScope.levelId)
+        if (!request) setDraft('')
         await refresh()
       } catch (e) {
         await refresh().catch(() => {})
@@ -242,6 +273,7 @@ export function useAssistant(userId: string, projectId: string, session: CloudSe
     level,
     building,
     referenceName,
+    selectionName: selected?.name,
     error,
     busy,
     enabled,
@@ -250,6 +282,16 @@ export function useAssistant(userId: string, projectId: string, session: CloudSe
     stale,
     pending: pendingRun(thread.run),
     send,
+    start: (starter: AssistantStarter) => {
+      try {
+        const request = assistantStarterRequest(project, activeId, starter)
+        setChoice('level')
+        setTargetFloorId(request.scope.levelId)
+        return send(request)
+      } catch (e) {
+        setError((e as Error).message)
+      }
+    },
     cancel,
     apply,
     refresh: () =>

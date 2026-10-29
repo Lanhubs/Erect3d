@@ -12,6 +12,9 @@ import { loadDocument } from '../projects/documents'
 import { authorize } from '../../security/permissions'
 import { ApiError } from '../../security/errors'
 import { validateDocumentSize } from '../projects/size'
+import { claimsPreparedChanges, editingContext } from './context'
+import { buildingCreationBrief } from '../../../../client/src/domain/assistantCreation'
+import { resumeAssistantProposal } from './resume'
 const errorText = (error: unknown) =>
   error instanceof Error ? error.message.slice(0, 800) : 'The proposed change could not be checked'
 export async function runAssistant(
@@ -48,29 +51,16 @@ export async function runAssistant(
       )
     const work = new EditWorkspace(snapshot.document, run.scope)
     const previousId = (job.payload as { previousRunId?: string }).previousRunId
-    if (previousId) {
-      const [previous] =
-        await db`SELECT proposal FROM assistant_runs WHERE id=${previousId} AND project_id=${run.project_id} AND actor_id=${actor.id} AND base_revision=${run.base_revision} AND status='ready'`
-      if (!previous?.proposal)
-        throw new ApiError(409, 'ASSISTANT_STALE', 'The earlier proposal is no longer available')
-      work.document = structuredClone(previous.proposal.document)
-      work.descriptions = [...previous.proposal.descriptions]
-      for (const id of previous.proposal.allowedIds || []) work.allowed.add(id)
-    }
+    if (previousId) await resumeAssistantProposal(db, work, run, previousId)
+    const inheritedCount = work.descriptions.length
     const messages =
       await db`SELECT role,content FROM assistant_messages WHERE thread_id=${run.thread_id} ORDER BY id DESC LIMIT 16`
+    work.creation = buildingCreationBrief(messages.find((m: any) => m.role === 'user')?.content || '')
     const parts: any[] = [
       {
-        text: JSON.stringify({
-          scope: run.scope,
-          buildingId: run.scope.buildingId,
-          activeLevelId: run.scope.levelId,
-          units: 'metres',
-          model: executeTool(work, 'inspect_model', {}),
-          targetFloor: executeTool(work, 'inspect_level', { levelId: run.scope.levelId }),
-          furnitureCatalog: executeTool(work, 'inspect_schema', { kind: 'furniture' }),
-          note: 'This is the actual current working model summary. Batch any further inspections and schemas together. You have only three model responses. Earlier proposals are conversation context only.',
-        }),
+        text: JSON.stringify(
+          editingContext(work, messages.find((m: any) => m.role === 'user')?.content || ''),
+        ),
       },
     ]
     for (const sourceId of run.plan_source_ids) {
@@ -140,6 +130,22 @@ export async function runAssistant(
         }
       if (responses.length) history.push({ role: 'user', parts: responses })
       if (!responses.length || round === 2) {
+        if (
+          !responses.length &&
+          work.descriptions.length === inheritedCount &&
+          claimsPreparedChanges(text) &&
+          round < 2
+        ) {
+          history.push({
+            role: 'user',
+            parts: [
+              {
+                text: 'No new edit_model command has succeeded in this request. A written description is not a model change. Prepare the actual requested edits now with edit_model and validate_model, or ask a focused question. Do not repeat a readiness claim.',
+              },
+            ],
+          })
+          continue
+        }
         if (!work.descriptions.length) {
           if (responses.length && round === 2)
             throw new ApiError(
@@ -149,7 +155,9 @@ export async function runAssistant(
             )
           await finish(
             'clarification',
-            text || 'Which part of the building would you like to improve?',
+            claimsPreparedChanges(text)
+              ? 'No model edits were prepared. Please describe the change and its target again; your model is unchanged.'
+              : text || 'Which part of the building would you like to improve?',
             undefined,
             usage,
           )
@@ -170,7 +178,9 @@ export async function runAssistant(
           }
           await finish(
             'ready',
-            text || 'The proposed changes are ready to preview. Nothing has been applied.',
+            work.descriptions.length === inheritedCount
+              ? 'The earlier proposal is unchanged. Review its visible preview and choose Apply changes to save it.'
+              : text || 'The proposed changes are ready to preview. Nothing has been applied.',
             proposal,
             usage,
           )

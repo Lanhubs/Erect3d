@@ -2,7 +2,9 @@ import type { Candidate, Intelligence } from '../contracts/analysis'
 import type { IntelligenceInput } from '../modules/ai/provider'
 import type { ModelQuality } from '../modules/plan-analysis/quality'
 import { labelRepairTargets } from './label-targets'
+import { spaceRepairTargets } from './space-targets'
 const coverageCodes = [
+  'UNASSIGNED_ENCLOSURE',
   'SOURCE_LABEL_UNACCOUNTED',
   'SOURCE_SPACE_UNMODELED',
   'SOURCE_SPACE_MISNAMED',
@@ -36,6 +38,7 @@ export function repairContext(
   const targets = [
     ...proposal.candidates.filter((candidate) => failed.has(candidate.id)),
     ...labelRepairTargets(proposal, failed),
+    ...spaceRepairTargets(quality),
   ]
   const anchors = targets.flatMap((candidate) => candidate.points)
   const hosts = new Set(targets.map((candidate) => candidate.wallId).filter(Boolean))

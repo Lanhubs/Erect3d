@@ -1,5 +1,5 @@
 import { LoadingState } from '../app/LoadingState'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Workspace } from '../app/Workspace'
 import { useProject } from '../state/project'
 import { useCloudProject } from './useCloudProject'
@@ -31,6 +31,18 @@ export function CloudWorkspace({
     [preview, setPreview] = useState(false),
     [proposed, setProposed] = useState(true)
   const assistant = useAssistant(user.id, projectId, session, chat)
+  const shownProposal = useRef<string | null>(null)
+  useEffect(() => {
+    const run = assistant.thread.run
+    if (!run?.proposal || run.status !== 'ready' || assistant.stale || shownProposal.current === run.id)
+      return
+    shownProposal.current = run.id
+    useProject.getState().setTool('select')
+    if (run.proposal.focusLevelId) useProject.getState().setView('model')
+    setChat(false)
+    setProposed(true)
+    setPreview(true)
+  }, [assistant.thread.run, assistant.stale])
   const editLocked = useProject((state) => state.editLocked)
   const previewDocument =
     preview && !assistant.stale && assistant.thread.run?.status === 'ready'
@@ -100,6 +112,14 @@ export function CloudWorkspace({
     <div className="cloud-workspace" key={generation}>
       <Workspace
         project={previewDocument && proposed ? previewDocument : project}
+        previewLevelId={
+          previewDocument && proposed ? assistant.thread.run?.proposal?.focusLevelId : undefined
+        }
+        wholeBuildingRequest={
+          previewDocument && assistant.thread.run?.proposal?.focusLevelId
+            ? assistant.thread.run.id
+            : undefined
+        }
         back={() => {
           void back()
         }}

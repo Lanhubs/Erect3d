@@ -12,6 +12,7 @@ export async function finishAssistantApply(session: CloudSession, key: string, r
     if (engine.state !== 'saved')
       throw new Error('Review the current sync state before completing this change.')
     useProject.getState().rememberAccepted(task.before)
+    if (run.proposal?.focusLevelId) useProject.getState().setActiveLevel(run.proposal.focusLevelId)
     await putTask(`${key}/apply`, { ...task, historyRecorded: true })
   })
 }

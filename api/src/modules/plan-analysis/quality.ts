@@ -5,9 +5,16 @@ import { sourceCoverage } from './source-coverage'
 import { openingCoverage } from './opening-coverage'
 import { fixtureCoverage } from './fixture-coverage'
 import { labelCoverage } from './label-coverage'
+import { spaceCoverage } from './space-coverage'
 export type ModelQuality = {
   status: 'ready' | 'needs-review' | 'blocked'
-  issues: { code: string; severity: 'warning' | 'error'; message: string; candidateId?: string }[]
+  issues: {
+    code: string
+    severity: 'warning' | 'error'
+    message: string
+    candidateId?: string
+    sourceRegion?: { x: number; y: number; width: number; height: number }
+  }[]
 }
 export function modelQuality(
   proposal: Intelligence,
@@ -80,6 +87,7 @@ export function modelQuality(
       'NO_ROOMS',
       'The wall network has no enclosed spaces. Review joins or room polygons before accepting.',
     )
+  if (level) issues.push(...spaceCoverage(level, dimensions))
   if (project && levelId)
     issues.push(...sourceCoverage(proposal, project, levelId, manualScale ? undefined : dimensions))
   if (project && levelId) issues.push(...openingCoverage(proposal, project, levelId, dimensions))
