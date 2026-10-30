@@ -3,18 +3,18 @@
 This report maps repository improvements to the supplied 39.1 assessment. A new score or
 offer is determined by the external reviewer; neither is guaranteed by these changes.
 
-| Finding                        | Remediation / evidence                                                                  |
-| ------------------------------ | --------------------------------------------------------------------------------------- |
-| Missing root onboarding        | Root README, contribution/security guides, changelog and configuration examples         |
-| No reproducible install        | Bun 1.4.2, independent committed locks and frozen installation commands                 |
-| No active CI                   | `.github/workflows/ci.yml`: lint, format, types, tests, coverage, builds and security   |
-| Backend tests difficult to run | Explicit disposable test database, migration command and service health checks          |
-| No lint/format enforcement     | Existing Oxlint extended to packages; separate Prettier normalization and checks        |
-| No coverage enforcement        | Measured package baselines, LCOV artifacts and documented instrumentation scope         |
-| No dependency maintenance      | Manual-review Renovate configuration and high/critical advisory checks                  |
-| Missing logging/error tracking | Existing logger strengthened; correlated safe failures and optional self-hosted OTLP    |
-| No containers                  | Existing backend Dockerfile retained; root Compose adds API/worker and separate test DB |
-| Short or single-author history | Genuine future maintenance only; no synthetic history or contributor identities         |
+| Finding                        | Remediation / evidence                                                                |
+| ------------------------------ | ------------------------------------------------------------------------------------- |
+| Missing root onboarding        | Root README, contribution/security guides, changelog and configuration examples       |
+| No reproducible install        | Bun 1.4.2, independent committed locks and frozen installation commands               |
+| No active CI                   | `.github/workflows/ci.yml`: lint, format, types, tests, coverage, builds and security |
+| Backend tests difficult to run | Explicit disposable test database, migration command and service health checks        |
+| No lint/format enforcement     | Existing Oxlint extended to packages; separate Prettier normalization and checks      |
+| No coverage enforcement        | Measured package baselines, LCOV artifacts and documented instrumentation scope       |
+| No dependency maintenance      | Manual-review Renovate configuration and high/critical advisory checks                |
+| Missing logging/error tracking | Existing logger strengthened; correlated safe failures and optional self-hosted OTLP  |
+| No containers                  | Standard root Dockerfile; Compose adds API/worker, PostgreSQL and a separate test DB  |
+| Short or single-author history | Genuine future maintenance only; no synthetic history or contributor identities       |
 
 The supplied scanner missed some existing files: API/client Bun locks, client Oxlint,
 backend Dockerfile, package documentation and structured logging. This change makes

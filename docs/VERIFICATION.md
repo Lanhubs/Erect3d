@@ -5,7 +5,7 @@ command requires `TEST_DATABASE_URL`, overrides migration `DATABASE_URL` only in
 child process, and never migrates a live development database by fallback.
 
 `bun run verify` runs lint, formatting, types, all three package suites and production web
-builds. `bun test scripts/tests` checks repository tooling. CI additionally runs coverage,
+builds. `bun run test:repository` checks repository tooling. CI additionally runs coverage,
 Redis integration, a production API Docker build, dependency audits and secret scanning.
 
 ## Coverage scope and gates

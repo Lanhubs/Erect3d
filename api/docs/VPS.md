@@ -131,11 +131,11 @@ HTTP JSON is limited to 2 MiB. The browser's optimized binary upload route accep
 also supported for other clients. Sensitive API access logs are disabled;
 ensure upstream load balancers and error logging also redact sensitive paths/URLs.
 
-An alternative API/worker container is provided in `deploy/Dockerfile`:
+An alternative API/worker container is provided in the root `Dockerfile`:
 
 ```sh
 # From the repository root:
-docker build -f api/deploy/Dockerfile -t erect3d-api .
+docker build -t erect3d-api .
 docker run --env-file api/.env.production -e HOST=0.0.0.0 -p 127.0.0.1:4000:4000 erect3d-api
 docker run --env-file api/.env.production erect3d-api bun src/workers/index.ts
 ```

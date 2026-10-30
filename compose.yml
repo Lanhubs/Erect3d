@@ -19,7 +19,7 @@ services:
   migrate:
     build:
       context: .
-      dockerfile: api/deploy/Dockerfile
+      dockerfile: Dockerfile
     environment: &api-environment
       NODE_ENV: development
       DATABASE_URL: postgres://erect_dev:local-development-only@postgres:5432/erect_dev
@@ -33,7 +33,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: api/deploy/Dockerfile
+      dockerfile: Dockerfile
     environment: *api-environment
     ports:
       - '127.0.0.1:4000:4000'
@@ -48,7 +48,7 @@ services:
   worker:
     build:
       context: .
-      dockerfile: api/deploy/Dockerfile
+      dockerfile: Dockerfile
     environment: *api-environment
     command: ['bun', 'src/workers/index.ts']
     depends_on:

@@ -51,13 +51,13 @@ jobs:
       - name: Migrate disposable test database
         run: bun run test:prepare
       - name: Test repository tooling
-        run: bun test scripts/tests
+        run: bun run test:repository
       - name: Tests and coverage gates
         run: bun run coverage
       - name: Production web builds
         run: bun run build
       - name: Backend packaging smoke check
-        run: docker build -f api/deploy/Dockerfile -t erect3d-api:ci .
+        run: docker build -t erect3d-api:ci .
       - name: Coverage reports
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

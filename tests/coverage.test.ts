@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { checkBaseline, summarizeLcov } from '../coverage-summary.mjs'
+import { checkBaseline, summarizeLcov } from '../scripts/coverage-summary.mjs'
 
 test('coverage gates exclude foreign imports and fixtures, preserve Windows paths, and reject empty reports', () => {
   const report =

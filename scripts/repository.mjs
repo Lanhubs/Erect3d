@@ -32,7 +32,7 @@ if (task?.startsWith('dev:')) {
   ) {
     throw new Error('Tests require an explicit disposable TEST_DATABASE_URL ending in _test')
   }
-  if (task === 'test') run(['test', 'scripts/tests'])
+  if (task === 'test') run(['run', 'test:repository'])
   for (const directory of packages) run(['run', task], directory)
   if (task === 'typecheck') run(['run', 'check:lines'], 'api')
 } else if (task === 'audit') {

@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
-const root = fileURLToPath(new URL('../../', import.meta.url))
+const root = fileURLToPath(new URL('../', import.meta.url))
 test('test preparation refuses a live database fallback before launching migrations', () => {
   for (const testUrl of ['', 'postgres://fixture:fixture@127.0.0.1:1/live_projects']) {
     const result = spawnSync(process.execPath, ['scripts/test-database.mjs'], {
