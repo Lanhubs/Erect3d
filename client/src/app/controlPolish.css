@@ -352,24 +352,6 @@ body .cloud-page:has(.cloud-signin) {
   flex-direction: column;
 }
 
-body .cloud-page:has(.cloud-signin) .cloud-page-header {
-  width: 100%;
-  max-width: 1120px;
-  margin: 0 auto;
-}
-
-body .cloud-page:has(.cloud-signin) .cloud-page-header h1 {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--control-muted);
-}
-
-body .cloud-page:has(.cloud-signin) .cloud-page-header a {
-  color: var(--brand-strong);
-  text-decoration: none;
-  font-weight: 500;
-}
-
 body .cloud-signin {
   width: min(420px, 100%);
   margin: auto;

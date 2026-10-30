@@ -293,9 +293,32 @@
   color: #af7244;
 }
 
+.card-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0 10px;
+}
+
+.card-icon {
+  display: grid;
+  flex: 0 0 36px;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(160, 106, 61, 0.32);
+  background: rgba(255, 255, 255, 0.28);
+  color: #a06a3d;
+}
+
+.card-icon svg {
+  width: 17px;
+  height: 17px;
+}
+
 .process-card h4,
 .starting-card h4 {
-  margin: 18px 0 10px;
+  margin: 0;
   font-size: 1.35rem;
   line-height: 1.2;
   letter-spacing: -0.04em;
@@ -820,13 +843,12 @@
   }
 
   .landing-header {
-    padding: 18px 0;
     flex-wrap: wrap;
     gap: 14px;
+    padding: 18px 0;
   }
 
   .landing-actions {
-    width: 100%;
     justify-content: flex-start;
   }
 

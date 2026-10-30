@@ -72,10 +72,6 @@ export function CloudRoute({ route, navigate }: { route: string; navigate: (path
     return <CloudDashboard key={`${user.id}:${generation}`} navigate={navigate} />
   return (
     <main className="cloud-page">
-      <header className="cloud-page-header">
-        <a href="/">Erect3D</a>
-        <h1>Projects</h1>
-      </header>
       <AccountPanel />
       {recovering && <p role="status">Recovering your saved draft into your account…</p>}
       {error && <p role="alert">{error}</p>}

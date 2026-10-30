@@ -6,7 +6,6 @@
   min-height: 100dvh;
   color: #26382e;
 }
-.cloud-page-header,
 .cloud-inline,
 .cloud-account,
 .cloud-dialog header,
@@ -15,10 +14,6 @@
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-}
-.cloud-page-header {
-  justify-content: space-between;
-  margin-bottom: 24px;
 }
 .cloud-page nav,
 .cloud-tools nav {

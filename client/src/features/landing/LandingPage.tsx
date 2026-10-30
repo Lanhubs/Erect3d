@@ -1,4 +1,5 @@
 import type { Project } from '../../domain/types'
+import { FiBox, FiEdit3, FiNavigation, FiPenTool, FiPlusSquare, FiUpload } from 'react-icons/fi'
 import { LandingDemo } from './LandingDemo'
 import { ComparisonPreview } from './ComparisonPreview'
 import { CustomizationFeature } from './CustomizationFeature'
@@ -12,18 +13,22 @@ type LandingPageProps = {
 
 const workflow = [
   {
+    icon: FiPenTool,
     title: 'Draw or import',
     text: 'Start with a blank canvas or bring in an existing floor plan.',
   },
   {
+    icon: FiEdit3,
     title: 'Edit the building',
     text: 'Define walls, doors, windows, floors, roofing and other architectural elements.',
   },
   {
+    icon: FiBox,
     title: 'Build in 3D',
     text: 'The same architectural model becomes a complete three-dimensional building.',
   },
   {
+    icon: FiNavigation,
     title: 'Step inside',
     text: 'Explore the result in first-person or inspect it from architectural views.',
   },
@@ -104,7 +109,12 @@ export function LandingPage({ projects, onStartDesigning, onOpenWorkspace }: Lan
           <div className="process-grid">
             {workflow.map((step) => (
               <article className="process-card" key={step.title}>
-                <h4>{step.title}</h4>
+                <div className="card-heading">
+                  <span className="card-icon" aria-hidden="true">
+                    <step.icon />
+                  </span>
+                  <h4>{step.title}</h4>
+                </div>
                 <p>{step.text}</p>
               </article>
             ))}
@@ -134,7 +144,12 @@ export function LandingPage({ projects, onStartDesigning, onOpenWorkspace }: Lan
           <div className="starting-grid">
             <article className="starting-card">
               <div className="starting-topline">CREATE</div>
-              <h4>Start from a blank canvas.</h4>
+              <div className="card-heading">
+                <span className="card-icon" aria-hidden="true">
+                  <FiPlusSquare />
+                </span>
+                <h4>Start from a blank canvas.</h4>
+              </div>
               <p>
                 Draw the plan directly in the browser and shape the building as you refine the architecture.
               </p>
@@ -142,7 +157,12 @@ export function LandingPage({ projects, onStartDesigning, onOpenWorkspace }: Lan
 
             <article className="starting-card">
               <div className="starting-topline">IMPORT</div>
-              <h4>Bring in an existing drawing.</h4>
+              <div className="card-heading">
+                <span className="card-icon" aria-hidden="true">
+                  <FiUpload />
+                </span>
+                <h4>Bring in an existing drawing.</h4>
+              </div>
               <p>
                 Prepare the source scale, reconstruct the plan and continue editing without leaving the
                 workspace.
