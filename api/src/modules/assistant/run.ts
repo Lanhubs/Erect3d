@@ -128,8 +128,13 @@ export async function runAssistant(
           }
           responses.push({ functionResponse: { id: call.id, name: call.name, response: response as object } })
         }
+      const completedBuildingDesign =
+        responses.length === 1 &&
+        responses[0].functionResponse.name === 'design_building' &&
+        'result' in responses[0].functionResponse.response
       if (responses.length) history.push({ role: 'user', parts: responses })
-      if (!responses.length || round === 2) {
+      if (completedBuildingDesign || !responses.length || round === 2) {
+        if (completedBuildingDesign) signal.throwIfAborted()
         if (
           !responses.length &&
           work.descriptions.length === inheritedCount &&

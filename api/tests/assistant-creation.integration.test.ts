@@ -6,8 +6,10 @@ import { buildingDesignFixture } from './building-design-fixture'
 import { loadDocument } from '../src/modules/projects/documents'
 const prompt =
   'craft for me a 2 storey buiding mansion with amazing furnintures in it and also make the building look like a chinese architecture'
+let providerCalls = 0
 const provider: EditingProvider = {
-  async next(_model, history) {
+  async next(_model, history, _tools, signal) {
+    providerCalls++
     const context = JSON.parse(history[0].parts![0].text!)
     expect(context.scope.mode).toBe('building')
     expect(context.creation.storeys).toBe(2)
@@ -23,23 +25,21 @@ const provider: EditingProvider = {
           ],
         },
       }
-    return {
-      text: 'A two-storey Chinese-inspired mansion is ready to review. It would replace this building after Apply. The floors are furnished and joined by stairs.',
-      content: {
-        role: 'model',
-        parts: [{ text: 'A two-storey Chinese-inspired mansion is ready to review.' }],
-      },
-    }
+    await new Promise((_, reject) =>
+      signal.addEventListener('abort', () => reject(signal.reason), { once: true }),
+    )
+    throw Error('Unreachable')
   },
 }
 const h = harness({ editingProvider: provider }),
-  worker = new Worker(h.db, h.config, undefined, undefined, h.metrics, provider)
+  worker = new Worker(h.db, { ...h.config, AI_TIMEOUT_MS: 1000 }, undefined, undefined, h.metrics, provider)
 afterAll(async () => {
   worker.stop()
   h.limits.close()
   await h.db.close()
 })
 test('the exact brief works with no selected element or upper floor, keeps the saved model private, and applies the complete design', async () => {
+  providerCalls = 0
   const user = await account(h.app),
     p = fixture(),
     b = p.buildings[0],
@@ -57,6 +57,8 @@ test('the exact brief works with no selected element or upper floor, keeps the s
   await worker.runOnce(runId)
   const run = await (await request(h.app, user, `${path}/runs/${runId}`)).json()
   expect(run.status).toBe('ready')
+  expect(providerCalls).toBe(1)
+  expect(run.summary).toBe('The proposed changes are ready to preview. Nothing has been applied.')
   expect(run.scope.mode).toBe('building')
   expect(run.proposal.document.buildings[0].levels).toHaveLength(2)
   expect(run.proposal.focusLevelId).toBe(l.id)
