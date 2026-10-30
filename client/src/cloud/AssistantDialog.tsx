@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useOverlay } from '../app/useOverlay'
 import type { useAssistant } from './useAssistant'
 import './assistant.css'
-import { FiArrowLeft, FiArrowRight } from 'react-icons/fi'
+import { FiArrowLeft, FiArrowRight, FiArrowUp } from 'react-icons/fi'
 import { assistantStarters, type AssistantStarter } from './assistantStarters'
 export type AssistantState = ReturnType<typeof useAssistant>
 export function AssistantDialog({
@@ -44,7 +44,7 @@ export function AssistantDialog({
       <header>
         <div>
           <h2>Design assistant</h2>
-          <span>Describe a change to your building.</span>
+          <span>Describe a change · Preview before applying.</span>
         </div>
         <div className="assistant-window-actions">
           <button
@@ -58,6 +58,19 @@ export function AssistantDialog({
           <button aria-label="Close assistant" title="Close assistant" onClick={close}>
             ×
           </button>
+        </div>
+        <div className="assistant-scope" role="group" aria-label="Change scope">
+          {(['selection', 'level', 'building'] as const).map((mode, i) => (
+            <button
+              key={mode}
+              type="button"
+              disabled={a.pending}
+              aria-pressed={a.scope?.mode === mode}
+              onClick={() => a.chooseScope(mode)}
+            >
+              {['Selection', 'This floor', 'Whole building'][i]}
+            </button>
+          ))}
         </div>
       </header>
       <div className="assistant-conversation" role="log" aria-label="Conversation">
@@ -152,19 +165,6 @@ export function AssistantDialog({
           void a.send()
         }}
       >
-        <div className="assistant-scope" aria-label="Change scope">
-          {(['selection', 'level', 'building'] as const).map((mode, i) => (
-            <button
-              key={mode}
-              type="button"
-              disabled={a.pending}
-              aria-pressed={a.scope?.mode === mode}
-              onClick={() => a.chooseScope(mode)}
-            >
-              {['Selection', 'This floor', 'Whole building'][i]}
-            </button>
-          ))}
-        </div>
         <p className="assistant-context">
           {a.scope?.mode === 'building' ? a.building?.name : a.level?.name}
           {a.scope?.mode === 'selection' ? ` · ${a.selectionName || 'selected element'}` : ''}
@@ -184,22 +184,37 @@ export function AssistantDialog({
         <label className="sr-only" htmlFor="assistant-message">
           Describe a change
         </label>
-        <textarea
-          id="assistant-message"
-          aria-label="Describe a change"
-          placeholder="Describe what you want to change…"
-          maxLength={8000}
-          rows={3}
-          value={a.draft}
-          disabled={a.pending}
-          onChange={(e) => a.setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-              e.preventDefault()
-              if (!a.pending && !a.busy) void a.send()
+        <div className="assistant-composer">
+          <textarea
+            id="assistant-message"
+            aria-label="Describe a change"
+            aria-keyshortcuts="Control+Enter Meta+Enter"
+            title="Preview before applying · Ctrl / ⌘ Enter to send"
+            placeholder="Describe what you want to change…"
+            maxLength={8000}
+            rows={3}
+            value={a.draft}
+            disabled={a.pending}
+            onChange={(e) => a.setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault()
+                if (!a.pending && !a.busy) void a.send()
+              }
+            }}
+          />
+          <button
+            type="submit"
+            className="primary assistant-send"
+            aria-label={a.busy ? 'Working…' : 'Send message'}
+            title={a.busy ? 'Working…' : 'Send message · Ctrl / ⌘ Enter'}
+            disabled={
+              a.busy || a.pending || !a.draft.trim() || !a.online || a.readOnly || a.enabled === false
             }
-          }}
-        />
+          >
+            <FiArrowUp aria-hidden="true" />
+          </button>
+        </div>
         {a.error && (
           <p role="alert" className="assistant-error">
             {a.error}
@@ -214,17 +229,6 @@ export function AssistantDialog({
           <p className="assistant-note">The assistant has not been configured on this server.</p>
         )}
         {a.readOnly && <p className="assistant-note">Editing access is required to request changes.</p>}
-        <footer>
-          <span>Preview before applying · Ctrl / ⌘ Enter to send</span>
-          <button
-            className="primary"
-            disabled={
-              a.busy || a.pending || !a.draft.trim() || !a.online || a.readOnly || a.enabled === false
-            }
-          >
-            {a.busy ? 'Working…' : 'Send'}
-          </button>
-        </footer>
       </form>
     </section>
   )
