@@ -5,6 +5,11 @@ import { splitRoofFootprint } from '../src/geometry/roofSections'
 import { fixtureProject } from '../src/domain/fixture'
 import { normalizeProject, wallEnvelope } from '../src/domain/levels'
 import { levelOf } from '../src/domain/types'
+import { roofClosureRings } from '../src/domain/roofCoverage'
+import { clipRoofLayout } from '../src/geometry/roofFootprint'
+import { roofOverhang } from '../src/geometry/roofOverhang'
+import { roofClosurePanels } from '../src/geometry/roofClosure'
+import { softwareRoofs } from '../src/rendering/softwareRoofs'
 import { useProject } from '../src/state/project'
 
 const bounds = { minX: 0, maxX: 12, minZ: 0, maxZ: 8, top: 2.9 }
@@ -74,6 +79,49 @@ test('roof choices remain part of edits and undo history', () => {
   expect(levelOf(useProject.getState().project!).roof?.shape).toBe('hip')
   useProject.getState().redo()
   expect(levelOf(useProject.getState().project!).roof?.shape).toBe('gable')
+})
+
+test('manual roof infill meets the wall line inside an expanded roof footprint', () => {
+  const project = fixtureProject(),
+    level = project.buildings[0].levels[0],
+    wallLine = wallEnvelope(level),
+    footprint = roofOverhang(wallLine, 0.4),
+    roof = { ...defaultRoof, shape: 'hip' as const, overhang: 0.95 }
+  const section = {
+    id: 'expanded-roof',
+    name: 'Expanded roof',
+    levelId: level.id,
+    footprint,
+    topHeight: 3.6,
+    roof,
+  }
+  project.buildings[0].roofSections = [section]
+  const xs = footprint.map((point) => point.x),
+    zs = footprint.map((point) => point.z),
+    top = 3.6
+  const layout = clipRoofLayout(
+    roofLayout(
+      {
+        minX: Math.min(...xs),
+        maxX: Math.max(...xs),
+        minZ: Math.min(...zs),
+        maxZ: Math.max(...zs),
+        top,
+      },
+      roof,
+    ),
+    roofOverhang(footprint, roof.overhang),
+  )
+  const panels = roofClosurePanels(roofClosureRings(section, level), layout.faces, top),
+    bottom = panels.flatMap((face) => face.slice(0, 2)),
+    softwareBottom = softwareRoofs(level, project.buildings[0])
+      .filter((face) => face.key.includes(':gable:'))
+      .flatMap((face) => face.vertices.slice(0, 2))
+  expect(panels.length).toBeGreaterThan(0)
+  expect(bottom.every(([, y]) => y === top)).toBe(true)
+  expect(bottom.some(([x]) => Math.abs(x) < 1e-8)).toBe(true)
+  expect(bottom.some(([x]) => Math.abs(x + 0.4) < 1e-8)).toBe(true)
+  expect(softwareBottom.some(([x]) => Math.abs(x) < 1e-8)).toBe(true)
 })
 
 test('legacy projects keep their single roof and normalized projects retain independent roof sections', () => {

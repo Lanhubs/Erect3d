@@ -1,5 +1,5 @@
 import { defaultRoof, type Building, type Level } from '../domain/types'
-import { effectiveRoofSections } from '../domain/roofCoverage'
+import { effectiveRoofSections, roofClosureRings } from '../domain/roofCoverage'
 import { roofLayout } from '../geometry/roof'
 import { clipRoofLayout } from '../geometry/roofFootprint'
 import { roofOverhang } from '../geometry/roofOverhang'
@@ -26,12 +26,8 @@ export function softwareRoofs(level: Level, building?: Building): SoftwareFace[]
         top: section.topHeight || Math.max(2.7, ...level.walls.map((wall) => wall.height)),
       }
       const full = roofLayout(bounds, section.roof),
-        clipped = section.followFootprint
-          ? clipRoofLayout(full, roofOverhang(section.footprint, section.roof.overhang), section.voids)
-          : full
-      const closures = section.followFootprint
-        ? roofClosurePanels([section.footprint, ...(section.voids || [])], clipped.faces, bounds.top)
-        : full.gables
+        clipped = clipRoofLayout(full, roofOverhang(section.footprint, section.roof.overhang), section.voids)
+      const closures = roofClosurePanels(roofClosureRings(section, level), clipped.faces, bounds.top)
       const surface: SoftwareFace[] = clipped.faces.map((vertices, index) => ({
         key: `${section.id}:face:${index}`,
         vertices,

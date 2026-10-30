@@ -1,5 +1,6 @@
 import type { Building, Level, RoofSection } from '../domain/types'
 import { createRoofGeometryCache } from '../domain/roofGeometryCache'
+import { roofClosureRings } from '../domain/roofCoverage'
 import { RoofAssembly } from './RoofAssembly'
 import { memo, useMemo } from 'react'
 import { ArenaCanopy } from './ArenaCanopy'
@@ -10,12 +11,14 @@ const RoofSectionModel = memo(function RoofSectionModel({
   top,
   vision,
   canopy,
+  supportLevel,
 }: {
   section: RoofSection
   elevation: number
   top: number
   vision: Building['architecture']
   canopy: boolean
+  supportLevel: Level
 }) {
   const bounds = useMemo(
     () => ({
@@ -38,6 +41,7 @@ const RoofSectionModel = memo(function RoofSectionModel({
           framingSpacing={section.framingSpacing}
           footprint={section.footprint}
           voids={section.voids}
+          closureRings={roofClosureRings(section, supportLevel)}
         />
       )}
     </group>
@@ -87,6 +91,7 @@ export function BuildingRoofs({
             canopy={
               building.architecture?.roofSectionId === section.id && section.roof.shape === 'arena-vault'
             }
+            supportLevel={level}
           />
         )
       })}

@@ -1,4 +1,4 @@
-import { defaultRoof, type Building, type Level, type RoofSection } from './types'
+import { defaultRoof, type Building, type Level, type Point, type RoofSection } from './types'
 import { wallEnvelope } from './levels'
 import { generatedRoof } from './roofDesign'
 import { roofRegions } from '../geometry/roofRegions'
@@ -10,6 +10,13 @@ const levelFootprints = (level: Level) =>
     : level.slabs?.length
       ? level.slabs.map((slab) => slab.polygon)
       : [wallEnvelope(level)].filter((ring) => ring.length >= 3)
+
+export function roofClosureRings(section: RoofSection, level: Level): Point[][] {
+  const own = [section.footprint, ...(section.voids || [])]
+  if (generatedRoof(section)) return own
+  const regions = roofRegions(levelFootprints(level))
+  return regions.length ? [...own, ...regions.flatMap((region) => [region.footprint, ...region.voids])] : own
+}
 
 export function effectiveRoofSections(building: Building): RoofSection[] {
   const sections = building.roofSections || [],

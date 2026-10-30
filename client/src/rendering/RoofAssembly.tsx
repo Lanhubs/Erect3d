@@ -231,6 +231,7 @@ export function RoofAssembly({
   framingSpacing = 0,
   footprint,
   voids = [],
+  closureRings,
   infill = true,
 }: {
   bounds: RoofBounds
@@ -238,6 +239,7 @@ export function RoofAssembly({
   framingSpacing?: number
   footprint?: Point[]
   voids?: Point[][]
+  closureRings?: Point[][]
   infill?: boolean
 }) {
   const boundary = useMemo(
@@ -249,8 +251,9 @@ export function RoofAssembly({
     return boundary ? clipRoofLayout(full, boundary, voids) : full
   }, [bounds, roof, boundary, voids])
   const closures = useMemo(
-    () => (footprint ? roofClosurePanels([footprint, ...voids], layout.faces, bounds.top) : []),
-    [footprint, voids, layout.faces, bounds.top],
+    () =>
+      footprint ? roofClosurePanels(closureRings || [footprint, ...voids], layout.faces, bounds.top) : [],
+    [footprint, voids, closureRings, layout.faces, bounds.top],
   )
   const x0 = bounds.minX - roof.overhang,
     x1 = bounds.maxX + roof.overhang
