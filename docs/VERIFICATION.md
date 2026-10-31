@@ -46,6 +46,12 @@ Coverage instrumentation uses a 20-second test deadline; it does not change prod
 request/AI timeouts. The ordinary backend suite uses the same bounded deadline for its
 real database and image-processing integration cases.
 
+An open reproducibility defect is recorded in
+[assessment evidence](REASSESSMENT.md): the editor stylesheet imports Tailwind CSS, which no
+package manifest declares, so a production build on a clean machine can fail to resolve that
+import even though every test and type check passes. Declaring the dependency is the fix and
+changes the installed dependency tree, so it needs an explicit decision from the repository owner.
+
 The formatting pass expanded formerly dense API files, so size is guarded rather than freely
 rewritten. `client/scripts/check-lines.ts` and `api/scripts/check-lines.ts` run inside
 `bun run typecheck`. Each source file is compared with a limit from
