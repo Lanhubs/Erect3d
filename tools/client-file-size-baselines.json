@@ -1,5 +1,5 @@
 {
-  "src/app/Workspace.tsx": 705,
+  "src/app/Workspace.tsx": 254,
   "src/app/WorkspaceHeader.tsx": 286,
   "src/cloud/AssistantDialog.tsx": 296,
   "src/cloud/CandidateDetails.tsx": 293,
