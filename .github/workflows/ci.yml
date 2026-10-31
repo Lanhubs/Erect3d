@@ -50,6 +50,8 @@ jobs:
         run: bun run typecheck
       - name: Migrate disposable test database
         run: bun run test:prepare
+      - name: Backend startup smoke check
+        run: bun run check:startup
       - name: Test repository tooling
         run: bun run test:repository
       - name: Tests and coverage gates

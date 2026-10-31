@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test'
 import { spawnSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import {
   databaseReady,
@@ -36,6 +37,25 @@ test('integration suites refuse to start without an explicit disposable database
   expect(result.status).not.toBe(0)
   expect(result.stderr).toContain('explicit disposable TEST_DATABASE_URL')
   expect(result.stdout).not.toContain('bun test')
+})
+
+test('the startup smoke check is gated the same way and never inherits a live database URL', () => {
+  const source = readFileSync(new URL('../scripts/repository.mjs', import.meta.url), 'utf8')
+  // The wrapper must swap the live URL for the disposable one before the real API boots.
+  expect(source).toContain('DATABASE_URL: process.env.TEST_DATABASE_URL')
+  for (const testUrl of ['', 'postgres://fixture:fixture@127.0.0.1:1/live_projects']) {
+    const result = spawnSync(process.execPath, ['scripts/repository.mjs', 'check:startup'], {
+      cwd: root,
+      env: { ...process.env, ...live, TEST_DATABASE_URL: testUrl },
+      encoding: 'utf8',
+      windowsHide: true,
+      timeout: 5000,
+    })
+    expect(result.status).not.toBe(0)
+    expect(result.stderr).toContain('The startup check boots the real API')
+    expect(result.stderr).toContain('bun run test:prepare')
+    expect(result.stdout).not.toContain('Real API startup')
+  }
 })
 
 test('the isolation guard only accepts a database name ending in _test', () => {

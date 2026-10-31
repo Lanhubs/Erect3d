@@ -18,8 +18,13 @@ const unitArguments = [
   '--path-ignore-patterns',
   `**/*${integrationSuffix}`,
 ]
-export function run(args, directory = '.') {
-  const result = spawnSync('bun', args, { cwd: `${root}/${directory}`, stdio: 'inherit', windowsHide: true })
+export function run(args, directory = '.', overrides) {
+  const result = spawnSync('bun', args, {
+    cwd: `${root}/${directory}`,
+    stdio: 'inherit',
+    windowsHide: true,
+    env: overrides ? { ...process.env, ...overrides } : process.env,
+  })
   if (result.error) throw result.error
   if (result.status !== 0) process.exit(result.status || 1)
 }
@@ -47,6 +52,11 @@ if (task?.startsWith('dev:')) {
 } else if (task === 'test:unit') {
   run(['run', 'test:repository'])
   for (const directory of packages) run(unitArguments, directory)
+} else if (task === 'check:startup') {
+  // The smoke check boots the real API, so it may not inherit a developer's live database URL.
+  if (!databaseReady(process.env))
+    throw new Error(`The startup check boots the real API. ${missingDatabaseMessage}`)
+  run(['run', 'check:startup'], 'api', { DATABASE_URL: process.env.TEST_DATABASE_URL, NODE_ENV: 'test' })
 } else if (task === 'test:integration') {
   if (!databaseReady(process.env)) throw new Error(missingDatabaseMessage)
   for (const directory of packages) {
