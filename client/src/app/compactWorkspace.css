@@ -182,7 +182,7 @@
   position: relative;
 }
 
-.command-more>div {
+.command-more > div {
   position: absolute;
   top: 100%;
   right: 0;
@@ -275,7 +275,7 @@
   order: 1;
 }
 
-.workspace-drawer>header {
+.workspace-drawer > header {
   height: 44px;
   min-height: 44px;
   display: flex;
@@ -285,13 +285,13 @@
   border-bottom: 1px solid #ccd6c8;
 }
 
-.workspace-drawer>header strong {
+.workspace-drawer > header strong {
   font-size: 13px;
   flex: 1;
   font-weight: 600;
 }
 
-.workspace-drawer>header button {
+.workspace-drawer > header button {
   height: 30px;
   min-width: 30px;
   border: 1px solid #c3cebf;
@@ -312,7 +312,7 @@
   font-size: 12px;
 }
 
-.drawer-content>*,
+.drawer-content > *,
 .drawer-content fieldset {
   min-width: 0;
   max-width: 100%;
@@ -350,14 +350,14 @@
   min-height: 36px;
 }
 
-.drawer-content .level-manager>summary {
+.drawer-content .level-manager > summary {
   flex-wrap: wrap;
   font-size: 12px;
   letter-spacing: 0;
   padding: 8px 0;
 }
 
-.drawer-content .level-manager>summary span {
+.drawer-content .level-manager > summary span {
   margin: 0;
   flex-basis: 100%;
 }
@@ -368,13 +368,13 @@
   padding: 8px 0;
 }
 
-.drawer-content .source-strip>span {
+.drawer-content .source-strip > span {
   white-space: normal;
   overflow-wrap: anywhere;
   font-size: 12px;
 }
 
-.drawer-content .source-strip>div {
+.drawer-content .source-strip > div {
   flex-wrap: wrap;
 }
 
@@ -387,7 +387,7 @@
   background: transparent;
 }
 
-.drawer-content .reconstruction-flow>div {
+.drawer-content .reconstruction-flow > div {
   flex-basis: 100%;
   display: grid;
   gap: 6px;
@@ -462,28 +462,28 @@
   display: flex;
 }
 
-.compact-workspace .view-area>.plan-pane,
-.compact-workspace .view-area>.model-pane {
+.compact-workspace .view-area > .plan-pane,
+.compact-workspace .view-area > .model-pane {
   min-width: 0;
   min-height: 0;
   flex: 1;
   display: flex;
 }
 
-.plan-pane>.plan-editor,
-.model-pane>.viewer {
+.plan-pane > .plan-editor,
+.model-pane > .viewer {
   flex: 1;
   min-width: 0;
   min-height: 0;
   width: 100%;
 }
 
-.compact-workspace .view-area.split>* {
+.compact-workspace .view-area.split > * {
   height: auto;
   width: auto;
 }
 
-.compact-workspace .view-area.split>.plan-pane {
+.compact-workspace .view-area.split > .plan-pane {
   border-right: 1px solid #c2cfc2;
 }
 
@@ -495,7 +495,7 @@
 }
 
 .compact-workspace .viewport-head button,
-.compact-workspace .view-options>summary {
+.compact-workspace .view-options > summary {
   padding: 3px 7px;
   font-size: 12px;
 }
@@ -572,7 +572,7 @@
   overflow: hidden;
 }
 
-.command-search>input {
+.command-search > input {
   margin: 14px;
   padding: 13px;
   border: 1px solid #adc1af;
@@ -583,7 +583,7 @@
   background: white;
 }
 
-.command-search>div {
+.command-search > div {
   overflow: auto;
   padding: 0 8px;
   min-height: 0;
@@ -689,7 +689,7 @@
     gap: 3px;
   }
 
-  .commandbar>button,
+  .commandbar > button,
   .commandbar summary {
     min-width: 36px;
     height: 40px;
@@ -759,12 +759,12 @@
     box-shadow: none;
   }
 
-  .workspace-drawer>header {
+  .workspace-drawer > header {
     height: 48px;
     min-height: 48px;
   }
 
-  .workspace-drawer>header button {
+  .workspace-drawer > header button {
     min-width: 44px;
     min-height: 44px;
   }
@@ -798,16 +798,16 @@
   }
 
   .compact-workspace .viewport-head button,
-  .compact-workspace .view-options>summary {
+  .compact-workspace .view-options > summary {
     font-size: 12px;
     padding: 6px;
   }
 
-  .compact-workspace .viewport-head>span {
+  .compact-workspace .viewport-head > span {
     display: none;
   }
 
-  .compact-workspace .viewport-head>div {
+  .compact-workspace .viewport-head > div {
     width: 100%;
     justify-content: flex-end;
   }
@@ -823,12 +823,12 @@
     height: 44px;
   }
 
-  .compact-workspace .view-options>div>* {
+  .compact-workspace .view-options > div > * {
     height: 44px;
   }
 
-  .compact-workspace .statusbar>span:nth-child(2),
-  .compact-workspace .statusbar>span:nth-child(3) {
+  .compact-workspace .statusbar > span:nth-child(2),
+  .compact-workspace .statusbar > span:nth-child(3) {
     display: none;
   }
 
@@ -837,8 +837,8 @@
     position: relative;
   }
 
-  .compact-workspace .view-area.split>.plan-pane,
-  .compact-workspace .view-area.split>.model-pane {
+  .compact-workspace .view-area.split > .plan-pane,
+  .compact-workspace .view-area.split > .model-pane {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -846,8 +846,8 @@
     border: 0;
   }
 
-  .compact-workspace .view-area.split.primary-model>.plan-pane,
-  .compact-workspace .view-area.split.primary-plan>.model-pane {
+  .compact-workspace .view-area.split.primary-model > .plan-pane,
+  .compact-workspace .view-area.split.primary-plan > .model-pane {
     inset: auto 8px 58px auto;
     width: 36%;
     height: 26%;
@@ -859,22 +859,22 @@
     background: #ecf0e7;
   }
 
-  .compact-workspace .view-area.split.preview-expanded.primary-model>.plan-pane,
-  .compact-workspace .view-area.split.preview-expanded.primary-plan>.model-pane {
+  .compact-workspace .view-area.split.preview-expanded.primary-model > .plan-pane,
+  .compact-workspace .view-area.split.preview-expanded.primary-plan > .model-pane {
     width: 68%;
     height: 50%;
   }
 
-  .compact-workspace .view-area.split.primary-model>.plan-pane>*,
-  .compact-workspace .view-area.split.primary-plan>.model-pane>* {
+  .compact-workspace .view-area.split.primary-model > .plan-pane > *,
+  .compact-workspace .view-area.split.primary-plan > .model-pane > * {
     pointer-events: none;
   }
 
-  .compact-workspace .view-area.split.primary-model>.plan-pane .viewport-head,
-  .compact-workspace .view-area.split.primary-model>.plan-pane .viewport-foot,
-  .compact-workspace .view-area.split.primary-plan>.model-pane .viewport-head,
-  .compact-workspace .view-area.split.primary-plan>.model-pane .viewport-foot,
-  .compact-workspace .view-area.split.primary-plan>.model-pane .viewer-zoom {
+  .compact-workspace .view-area.split.primary-model > .plan-pane .viewport-head,
+  .compact-workspace .view-area.split.primary-model > .plan-pane .viewport-foot,
+  .compact-workspace .view-area.split.primary-plan > .model-pane .viewport-head,
+  .compact-workspace .view-area.split.primary-plan > .model-pane .viewport-foot,
+  .compact-workspace .view-area.split.primary-plan > .model-pane .viewer-zoom {
     display: none;
   }
 
@@ -962,14 +962,14 @@
     overflow-y: hidden;
   }
 
-  .compact-workspace .commandbar>button,
+  .compact-workspace .commandbar > button,
   .compact-workspace .commandbar summary {
     min-width: 44px;
     min-height: 44px;
     box-sizing: border-box;
   }
 
-  .compact-workspace .commandbar>button[aria-label='Toggle properties'] {
+  .compact-workspace .commandbar > button[aria-label='Toggle properties'] {
     display: none;
   }
 
@@ -984,7 +984,7 @@
   }
 
   .compact-workspace .viewport-head button,
-  .compact-workspace .view-options>summary {
+  .compact-workspace .view-options > summary {
     min-height: 44px;
     box-sizing: border-box;
   }

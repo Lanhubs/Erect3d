@@ -102,5 +102,3 @@ test('AccountPanel renders user first name and email in distinct spans for mobil
   expect(html).toContain('<span class="account-email"> · idiagbon@gmail.com</span>')
   expect(html).toContain('Sign out')
 })
-
-

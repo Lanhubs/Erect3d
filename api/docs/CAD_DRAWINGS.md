@@ -41,9 +41,9 @@ cloud revision to be visible before asking, so the sheet always matches what the
 
 DWG needs an external converter that keeps the LibreDWG contract `BIN -o OUTPUT INPUT`:
 
-| Variable | Purpose |
-| --- | --- |
-| `DWG_CONVERTER_PATH` | `dwg2dxf`, enables `dwgImport` |
+| Variable                    | Purpose                        |
+| --------------------------- | ------------------------------ |
+| `DWG_CONVERTER_PATH`        | `dwg2dxf`, enables `dwgImport` |
 | `DXF_TO_DWG_CONVERTER_PATH` | `dxf2dwg`, enables `dwgExport` |
 
 Both are probed once per path pair at startup and reported by `GET /ready` as
@@ -64,11 +64,11 @@ experimental in the UI and DXF remains the default export.
 Every limit is configuration, and each one is reachable as an honest failure rather than a
 hang:
 
-| Variable | Default | Effect |
-| --- | --- | --- |
-| `CAD_MAX_BYTES` | 33554432 | largest accepted drawing, checked before parsing |
-| `CAD_MAX_ENTITIES` | 200000 | entity budget, so nested blocks cannot explode |
-| `CAD_CONVERT_TIMEOUT_MS` | 60000 | wall clock for parse, raster and conversion |
+| Variable                 | Default  | Effect                                           |
+| ------------------------ | -------- | ------------------------------------------------ |
+| `CAD_MAX_BYTES`          | 33554432 | largest accepted drawing, checked before parsing |
+| `CAD_MAX_ENTITIES`       | 200000   | entity budget, so nested blocks cannot explode   |
+| `CAD_CONVERT_TIMEOUT_MS` | 60000    | wall clock for parse, raster and conversion      |
 
 Conversion runs in an isolated child process with a scratch directory that is removed even on
 failure, and `cad.convert` and `cad.export` jobs use `max_attempts = 1`: a hostile or malformed
