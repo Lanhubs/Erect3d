@@ -104,6 +104,23 @@ and R2 keys stay on the server. Explicit live checks are operator-invoked, separ
 documented commands; normal CI requires no cloud accounts. Uploaded originals retain
 their quality; storage optimization uses lossless processing/archiving.
 
+## CAD drawings
+
+Importing a DWG or DXF converts the drawing to an upright raster inside an isolated worker, and the
+existing analysis, review and approval flow then builds the model from that raster; PNG, JPEG and PDF
+imports are unchanged. ASCII DXF needs no extra binary. DWG import and DWG export are experimental
+and appear in `/ready` as `dwgImport`/`dwgExport` only when an operator installs a converter that
+keeps the LibreDWG argument contract (`BIN -o OUTPUT INPUT`); this repository never ships or downloads
+one. `CAD_MAX_BYTES`, `CAD_CONVERT_TIMEOUT_MS` and `CAD_MAX_ENTITIES` bound the conversion, and each
+conversion job runs a single attempt so a hostile drawing cannot pin a worker.
+
+Designed floors export as ASCII DXF written in the browser, in metres (`$INSUNITS=6`) with one layer
+per element, room labels and floor elevations. A DWG sheet is that same scene drawn by the server and
+passed through `dxf2dwg`, so it needs a cloud project; it writes R2000 and can simplify complex
+entities, so it stays labelled experimental. LibreDWG is GPLv3 and is installed by the operator, never
+redistributed here; ODA File Converter can fill the same role behind the same wrapper contract.
+[The CAD guide](api/docs/CAD_DRAWINGS.md) covers the limits, the job and the migration.
+
 ## Builds, film and deployment
 
 `bun run build` builds the editor and independent film website into `client/dist`, with

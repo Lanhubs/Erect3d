@@ -103,6 +103,7 @@ needs to allow your exact frontend origin for browser PUT/GET requests.
 - [WebSocket protocol](docs/REALTIME.md)
 - [VPS deployment and operations](docs/VPS.md)
 - [Private R2 storage and file optimization](docs/R2_STORAGE.md)
+- [CAD drawings in and out](docs/CAD_DRAWINGS.md)
 - [Hybrid interpretation scope and accuracy gates](docs/HYBRID_INTERPRETATION.md)
 - [Delivery report, verification and limitations](docs/DELIVERY.md)
 

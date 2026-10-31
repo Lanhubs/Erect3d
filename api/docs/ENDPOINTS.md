@@ -72,6 +72,7 @@ The existing member-ID endpoints remain available for role changes and removal.
 - `POST /api/v1/projects/:projectId/assets/:assetId/finalize`
 - `POST /api/v1/projects/:projectId/assets/optimized-upload`
 - `POST /api/v1/projects/:projectId/assets/uploads`
+- `POST /api/v1/projects/:projectId/cad/convert`
 - `POST /api/v1/projects/:projectId/comments`
 - `POST /api/v1/projects/:projectId/exports`
 - `POST /api/v1/projects/:projectId/issues`
