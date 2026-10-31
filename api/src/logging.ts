@@ -63,7 +63,7 @@ function emitter(minimum: Level, write: (line: string) => void) {
 
 export function createLogger(
   minimum: Level = 'info',
-  write: (line: string) => void = (line) => process.stdout.write(`${line}\n`),
+  write: (line: string) => void = (line) => console.log(line),
 ) {
   const log = emitter(minimum, write)
   return (event: string, fields: Fields = {}, level?: Level) => {
