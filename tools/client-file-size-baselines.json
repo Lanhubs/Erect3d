@@ -20,7 +20,6 @@
   "src/domain/stadiumSample.ts": 313,
   "src/domain/types.ts": 336,
   "src/features/import/useAnalysis.ts": 219,
-  "src/features/inspector/Inspector.tsx": 604,
   "src/features/inspector/OpeningInspector.tsx": 339,
   "src/features/inspector/RoofControls.tsx": 443,
   "src/features/inspector/SiteControls.tsx": 389,
