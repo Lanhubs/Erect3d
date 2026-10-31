@@ -2,7 +2,8 @@ import { SessionApi } from './sessionApi'
 const origin = (
   import.meta.env.VITE_API_ORIGIN || (typeof window !== 'undefined' ? window.location.origin : '')
 ).replace(/\/$/, '')
-export const privateAssetUrl = (url: string) => new URL(url, `${origin}/`).href
+// Object storage hands back a fully signed URL; only the local store's ticket path needs the app origin.
+export const privateAssetUrl = (url: string) => new URL(url, origin ? `${origin}/` : undefined).href
 let expectedUser: string | null = null
 export function setExpectedUser(id: string | null) {
   expectedUser = id
@@ -25,6 +26,9 @@ export async function capabilities() {
     cloudAnalysis: boolean
     assistant?: boolean
     realtime: boolean
+    cadImport?: boolean
+    dwgImport?: boolean
+    dwgExport?: boolean
   }
 }
 export async function paginated<T>(path: string): Promise<T[]> {
