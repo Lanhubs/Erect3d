@@ -37,11 +37,9 @@ jobs:
           persist-credentials: false
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
-          bun-version: 1.4.2
-      - name: Install repository tools
+          bun-version: 1.4.4
+      - name: Install the workspace
         run: bun install --frozen-lockfile
-      - name: Install packages
-        run: bun run setup
       - name: Lint
         run: bun run lint
       - name: Formatting
@@ -82,7 +80,7 @@ jobs:
         run: docker run --rm -v "$PWD:/repo:ro" zricethezav/gitleaks:v8.24.3 detect --source /repo --no-git --redact --config /repo/.gitleaks.toml
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
-          bun-version: 1.4.2
-      - run: bun install --frozen-lockfile && bun run setup
+          bun-version: 1.4.4
+      - run: bun install --frozen-lockfile
       - name: Dependency advisories (high and critical)
         run: bun run audit

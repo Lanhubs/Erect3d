@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "engines": {
-    "bun": ">=1.4.2"
+    "bun": ">=1.4.4"
   },
-  "packageManager": "bun@1.4.2",
+  "packageManager": "bun@1.4.4",
   "scripts": {
     "lint": "oxlint --config ../.oxlintrc.json src client scripts tests",
     "dev": "bun --watch src/index.ts",
@@ -23,20 +23,20 @@
     "verify": "bun run check:lines && bun run typecheck && bun run test"
   },
   "dependencies": {
-    "@google/genai": "^2.28.0",
+    "@google/genai": "2.28.0",
     "@hono/bun": "^1.0.0",
     "@techstark/opencv-js": "5.0.0-release.1",
     "@tesseract.js-data/eng": "1.0.0",
     "dxf-parser": "1.1.2",
-    "hono": "^4.0.0",
+    "hono": "4.13.13",
     "sharp": "0.35.5",
     "tesseract.js": "7.0.0",
-    "three": "^0.186.0",
+    "three": "0.186.0",
     "zod": "4.6.6"
   },
   "devDependencies": {
-    "@types/bun": "latest",
-    "@types/three": "^0.186.0",
+    "@types/bun": "1.4.4",
+    "@types/three": "0.186.0",
     "typescript": "~6.0.2"
   }
 }

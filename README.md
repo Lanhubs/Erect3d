@@ -16,13 +16,14 @@ guarantee of survey accuracy, structural safety or a complete design from every 
 | `api/`          | Bun/Hono API, PostgreSQL persistence, sessions, collaboration, private storage and workers |
 | `motion-video/` | Independent film website and optional 35-second MP4 capture/export tooling                 |
 
-All three packages have independent manifests and lockfiles. Shared geometry remains in
-the client source tree; install all packages before running cross-package checks or builds.
-The root package contains development tooling only, not a replacement workspace layout.
+All three packages are members of one Bun workspace, so the committed `bun.lock` at the
+repository root resolves every package in the graph. Shared geometry remains in the client
+source tree; the root install provides it to cross-package checks and builds.
 
 ## Prerequisites
 
-- **Bun 1.4.2**, the pinned installation and test runtime.
+- **Bun 1.4.4**, the pinned installation and test runtime. Bun 1.4.2 miswrites workspace
+  lockfiles, so older installers cannot be used with this repository.
 - **Docker Compose v2** for the local backend and PostgreSQL 17, or a separately installed
   PostgreSQL 17 with disposable development/test databases.
 - A browser with hardware graphics acceleration. WebGPU is preferred; the existing
@@ -36,7 +37,6 @@ Run from the repository root:
 
 ```sh
 bun install --frozen-lockfile
-bun run setup
 docker compose up -d --build
 bun run dev:client
 ```

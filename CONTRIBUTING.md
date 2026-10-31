@@ -1,7 +1,8 @@
 # Contributing
 
-Start with the root README and use Bun 1.4.2 with frozen lockfiles. Keep runtime packages
-independent and install all three because the API and film reuse client geometry.
+Start with the root README and use Bun 1.4.4 with a frozen lockfile. The three runtime packages
+are members of one Bun workspace, so a single `bun install --frozen-lockfile` at the repository
+root installs all of them; the API and film reuse client geometry, so none may be skipped.
 
 ## Changes
 

@@ -1,6 +1,8 @@
 # Verification
 
-Use Bun 1.4.2 and a PostgreSQL 17 database ending in `_test`. The root `test:prepare`
+Use Bun 1.4.4 and a PostgreSQL 17 database ending in `_test`. Install with one
+`bun install --frozen-lockfile` at the repository root; the three runtime packages are
+workspace members sharing that single committed lockfile. The root `test:prepare`
 command requires `TEST_DATABASE_URL`, overrides migration `DATABASE_URL` only in the
 child process, and never migrates a live development database by fallback.
 

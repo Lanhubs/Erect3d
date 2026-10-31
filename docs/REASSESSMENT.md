@@ -6,7 +6,7 @@ offer is determined by the external reviewer; neither is guaranteed by these cha
 | Finding                        | Remediation / evidence                                                                |
 | ------------------------------ | ------------------------------------------------------------------------------------- |
 | Missing root onboarding        | Root README, contribution/security guides, changelog and configuration examples       |
-| No reproducible install        | Bun 1.4.2, independent committed locks and frozen installation commands               |
+| No reproducible install        | Bun 1.4.4, one committed workspace lockfile and a single frozen installation command  |
 | No active CI                   | `.github/workflows/ci.yml`: lint, format, types, tests, coverage, builds and security |
 | Backend tests difficult to run | Explicit disposable test database, migration command and service health checks        |
 | No lint/format enforcement     | Existing Oxlint extended to packages; separate Prettier normalization and checks      |

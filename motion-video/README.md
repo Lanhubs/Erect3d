@@ -4,9 +4,8 @@ Independent 35-second browser film, separated from the editor.
 
 ## Build and export
 
-From `motion-video`:
+From `motion-video`, after one `bun install --frozen-lockfile` at the repository root:
 
-- `bun install --frozen-lockfile`
 - `bun run dev` — review on http://127.0.0.1:5191/motion/erect3d-film/
 - `bun test` and `bun run typecheck`
 - `bun run build` — standalone site in `dist/`

@@ -20,13 +20,12 @@ pending edits for offline work, then syncs automatically when connectivity retur
 
 ## Development
 
-Verified locally with Bun 1.4.2 and PostgreSQL 17. Install both frontend and API
-dependencies, because shared pure geometry imports remain in the frontend source tree.
+Verified locally with Bun 1.4.4 and PostgreSQL 17. One frozen install at the repository root
+resolves every workspace member, including the frontend package that holds shared pure
+geometry imports.
 
 ```sh
-cd client
-bun install --frozen-lockfile
-cd ../api
+cd /path/to/erect3d
 bun install --frozen-lockfile
 ```
 

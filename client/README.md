@@ -5,7 +5,8 @@ and walkthrough. See the [root README](../README.md) for complete setup and veri
 
 ## Development and builds
 
-Use Bun 1.4.2. Install the root tools and all three packages with the root `setup` command.
+Use Bun 1.4.4. Install the root tools and all three workspace members with one
+`bun install --frozen-lockfile` at the repository root.
 Run the API and worker, then `bun run dev` here. The default API proxy is
 `http://127.0.0.1:4000`; public client configuration is documented in `.env.example`.
 

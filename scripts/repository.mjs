@@ -41,8 +41,6 @@ if (task?.startsWith('dev:')) {
   run(['run', target[1]], target[0])
 } else if (task === 'build') {
   run(['run', 'build'], 'client')
-} else if (task === 'install') {
-  for (const directory of packages) run(['install', '--frozen-lockfile'], directory)
 } else if (task === 'verify') {
   for (const name of ['lint', 'format:check', 'typecheck', 'test', 'build']) run(['run', name])
 } else if (task === 'typecheck') {
@@ -72,7 +70,7 @@ if (task?.startsWith('dev:')) {
     for (const directory of packages) run(unitArguments, directory)
   }
 } else if (task === 'audit') {
-  for (const directory of ['.', ...packages]) run(['audit', '--audit-level=high'], directory)
+  run(['audit', '--audit-level=high'])
 } else {
   throw new Error(`Unknown repository task: ${task}`)
 }

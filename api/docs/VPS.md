@@ -5,24 +5,22 @@ templates, not a claim that a server has already been provisioned or deployed.
 
 ## Layout and prerequisites
 
-Use a Linux VPS with Bun 1.4.2, PostgreSQL 17, Nginx and TLS certificates. Keep PostgreSQL
+Use a Linux VPS with Bun 1.4.4, PostgreSQL 17, Nginx and TLS certificates. Keep PostgreSQL
 and the API private to the server/network. If using native Redis protection, use Redis
 7.2 or newer with authentication and private networking. PostgreSQL protection is also
 supported. Use private Cloudflare R2 storage with public reads disabled. Original files
 use reversible ZIP storage; image pixels and PDF contents are not rewritten.
 
 Deploy the repository as `/opt/erect3d`, keeping `api/`, `client/` and `motion-video/`.
-API imports use pure client geometry at runtime. Install pinned dependencies in each
-directory and build the frontend into `client/dist`:
+API imports use pure client geometry at runtime. The three directories are workspace
+members, so one frozen install at the repository root resolves every pinned dependency;
+then build the frontend into `client/dist`:
 
 ```sh
-cd /opt/erect3d/motion-video
+cd /opt/erect3d
 bun install --frozen-lockfile
-cd ../client
-bun install --frozen-lockfile
+cd client
 bun run build
-cd ../api
-bun install --frozen-lockfile
 ```
 
 The client build also builds the independent film and mounts it at
