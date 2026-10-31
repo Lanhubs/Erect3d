@@ -18,7 +18,9 @@
     "build": "bun scripts/repository.mjs build",
     "verify": "bun scripts/repository.mjs verify",
     "audit": "bun scripts/repository.mjs audit",
-    "test:repository": "bun test tests/coverage.test.ts tests/database-guard.test.ts tests/cad-file-size.test.ts",
+    "test:repository": "bun test ./tests",
+    "test:unit": "bun scripts/repository.mjs test:unit",
+    "test:integration": "bun scripts/repository.mjs test:integration",
     "test:prepare": "bun scripts/test-database.mjs"
   },
   "devDependencies": {

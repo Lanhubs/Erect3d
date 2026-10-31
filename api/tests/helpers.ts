@@ -26,7 +26,10 @@ export function harness(
 ) {
   const url = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL
   if (!url || !new URL(url).pathname.endsWith('_test'))
-    throw new Error('Integration tests require TEST_DATABASE_URL with a database ending in _test')
+    throw new Error(
+      'Integration tests require a TEST_DATABASE_URL pointing at a database ending in _test. ' +
+        'Run "bun run test:prepare" from the repository root.',
+    )
   const config = readConfig({
     DATABASE_URL: url,
     NODE_ENV: 'test',

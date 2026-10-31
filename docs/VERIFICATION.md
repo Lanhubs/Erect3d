@@ -5,7 +5,12 @@ command requires `TEST_DATABASE_URL`, overrides migration `DATABASE_URL` only in
 child process, and never migrates a live development database by fallback.
 
 `bun run verify` runs lint, formatting, types, all three package suites and production web
-builds. `bun run test:repository` checks repository tooling. CI additionally runs coverage,
+builds. `bun run test:repository` checks repository tooling. `bun run test` runs the package
+suites: with a disposable `TEST_DATABASE_URL` it runs everything, and without one it runs only
+the suites that need no database and prints the name of every `*.integration.test.ts` file it
+skipped, so a fresh clone has a runnable command that cannot pretend to be the full suite.
+`bun run test:unit` and `bun run test:integration` request either half explicitly, and
+`test:integration` refuses to start without the isolated database. CI additionally runs coverage,
 Redis integration, a production API Docker build, dependency audits and secret scanning.
 
 ## Coverage scope and gates

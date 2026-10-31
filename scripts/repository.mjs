@@ -1,8 +1,23 @@
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
+import {
+  databaseReady,
+  integrationFiles,
+  integrationSuffix,
+  integrationSuites,
+  missingDatabaseMessage,
+  skippedNotice,
+} from './test-plan.mjs'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
 const packages = ['client', 'api', 'motion-video']
+const unitArguments = [
+  'test',
+  'tests',
+  '--timeout=20000',
+  '--path-ignore-patterns',
+  `**/*${integrationSuffix}`,
+]
 export function run(args, directory = '.') {
   const result = spawnSync('bun', args, { cwd: `${root}/${directory}`, stdio: 'inherit', windowsHide: true })
   if (result.error) throw result.error
@@ -25,18 +40,26 @@ if (task?.startsWith('dev:')) {
   for (const directory of packages) run(['install', '--frozen-lockfile'], directory)
 } else if (task === 'verify') {
   for (const name of ['lint', 'format:check', 'typecheck', 'test', 'build']) run(['run', name])
-} else if (task === 'typecheck' || task === 'test') {
-  if (
-    task === 'test' &&
-    (!process.env.TEST_DATABASE_URL || !new URL(process.env.TEST_DATABASE_URL).pathname.endsWith('_test'))
-  ) {
-    throw new Error('Tests require an explicit disposable TEST_DATABASE_URL ending in _test')
-  }
-  if (task === 'test') run(['run', 'test:repository'])
+} else if (task === 'typecheck') {
   for (const directory of packages) run(['run', task], directory)
-  if (task === 'typecheck') {
-    run(['run', 'check:lines'], 'api')
-    run(['run', 'check:lines'], 'client')
+  run(['run', 'check:lines'], 'api')
+  run(['run', 'check:lines'], 'client')
+} else if (task === 'test:unit') {
+  run(['run', 'test:repository'])
+  for (const directory of packages) run(unitArguments, directory)
+} else if (task === 'test:integration') {
+  if (!databaseReady(process.env)) throw new Error(missingDatabaseMessage)
+  for (const directory of packages) {
+    const files = integrationFiles(directory)
+    if (files.length) run(['test', '--timeout=20000', ...files], directory)
+  }
+} else if (task === 'test') {
+  run(['run', 'test:repository'])
+  if (databaseReady(process.env)) for (const directory of packages) run(['run', 'test'], directory)
+  else {
+    // A fresh clone still has a suite to run; the skipped files are named instead of hidden.
+    console.log(skippedNotice(integrationSuites()))
+    for (const directory of packages) run(unitArguments, directory)
   }
 } else if (task === 'audit') {
   for (const directory of ['.', ...packages]) run(['audit', '--audit-level=high'], directory)

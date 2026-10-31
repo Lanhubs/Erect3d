@@ -8,6 +8,8 @@
 - Development/test setup documentation and separate disposable database configuration.
 - Structured diagnostics with safe error context and optional bounded self-hosted OTLP export.
 - DWG/DXF plan import through a bounded conversion worker, and DXF/DWG sheet export for CAD tools.
+- A `bun run test` that runs the database-free suites and prints every integration suite it skipped,
+  alongside explicit `test:unit` and `test:integration` commands.
 - Consistent formatting maintained separately from functional changes.
 
 Earlier features remain documented in the package guides and Git history. No historical

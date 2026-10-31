@@ -82,6 +82,9 @@ bun run build
 ```
 
 `bun run verify` runs lint, formatting, types, tests and the combined production web build.
+`bun run test` needs no database to be useful: without `TEST_DATABASE_URL` it runs the suites
+that work offline and prints every `*.integration.test.ts` file it skipped, while
+`bun run test:unit` and `bun run test:integration` ask for one half explicitly.
 The backend runs directly under Bun; CI also builds its production Docker image.
 Tests use synthetic drawings, injected AI providers and in-memory private storage. They
 do not call Gemini or upload drawings to R2. Redis integration is enabled by setting
