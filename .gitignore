@@ -14,5 +14,7 @@ coverage/
 .env.*
 !.env.example
 !**/.env.example
-!**/.env.r2.example
 *.tsbuildinfo
+
+# Bun is the only package manager used here; an npm lockfile would be stale noise.
+package-lock.json
