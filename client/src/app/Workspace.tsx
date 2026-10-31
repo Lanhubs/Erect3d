@@ -85,7 +85,7 @@ export function Workspace({
   const activeLevelId = previewLevelId || savedActiveLevelId
   const [localAnalysisMode, setLocalAnalysisMode] = useState(false),
     backend = Boolean(onBackendAnalysis) || !localAnalysisMode
-  const { source, url, error, pages, busy, importFile, selectPage } = usePlanSource(
+  const { source, url, error, pages, busy, stage, importFile, selectPage } = usePlanSource(
     project,
     activeLevelId || project.buildings[0].levels[0].id,
     analysis.clear,
@@ -518,7 +518,6 @@ export function Workspace({
             </div>
             <div hidden={panel !== 'source'}>
               <fieldset disabled={readOnly} className="readonly-controls">
-                {' '}
                 <SourceStrip
                   source={source}
                   showImport={showImport}
@@ -620,6 +619,7 @@ export function Workspace({
                 error={error}
                 analysisError={analysis.error}
                 busy={busy}
+                stage={stage}
                 pages={pages}
                 page={page}
                 setPage={setPage}
