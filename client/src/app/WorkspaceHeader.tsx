@@ -10,25 +10,25 @@ import {
   FiMoreHorizontal,
   FiMousePointer,
   FiMove,
-  FiNavigation,
   FiPenTool,
   FiRotateCcw,
   FiRotateCw,
   FiSave,
   FiSearch,
-  FiSliders,
   FiSquare,
   FiTrendingUp,
   FiUsers,
-  FiPlay,
 } from 'react-icons/fi'
-import type { MouseEvent } from 'react'
 import type { Selection } from '../domain/types'
 import type { Tool, View } from '../state/project'
 import { useProject } from '../state/project'
 import { panels, type PanelId } from './WorkspacePanels'
 import { ConstructionAssistantIcon } from '../components/construction-assistant-icon'
-export type WorkspaceMode = 'edit' | 'analyze' | 'present'
+import { ExportMenu } from '../cad/ExportMenu'
+import { StudioViewDock } from './StudioViewDock'
+import { choose, type WorkspaceMode } from './menuChoice'
+
+export type { WorkspaceMode } from './menuChoice'
 export const drawingTools = [
   { id: 'select', label: 'Select', icon: FiMousePointer },
   { id: 'pan', label: 'Pan', icon: FiMove },
@@ -65,14 +65,6 @@ type Props = {
   assistant?: () => void
   assistantOpen?: boolean
   previewing?: boolean
-}
-function choose(event: MouseEvent<HTMLButtonElement>, action: () => void) {
-  const menu = event.currentTarget.closest('details')
-  if (menu) {
-    menu.open = false
-    menu.querySelector('summary')?.focus()
-  }
-  action()
 }
 const shortcuts =
   'Arrow keys move; Shift gives finer steps. [ / ] rotate; comma / period resize; Page Up / Down adjust height. Ctrl/Cmd Z undoes. Scroll or pinch zooms 3D; Ctrl + / - zooms; Ctrl 0 fits.'
@@ -163,6 +155,7 @@ export function WorkspaceHeader({
               <span>Collaborate</span>
             </button>
           )}
+          <ExportMenu />
           <button aria-label="Find a control" data-tooltip="Find a control · Ctrl/Cmd K" onClick={search}>
             <FiSearch />
             <kbd>Ctrl K</kbd>
@@ -276,72 +269,18 @@ export function WorkspaceHeader({
           </div>
         </details>
       </div>
-      <div className="studio-view-dock" aria-label="Workspace view">
-        <div className="studio-view-switch">
-          {(['plan', 'split', 'model'] as const).map((next, i) => (
-            <button
-              key={next}
-              aria-pressed={mode === 'edit' && view === next}
-              onClick={() => {
-                setMode('edit')
-                setView(next)
-              }}
-            >
-              {['2D', 'Split', '3D'][i]}
-            </button>
-          ))}
-        </div>
-        <button
-          className="studio-walk"
-          aria-label={walking ? 'Exit walk' : 'Walk'}
-          aria-pressed={walking}
-          onClick={walk}
-          data-tooltip={walking ? 'Exit walkthrough' : 'Walk through the building'}
-        >
-          <FiNavigation />
-          <span>{walking ? 'Exit walk' : 'Walk'}</span>
-        </button>
-        <button
-          className="studio-present"
-          aria-label="Present"
-          aria-pressed={mode === 'present'}
-          onClick={() => setMode('present')}
-          data-tooltip="Present building"
-        >
-          <FiPlay />
-          <span>Present</span>
-        </button>
-        <details className="studio-menu studio-view-menu">
-          <summary aria-label="More view modes">
-            <FiMoreHorizontal />
-          </summary>
-          <div>
-            <button
-              aria-pressed={mode === 'analyze'}
-              onClick={(event) => choose(event, () => setMode('analyze'))}
-            >
-              Analyze building
-            </button>
-            <button
-              aria-pressed={mode === 'present'}
-              onClick={(event) => choose(event, () => setMode('present'))}
-            >
-              Present building
-            </button>
-          </div>
-        </details>
-        {inspectorAvailable && (
-          <button
-            className="studio-properties-trigger"
-            aria-label="Toggle properties"
-            data-tooltip={selection ? 'Selected element properties' : 'Properties'}
-            aria-pressed={inspectorOpen}
-            onClick={toggleInspector}
-          >
-            <FiSliders />
-          </button>
-        )}
-      </div>
+      <StudioViewDock
+        mode={mode}
+        setMode={setMode}
+        view={view}
+        setView={setView}
+        walk={walk}
+        walking={walking}
+        selection={selection}
+        inspectorOpen={inspectorOpen}
+        toggleInspector={toggleInspector}
+        inspectorAvailable={inspectorAvailable}
+      />
     </>
   )
 }

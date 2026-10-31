@@ -9,6 +9,8 @@ import { claim, complete, fail, recoverExhausted, renew } from '../jobs/queue'
 import { analyze } from './analyze'
 import { normalizeImage, purgeAsset } from './images'
 import { exportProject, snapshotProject } from './exports'
+import { exportCad } from './cad-export'
+import { convertCad } from '../modules/cad/convert'
 import { maintenance } from './maintenance'
 import type { Metrics } from '../middleware/observability'
 import { report } from '../middleware/telemetry'
@@ -68,11 +70,17 @@ export class Worker {
         case 'asset.normalize':
           result = await normalizeImage(this.db, this.store, job)
           break
+        case 'cad.convert':
+          result = await convertCad(this.db, this.config, this.store, job)
+          break
         case 'asset.purge':
           result = await purgeAsset(this.db, this.store, job)
           break
         case 'export':
           result = await exportProject(this.db, this.store, job)
+          break
+        case 'cad.export':
+          result = await exportCad(this.db, this.config, this.store, job)
           break
         case 'project.snapshot':
           result = await snapshotProject(this.db, job)
