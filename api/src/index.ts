@@ -3,9 +3,11 @@ import { createApp } from './app'
 import { readConfig } from './config/env'
 import { createServices } from './config/services'
 import { maximumMessageBytes } from './realtime/protocol'
+import { startIncidentReporting, closeIncidentReporting } from './monitoring'
 import { log } from './logging'
-const config = readConfig(),
-  services = createServices(config),
+const config = readConfig()
+startIncidentReporting(config)
+const services = createServices(config),
   app = createApp(services)
 await services.readiness.check()
 await services.hub.start()
@@ -33,6 +35,7 @@ async function shutdown() {
   await services.hub.stop()
   services.limits.close()
   services.metrics.sink?.close?.()
+  await closeIncidentReporting()
   await services.db.close({ timeout: 5 })
   log('api.stopped')
   process.exit(0)

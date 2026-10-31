@@ -71,6 +71,24 @@ test('severity filtering works and logging failure cannot interrupt an operation
   ).not.toThrow()
 })
 
+test('the emitter writes one framed JSON document per event', () => {
+  const lines: string[] = [],
+    logger = createLogger('info', (line) => lines.push(line))
+  logger('http.request', { requestId: 'request_1', method: 'GET', status: 200 })
+  logger('job.completed', { jobId: 'job_1' })
+  expect(lines).toHaveLength(2)
+  for (const [index, line] of lines.entries()) {
+    const row = JSON.parse(line)
+    expect(line.split(/\r?\n/)).toHaveLength(1)
+    expect(line.startsWith('{"level":"info","at":"')).toBe(true)
+    expect(line.endsWith(`"event":"${index === 0 ? 'http.request' : 'job.completed'}"}`)).toBe(true)
+    expect(Number.isFinite(Date.parse(row.at))).toBe(true)
+    // Process identity belongs to the deployment, not to the event the collector indexes.
+    expect(row.pid).toBeUndefined()
+    expect(row.hostname).toBeUndefined()
+  }
+})
+
 test('OTLP batches are bounded, omit private fields and serialize concurrent flushes', async () => {
   const bodies: string[] = []
   let release!: (response: Response) => void

@@ -4,6 +4,7 @@ import type { ObjectStore } from '../storage/objects'
 import type { PlanIntelligenceProvider } from '../modules/ai/provider'
 import { classifyFailure } from '../modules/ai/provider'
 import { ApiError } from '../security/errors'
+import { captureIncident } from '../monitoring'
 import { log } from '../logging'
 import { claim, complete, fail, recoverExhausted, renew } from '../jobs/queue'
 import { analyze } from './analyze'
@@ -121,6 +122,7 @@ export class Worker {
         code: failure.code,
         retryable: failure.retryable,
       })
+      captureIncident(error, { jobId: job.id, requestId: job.request_id, kind: job.kind, code: failure.code })
       if (error instanceof TypeError)
         log('job.client_failed', {
           jobId: job.id,

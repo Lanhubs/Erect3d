@@ -11,6 +11,7 @@ import { originGuard } from './middleware/auth'
 import { traffic } from './middleware/traffic'
 import { ApiError } from './security/errors'
 import { log } from './logging'
+import { mountIncidentReporting } from './monitoring'
 import { report } from './middleware/telemetry'
 import { mountRoutes } from './routes'
 import { buildOpenApi } from './contracts/openapi'
@@ -20,6 +21,7 @@ export function createApp(services: Services) {
   const app = new Hono<ApiEnv>({ strict: false }),
     { config, db, metrics, limits, store } = services
   app.use('*', observe(metrics))
+  mountIncidentReporting(app)
   const security = secureHeaders({
     xFrameOptions: 'DENY',
     referrerPolicy: 'no-referrer',

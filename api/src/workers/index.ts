@@ -1,8 +1,11 @@
 import { readConfig } from '../config/env'
 import { createServices } from '../config/services'
 import { Worker } from './runner'
+import { closeIncidentReporting, startIncidentReporting } from '../monitoring'
 import { log } from '../logging'
-const services = createServices(readConfig()),
+const config = readConfig()
+startIncidentReporting(config)
+const services = createServices(config),
   worker = new Worker(
     services.db,
     services.config,
@@ -24,6 +27,7 @@ try {
 } finally {
   services.metrics.sink?.close?.()
   services.limits.close()
+  await closeIncidentReporting()
   await services.db.close({ timeout: 5 })
   log('worker.stopped')
 }

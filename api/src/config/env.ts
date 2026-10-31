@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { isIP } from 'node:net'
+import { validateConfiguration } from './validate'
 
 const optionalText = z.preprocess((value) => (value === '' ? undefined : value), z.string().min(1).optional())
 const schema = z
@@ -51,136 +51,13 @@ const schema = z
     WORKER_POLL_MS: z.coerce.number().int().min(100).max(30000).default(1000),
     WORKER_LEASE_SECONDS: z.coerce.number().int().min(30).max(600).default(120),
     LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+    SENTRY_DSN: optionalText,
+    SENTRY_RELEASE: optionalText,
     OTEL_EXPORTER_OTLP_LOGS_ENDPOINT: optionalText,
     OTEL_SERVICE_NAME: z.string().min(1).max(100).default('erect3d-api'),
     TRUSTED_PROXY_IPS: z.string().default(''),
   })
-  .superRefine((env, context) => {
-    if (env.OTEL_EXPORTER_OTLP_LOGS_ENDPOINT) {
-      try {
-        const endpoint = new URL(env.OTEL_EXPORTER_OTLP_LOGS_ENDPOINT)
-        if (
-          !['http:', 'https:'].includes(endpoint.protocol) ||
-          endpoint.username ||
-          endpoint.password ||
-          endpoint.search ||
-          endpoint.hash
-        )
-          throw new Error()
-      } catch {
-        context.addIssue({
-          code: 'custom',
-          path: ['OTEL_EXPORTER_OTLP_LOGS_ENDPOINT'],
-          message: 'Use an HTTP(S) OTLP logs endpoint without credentials or query parameters',
-        })
-      }
-    }
-    try {
-      if (!['postgres:', 'postgresql:'].includes(new URL(env.DATABASE_URL).protocol)) throw new Error()
-    } catch {
-      context.addIssue({ code: 'custom', path: ['DATABASE_URL'], message: 'Use a PostgreSQL connection URL' })
-    }
-    if (env.REDIS_URL) {
-      try {
-        if (!['redis:', 'rediss:'].includes(new URL(env.REDIS_URL).protocol)) throw new Error()
-      } catch {
-        context.addIssue({ code: 'custom', path: ['REDIS_URL'], message: 'Use a Redis connection URL' })
-      }
-    }
-    if (
-      env.TRUSTED_PROXY_IPS.split(',')
-        .filter(Boolean)
-        .some((value) => !isIP(value.trim()))
-    ) {
-      context.addIssue({
-        code: 'custom',
-        path: ['TRUSTED_PROXY_IPS'],
-        message: 'Use exact proxy IP addresses',
-      })
-    }
-    if (env.R2_ENDPOINT) {
-      try {
-        const endpoint = new URL(env.R2_ENDPOINT)
-        if (
-          endpoint.protocol !== 'https:' ||
-          !endpoint.hostname.endsWith('.r2.cloudflarestorage.com') ||
-          !['', '/'].includes(endpoint.pathname) ||
-          endpoint.search ||
-          endpoint.hash ||
-          endpoint.username ||
-          endpoint.password
-        )
-          throw new Error()
-      } catch {
-        context.addIssue({
-          code: 'custom',
-          path: ['R2_ENDPOINT'],
-          message: 'Use the private Cloudflare R2 HTTPS API endpoint, without bucket paths',
-        })
-      }
-    }
-    const origins = env.ALLOWED_ORIGINS.split(',').map((value) => value.trim())
-    if (
-      origins.some((value) => {
-        try {
-          return new URL(value).origin !== value
-        } catch {
-          return true
-        }
-      })
-    ) {
-      context.addIssue({
-        code: 'custom',
-        path: ['ALLOWED_ORIGINS'],
-        message: 'Use exact origins, without paths or wildcards',
-      })
-    }
-    if (env.NODE_ENV === 'production') {
-      if (env.DATABASE_TLS !== 'verify-full')
-        context.addIssue({
-          code: 'custom',
-          path: ['DATABASE_TLS'],
-          message: 'Production requires verified database TLS',
-        })
-      if (origins.some((value) => !value.startsWith('https://')))
-        context.addIssue({
-          code: 'custom',
-          path: ['ALLOWED_ORIGINS'],
-          message: 'Production origins require HTTPS',
-        })
-      if (env.STORAGE_BACKEND === 'r2' && !env.R2_BUCKET)
-        context.addIssue({
-          code: 'custom',
-          path: ['R2_BUCKET'],
-          message: 'Production requires private R2 storage',
-        })
-    }
-    if (env.RATE_LIMIT_BACKEND === 'redis' && !env.REDIS_URL) {
-      context.addIssue({
-        code: 'custom',
-        path: ['REDIS_URL'],
-        message: 'Redis rate limits require REDIS_URL',
-      })
-    }
-    const storage = [env.R2_ENDPOINT, env.R2_BUCKET, env.R2_ACCESS_KEY_ID, env.R2_SECRET_ACCESS_KEY]
-    if (
-      env.STORAGE_BACKEND === 'filesystem' &&
-      (!env.STORAGE_ROOT || !env.STORAGE_SIGNING_KEY || env.STORAGE_SIGNING_KEY.length < 32)
-    ) {
-      context.addIssue({
-        code: 'custom',
-        path: ['STORAGE_ROOT'],
-        message: 'Private filesystem storage requires a root and signing key of at least 32 characters',
-      })
-    }
-    if (storage.some(Boolean) && !storage.every(Boolean)) {
-      context.addIssue({
-        code: 'custom',
-        path: ['R2_BUCKET'],
-        message: 'Supply all private R2 settings together',
-      })
-    }
-  })
+  .superRefine(validateConfiguration)
 export type Config = z.infer<typeof schema>
 export function readConfig(input: Record<string, unknown> = process.env): Config {
   const parsed = schema.safeParse(input)
