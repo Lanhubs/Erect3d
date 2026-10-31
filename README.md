@@ -41,10 +41,12 @@ docker compose up -d --build
 bun run dev:client
 ```
 
-Open `http://127.0.0.1:5173`. Compose starts PostgreSQL, migrations, API and worker. Account
-creation is enabled for this loopback-only development setup. Gemini and R2 are optional:
-without credentials, manual editing, templates, accounts and collaboration work, while
-cloud-dependent actions report that they are unavailable.
+Open `http://localhost:5173`. The development server binds Vite's default `localhost` loopback
+address, which on some Windows setups is IPv6-only, so use the host name the server printed
+instead of assuming `127.0.0.1`; both loopback origins may call the API. Compose starts
+PostgreSQL, migrations, API and worker. Account creation is enabled for this loopback-only
+development setup. Gemini and R2 are optional: without credentials, manual editing, templates,
+accounts and collaboration work, while cloud-dependent actions report that they are unavailable.
 
 For a host-run API/worker instead, start only PostgreSQL with
 `docker compose up -d postgres`, copy `api/.env.example` to `api/.env.local`, then run:
@@ -73,18 +75,25 @@ reuse a live database. Preparation requires an explicit `TEST_DATABASE_URL` endi
 ```sh
 docker compose up -d postgres
 bun run test:prepare
+bun run check:startup
 bun run test
 bun run lint
 bun run format:check
 bun run typecheck
 bun run coverage
 bun run build
+bun run audit
 ```
 
 `bun run verify` runs lint, formatting, types, tests and the combined production web build.
+`bun run typecheck` also runs the per-package file-size guards described in
+[contributing](CONTRIBUTING.md). `bun run check:startup` boots the real API against the
+disposable database and checks readiness, health and the authentication boundary; it refuses
+to run without `TEST_DATABASE_URL`, so it cannot start against a live project database.
 `bun run test` needs no database to be useful: without `TEST_DATABASE_URL` it runs the suites
 that work offline and prints every `*.integration.test.ts` file it skipped, while
 `bun run test:unit` and `bun run test:integration` ask for one half explicitly.
+`bun run coverage` requires the same disposable database and enforces the recorded floors.
 The backend runs directly under Bun; CI also builds its production Docker image.
 Tests use synthetic drawings, injected AI providers and in-memory private storage. They
 do not call Gemini or upload drawings to R2. Redis integration is enabled by setting

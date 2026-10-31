@@ -10,7 +10,10 @@ suites: with a disposable `TEST_DATABASE_URL` it runs everything, and without on
 the suites that need no database and prints the name of every `*.integration.test.ts` file it
 skipped, so a fresh clone has a runnable command that cannot pretend to be the full suite.
 `bun run test:unit` and `bun run test:integration` request either half explicitly, and
-`test:integration` refuses to start without the isolated database. CI additionally runs coverage,
+`test:integration` refuses to start without the isolated database. `bun run check:startup` also
+requires that database: it overrides `DATABASE_URL` with `TEST_DATABASE_URL` in the child process,
+boots the real API on loopback port 44001 and checks `/ready`, `/health` and that an
+unauthenticated `GET /api/v1/projects` is rejected with 401. CI additionally runs coverage,
 Redis integration, a production API Docker build, dependency audits and secret scanning.
 
 ## Coverage scope and gates
@@ -43,9 +46,15 @@ Coverage instrumentation uses a 20-second test deadline; it does not change prod
 request/AI timeouts. The ordinary backend suite uses the same bounded deadline for its
 real database and image-processing integration cases.
 
-The formatting pass expanded formerly dense API files. The file-size guard retains a
-200-line limit for new files, prohibits growth in the explicitly recorded formatted legacy
-files, and enforces a 500-line hard ceiling. This avoids changing working modules merely
-to counter line wrapping; larger legacy files should be extracted when behavior changes.
+The formatting pass expanded formerly dense API files, so size is guarded rather than freely
+rewritten. `client/scripts/check-lines.ts` and `api/scripts/check-lines.ts` run inside
+`bun run typecheck`. Each source file is compared with a limit from
+`tools/client-file-size-baselines.json` or `tools/api-file-size-baselines.json`: a listed file may
+not grow past its recorded line count, and a file that is not listed is limited to 200 lines. The
+guards report the largest file they saw instead of enforcing an absolute ceiling. 300 lines is the
+reviewed target for work that touches an oversized legacy file, so such work should shrink the
+file, and any deliberate exception is a baseline edit that a reviewer sees in the diff. This
+avoids changing working modules merely to counter line wrapping; larger legacy files should be
+extracted when behavior changes.
 The native WebGPU tower startup defect remains open and must not be represented as fixed
 by passing unit tests or WebGL screenshots.

@@ -106,7 +106,7 @@ unverified. The user’s real project was not replaced. No commit, push or deplo
 
 Final checks: 110 API passes / 1 Redis skip / 0 failures (741 assertions, 29 files);
 166 client passes / 0 failures (1,880 assertions, 39 files). API typecheck, the
-200-line source gate (157 files, maximum 160 lines), frontend production build and
+file-size source gate (157 files, maximum 160 lines in that check), frontend production build and
 Git whitespace checks passed. The build retains its existing large-chunk warning.
 Reload retained revision 12; the synthetic QA account was signed out afterward.
 

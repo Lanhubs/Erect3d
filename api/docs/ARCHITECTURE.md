@@ -109,6 +109,13 @@ membership can grant scoped external access. Removing a team member also removes
 direct memberships in that team's projects. Permission removal is checked on subsequent
 HTTP requests, WebSocket messages, delivery and heartbeat.
 
+A project owner adds a registered collaborator with `POST /api/v1/projects/:projectId/members`
+and `{ "email": "name@example.com", "role": "EDITOR" }`. Addresses are trimmed and lower-cased,
+roles are limited to the table above, access is granted immediately and no email is sent; an
+address without an account returns `ACCOUNT_NOT_FOUND`. The lookup happens only after the caller
+passes `manage`, so the route is not an account directory. Role changes and removal keep using
+the user-id member routes.
+
 Browser cookies are opaque, HttpOnly, SameSite=Lax, Secure in production, with idle and
 absolute expiry. Mutations require an exact allowed Origin and session-bound CSRF token.
 Registration/login have separate rate limits and progressive login cooldowns. Password

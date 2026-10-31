@@ -54,4 +54,4 @@ Project commits and drag previews reuse unchanged JSON branches. Furniture edits
 
 ## 11. Module plan
 
-Domain types, fixture, coordinate helpers, geometry helpers, project store, persistence, import, worker, plan editor, 3D viewer, walkthrough controller, inspector, and shell each live in focused files. Every source file must stay under 200 lines; build verification checks this mechanically.
+Domain types, fixture, coordinate helpers, geometry helpers, project store, persistence, import, worker, plan editor, 3D viewer, walkthrough controller, inspector, and shell each live in focused files. `bun run typecheck` also runs `scripts/check-lines.ts`, which caps a source file that is not listed in `tools/client-file-size-baselines.json` at 200 lines and freezes each listed legacy file at its recorded count, so oversized modules cannot grow. Splitting one is deliberate work with passing tests, not a formatting exercise.

@@ -11,8 +11,15 @@ independent and install all three because the API and film reuse client geometry
 - Use the existing Oxlint configuration. Investigate warnings before changing hook
   dependencies or imperative Three.js code; document narrowly scoped justified exceptions.
 - Format with `bun run format`. Keep formatting-only changes separate from functional work.
+- Keep new source files at or under 200 lines. `bun run typecheck` also runs the client and API
+  file-size guards, which read `tools/client-file-size-baselines.json` and
+  `tools/api-file-size-baselines.json`: a listed legacy file may not grow past its recorded count
+  and any other file is capped at 200. Work that touches an oversized file should bring it toward
+  300 lines or fewer by extracting a real module boundary; changing a baseline is a deliberate,
+  reviewed edit, never a way to make a check pass.
 - Run `bun run verify`, `bun run coverage` and `bun run audit` with a disposable migrated
-  test database. Describe graphics or external-service checks that could not be completed.
+  test database, and `bun run check:startup` to boot the real API against that same database.
+  Describe graphics or external-service checks that could not be completed.
 
 ## Reviews and maintenance
 

@@ -86,7 +86,7 @@ file fails; add a new numbered migration instead. There is no destructive automa
 down-migration. Back up before deployment and test restore procedures independently.
 
 Create an `erect_app` login without superuser/DDL privileges, then apply
-`deploy/runtime-role.sql` as the administrator. Replace database/role names if yours differ.
+`api/deploy/runtime-role.sql` as the administrator. Replace database/role names if yours differ.
 Reapply grants after migrations introducing new objects. Runtime cannot edit/delete
 immutable history or change migration checksums. The application migrations are not
 automatically run by API/worker startup.
@@ -115,12 +115,12 @@ Keep source files private in backups too.
 
 ## Start services and proxy
 
-Install `deploy/erect-api.service` and `deploy/erect-worker.service` in the systemd service
-directory, then reload systemd and enable/start both services. The worker is separate
+Install `api/deploy/erect-api.service` and `api/deploy/erect-worker.service` in the systemd
+service directory, then reload systemd and enable/start both services. The worker is separate
 from HTTP and can be scaled by additional units/processes. Each process handles one job
 at a time, with leases and cancellation checks preventing stale publication.
 
-Install `deploy/nginx.conf` inside Nginx's HTTP context. It serves `client/dist`, proxies
+Install `api/deploy/nginx.conf` inside Nginx's HTTP context. It serves `client/dist`, proxies
 `/api/`, `/health` and `/ready`, supports WebSocket upgrades, and overwrites the trusted
 X-Real-IP header. The example TLS certificate paths use your existing public domain.
 Run `nginx -t` before reloading. Test these templates on the VPS; they were not executed

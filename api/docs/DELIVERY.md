@@ -138,10 +138,13 @@ TypeScript checks, passed. Existing large OpenCV/PDF bundle warnings remain.
 
 ## 13. File-length verification
 
-`scripts/check-lines.ts` checks every API source, adapter, script and test TypeScript file
-and fails above 200 lines. It reports file count and maximum length in development/CI.
-The latest check covered **130 TypeScript files**, with a maximum of **112 lines**.
-Markdown, SQL and deployment configuration are not compressed to satisfy that source rule.
+`scripts/check-lines.ts` walks every API source, adapter, script and test TypeScript file and
+compares each one with `tools/api-file-size-baselines.json`: a file listed there may not grow past
+its recorded count, and any other file fails above 200 lines. It runs as `bun run check:lines`,
+as part of this package's `bun run verify` and from the root `bun run typecheck`, and reports the
+file count and maximum length. The current check covers **323 TypeScript files** with a maximum
+of **378 lines**, all inside frozen legacy entries. Markdown, SQL and deployment configuration
+are not compressed to satisfy that source rule.
 
 ## 14. Known limitations and deployment gates
 

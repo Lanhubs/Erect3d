@@ -12,6 +12,12 @@
 - DWG/DXF plan import through a bounded conversion worker, and DXF/DWG sheet export for CAD tools.
 - A `bun run test` that runs the database-free suites and prints every integration suite it skipped,
   alongside explicit `test:unit` and `test:integration` commands.
+- Per-package file-size guards run from `bun run typecheck`: recorded legacy files are frozen at
+  their measured line counts and any other source file is capped at 200 lines.
+- The largest editor modules (3D viewport, workspace shell, inspector, structure panel and proposal
+  review) were divided into focused components and hooks, with viewport bounds and review state
+  extracted under test. This is internal structure only; no interface, model or rendering behavior
+  changed.
 - Consistent formatting maintained separately from functional changes.
 
 Earlier features remain documented in the package guides and Git history. No historical

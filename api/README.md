@@ -80,6 +80,11 @@ bun --env-file=.env.local run check:startup
 bun build ./client/index.ts --target browser --outfile .local/browser-adapter.js
 ```
 
+From the repository root, `bun run test:prepare` does the same migration but accepts only a
+`TEST_DATABASE_URL` ending in `_test` and forces it into the child process, so it cannot migrate
+a live development database; `bun run check:startup` likewise passes that test URL before booting
+the real API. The `check:startup` form above starts the API against whatever `DATABASE_URL` the
+env file you name contains, so point it at a disposable database.
 `TEST_REDIS_URL` enables the additional native Redis integration test. See
 the root `.github/workflows/ci.yml` for active PostgreSQL/Redis CI checks.
 
@@ -111,4 +116,6 @@ Authenticated OpenAPI is available at `/api/v1/openapi.json`. Routes are derived
 Hono registration and core request schemas from Zod. Some auxiliary bodies and response
 schemas remain generic; this is not yet a complete client code-generation specification.
 
-Nothing has been committed, pushed or deployed by this backend task.
+This documentation describes the repository as it is checked out: nothing here provisions a
+deployment, a domain, a Cloudflare bucket or a Gemini project, and no release has been published
+from these instructions.
