@@ -65,8 +65,17 @@ and deep-compares every response, so a change in the client-visible error contra
 Both files pass with `SENTRY_DSN` unset, produce no traffic beyond `127.0.0.1` and commit no
 credential — the DSN, cookie value and connection string in them are placeholders.
 
-The 28 integration suites, `bun run coverage` and `bun run check:startup` still require the
-disposable PostgreSQL database; nothing here substitutes for them.
+The 28 integration suites, `bun run coverage` and `bun run check:startup` need the disposable
+PostgreSQL database; nothing above substitutes for them. They have been executed locally against
+two loopback-only containers (`postgres:17` with its data directory on a tmpfs, `redis:7-alpine`
+with persistence off) and all 28 pass, with the Redis suite passing once `TEST_REDIS_URL` is set —
+see [assessment evidence](REASSESSMENT.md). Running them found and fixed a real regression in the
+worker log sink, so a unit-only pass is not sufficient evidence for a logging change.
+
+Coverage floors are a separate matter: executed against that database, all three packages currently
+miss at least one committed floor, and the same run repeated at the preceding commit shows the gap
+predates the dependency and incident-reporting work. The floors were left untouched rather than
+re-recorded to match. `bun run coverage` therefore exits non-zero today.
 
 A reproducibility defect found in this pass is closed. The editor stylesheet imports Tailwind CSS,
 which no package manifest declared, so a production build on a clean machine failed to resolve that

@@ -10,8 +10,14 @@
 - One `api/src/logging.ts` entry point for the JSON logger, with request correlation, level
   escalation and error classification now covered end to end through the HTTP middleware.
 - pino added as the JSON emitter behind that unchanged contract: one framed document per event,
-  text levels, no `pid`/`hostname`, direct synchronous writes and the same credential redaction.
-  The last `console.*` call in API runtime source is gone.
+  text levels, no `pid`/`hostname`, writes through the same `console.log` sink as before and the
+  same credential redaction. The last `console.*` call in API runtime source is gone.
+- All 28 API integration suites, the Redis suite and `bun run check:startup` executed against
+  disposable loopback-only containers: 93 tests in 28 files pass, and the repository total with a
+  database is 651 tests with 650 passing. That run corrected the logger sink, which had moved to
+  `process.stdout.write` and left `api/tests/jobs.integration.test.ts` unable to observe
+  `job.failed`; only the unit half of the suite can hide that, so it is recorded as a defect found
+  by the database run rather than a passing result all along.
 - Optional Sentry incident reporting (`api/src/monitoring.ts`, `@sentry/bun` + `@sentry/hono`):
   inert while `SENTRY_DSN` is empty, one policy for HTTP and worker failures, Sentry 11
   `dataCollection` switched off for cookies, headers, bodies, query strings, stack-frame locals

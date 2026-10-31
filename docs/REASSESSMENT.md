@@ -210,6 +210,11 @@ because it decides how the application paints.
 
 ### Not verified here, and why
 
+_The first two bullets are this round's snapshot and have since been overtaken: the database
+suites, the Redis suite, `check:startup` and `bun run coverage` were all executed afterwards
+against disposable containers, with the results recorded in
+"The database suites were then actually run"._
+
 - `bun run test:prepare`, `bun run test:integration`, `bun run coverage`, `bun run check:startup`
   and the full `bun run verify` need a disposable PostgreSQL 17 ending in `_test`. This machine's
   Docker daemon is stopped, and the PostgreSQL listening on `127.0.0.1:5432` is the developer's
@@ -315,15 +320,80 @@ manifests alone shifted four floating ranges to newer patches (`@babel/runtime`,
 binary variants. That is exactly why the file is committed and why CI installs with
 `--frozen-lockfile`; the committed lock was then re-verified as a fixed point of frozen install.
 
-Not runnable on this machine, and therefore not claimed: the 28 integration suites, `bun run
-coverage` and `bun run check:startup` all need the disposable Compose PostgreSQL, and starting a
-container was declined here. CI runs them. `docker build` needs the image layer cache this machine
-does not have. Two moderate advisories (`glob@13.0.6`, `minimatch@10.2.6`) arrive only through
+Two moderate advisories (`glob@13.0.6`, `minimatch@10.2.6`) arrive only through
 `@sentry/bundler-plugins`, which the API never imports; their fixes (glob ≥14.0.2, minimatch
 ≥11.0.1) are outside the ranges Sentry declares, so no in-range upgrade exists and forcing one
 would be a fabricated green check. Two consequences are worth stating: the workspace lock requires
 Bun 1.4.4 because 1.4.2 writes a phantom root dependency into it, and the repository now asserts
 that pin, so a developer still on 1.4.2 will see `bun run test` fail until they upgrade.
+
+## The database suites were then actually run (1 November 2026)
+
+The previous paragraph was written when starting a container had been declined. That declined
+constraint is what let a real defect survive three rounds of "full" verification, so the suites
+were run for their own sake rather than to complete a checklist.
+
+Two disposable containers, both loopback-only, neither holding a repository secret: `postgres:17`
+published on `127.0.0.1:55432` with its data directory on `--tmpfs` so nothing persists, and
+`redis:7-alpine` on `127.0.0.1:56379` started with `--save '' --appendonly no`. `erect_api_test`
+came from `tools/postgres-init.sql`, and `bun run test:prepare` applied all 12 migrations to it.
+The developer's live cluster on `127.0.0.1:5432` was not contacted; every command below ran with an
+explicit `TEST_DATABASE_URL`, in a source copy that contains no `.env` file at all, and
+`api/tests/helpers.ts` additionally refuses any database name not ending in `_test`.
+
+| Command                                       | Result                                                                                              |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `bun install --frozen-lockfile`               | resolved from the committed lock, `pino 10.4.0` and `@sentry/* 11.10.0` installed exactly as pinned |
+| `bun run test:prepare`                        | migrations `001_accounts` … `012_cad_sources` applied to `erect_api_test`                           |
+| `bun run test:integration`                    | 92 passed, 0 failed, 1 skipped — 93 tests across 28 files, 54.4s                                    |
+| `tests/redis.integration.test.ts`             | passes once `TEST_REDIS_URL` is set (run separately: 1 passed, 0 failed)                            |
+| `bun run check:startup`                       | "Real API startup, readiness, health and authentication boundary passed"                            |
+| `bun run test` (with the database)            | 651 tests — 650 passed, 1 skipped, 0 failed (repository 23, client 321, API 305, film 2)            |
+| `bun run test:integration` after the fix      | 93 passed, 0 failed, 0 skipped across 28 files with both URLs set — this is the committed tree      |
+| `bun run lint` / `format:check` / `typecheck` | 150 warnings 0 errors on 879 files / 966 files, 0 need formatting / three packages clean            |
+
+### The defect the database suites caught
+
+`api/tests/jobs.integration.test.ts:85` captures worker output with `spyOn(console, 'log')`. The
+pino commit had also moved the default sink from `console.log(line)` to
+`process.stdout.write(\`${line}\n\`)`, so that spy saw nothing, `find`returned`undefined`and
+"a failing provider job logs safe request, project and failure identifiers" failed with "received
+value must be a non-null object". The suite was right and the implementation was wrong: the sink
+change was not required by pino and silently moved an observable boundary the tests depended on.`api/src/logging.ts`now defaults to`console.log(line)` again, which is what the pre-pino code
+did, and the whole suite passes. Nothing in the assertions was adjusted, and no test was skipped to
+obtain that result.
+
+This is the cost of running the unit half alone: `bun run test` without a database reports the 28
+skipped files by name, which is honest, but it cannot exercise them, and this regression was in
+one of them.
+
+### Coverage gates: measured, and red — for reasons that predate this work
+
+`bun run coverage` had never been executed on this machine. Running it against the disposable
+database fails its own floor check, and the failure is not attributable to the dependency or
+incident-reporting work:
+
+| Package        | Measured (line / function / files) | Committed floor | Result       |
+| -------------- | ---------------------------------- | --------------- | ------------ |
+| `client`       | 60.47 / 75.92 / 339                | 60 / 76 / 288   | floor missed |
+| `api`          | 86.48 / 87.54 / 218                | 87 / 88 / 156   | both missed  |
+| `motion-video` | 84.16 / 96.87 / 4                  | 99 / 94 / 4     | line missed  |
+
+`client/src`, `client/tests` and `motion-video` source are byte-identical to the commit that
+preceded this pass (only lockfiles and pinned ranges differ), so those two measurements are
+unchanged by anything here. For `api` the question was tested rather than assumed: the same
+coverage run repeated at that preceding commit measured 86.44 / 87.63 / 216 — already below both
+of its floors. The floors in `tools/coverage-baselines.json` were recorded long before this pass
+and describe a smaller instrumented scope (156 API files against 216, 288 client files against
+339), so the gate has been comparing a current tree to a stale snapshot.
+
+The floors were **not** rewritten. Lowering `client` to 75, `api` to 86 and `motion-video` to 84
+would turn a measured regression signal off, which is exactly the failure mode `docs/
+VERIFICATION.md` warns against, and `--record-baseline` is documented as a deliberate
+owner-reviewed act, not a way to make a run pass. Two legitimate routes remain open to the owner:
+add tests until each percent clears its floor, or re-record the baselines from this same measured
+run with the scope change explained in the diff. `coverage/summary.json` was not produced, because
+the script throws at the first package before writing it.
 
 No push, tag, release, deployment or resubmission was performed in this pass either.
 A rescore, offer or funding decision belongs to the external reviewer.
