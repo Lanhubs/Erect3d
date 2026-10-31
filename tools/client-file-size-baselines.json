@@ -46,7 +46,6 @@
   "src/rendering/SiteEnvironment.tsx": 226,
   "src/rendering/softwareDetails.ts": 205,
   "src/rendering/SoftwarePreview.tsx": 286,
-  "src/rendering/Viewer.tsx": 533,
   "src/state/project.ts": 245,
   "src/workers/wallScan.ts": 214
 }

@@ -15,6 +15,17 @@ export function legacyRenderer(defaults: RendererDefaults) {
   if (import.meta.env.DEV) renderer.domElement.dataset.rendererInstance = crypto.randomUUID()
   return renderer
 }
+export function supportsWebgl() {
+  try {
+    const probe = document.createElement('canvas')
+    const context = probe.getContext('webgl2') || probe.getContext('webgl')
+    if (!context) return 'gpu' in navigator
+    context.getExtension('WEBGL_lose_context')?.loseContext()
+    return true
+  } catch {
+    return false
+  }
+}
 export async function graphicsRenderer(defaults: RendererDefaults, choice: RendererChoice = 'auto') {
   if (choice === 'webgl') return legacyRenderer(defaults)
   try {
