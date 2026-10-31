@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { createLogger } from '../src/security/log'
+import { createLogger } from '../src/logging'
 import { OtlpSink } from '../src/middleware/otlp'
 import { report } from '../src/middleware/telemetry'
 import { readConfig } from '../src/config/env'

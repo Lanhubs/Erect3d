@@ -5,7 +5,7 @@ import { assertLease } from '../jobs/lease'
 import { enqueue } from '../jobs/queue'
 import { bytesHash } from '../modules/assets/validation'
 import { ApiError } from '../security/errors'
-import { log } from '../security/log'
+import { log } from '../logging'
 
 type Output = {
   bytes: Uint8Array

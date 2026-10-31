@@ -56,8 +56,8 @@ export function createLogger(
   }
 }
 let logger = createLogger()
-export function configureLogging(level: Level) {
-  logger = createLogger(level)
+export function configureLogging(level: Level, write?: (line: string) => void) {
+  logger = createLogger(level, write)
 }
 export function log(event: string, fields: Fields = {}, level?: Level) {
   logger(event, fields, level)

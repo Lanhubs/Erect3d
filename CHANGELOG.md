@@ -7,6 +7,8 @@
 - Active CI, coverage baselines, dependency auditing, secret scanning and reviewed update configuration.
 - Development/test setup documentation and separate disposable database configuration.
 - Structured diagnostics with safe error context and optional bounded self-hosted OTLP export.
+- One `api/src/logging.ts` entry point for the JSON logger, with request correlation, level
+  escalation and error classification now covered end to end through the HTTP middleware.
 - DWG/DXF plan import through a bounded conversion worker, and DXF/DWG sheet export for CAD tools.
 - A `bun run test` that runs the database-free suites and prints every integration suite it skipped,
   alongside explicit `test:unit` and `test:integration` commands.

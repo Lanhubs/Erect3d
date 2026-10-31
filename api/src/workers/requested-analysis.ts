@@ -4,7 +4,7 @@ import type { ObjectStore } from '../storage/objects'
 import type { PlanIntelligenceProvider } from '../modules/ai/provider'
 import type { Metrics } from '../middleware/observability'
 import { Worker } from './runner'
-import { log } from '../security/log'
+import { log } from '../logging'
 import { recoverExhausted } from '../jobs/queue'
 import type { EditingProvider } from '../modules/assistant/provider'
 

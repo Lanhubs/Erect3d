@@ -10,7 +10,7 @@ import type { PlanIntelligenceProvider } from '../modules/ai/provider'
 import { Readiness } from '../middleware/readiness'
 import type { TelemetrySink } from '../middleware/telemetry'
 import { OtlpSink } from '../middleware/otlp'
-import { configureLogging } from '../security/log'
+import { configureLogging } from '../logging'
 import { RequestedAnalysis } from '../workers/requested-analysis'
 import { GeminiEditingProvider, type EditingProvider } from '../modules/assistant/provider'
 export type Services = ReturnType<typeof createServices>

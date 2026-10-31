@@ -1,7 +1,7 @@
 import { readConfig } from '../config/env'
 import { createServices } from '../config/services'
 import { Worker } from './runner'
-import { log } from '../security/log'
+import { log } from '../logging'
 const services = createServices(readConfig()),
   worker = new Worker(
     services.db,

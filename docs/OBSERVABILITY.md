@@ -1,8 +1,13 @@
 # Observability
 
-The API and worker retain their shared JSON logger. Each record includes `at`, `level`
+The API and worker retain their shared JSON logger. Every record includes `at`, `level`
 and `event`; HTTP and worker failures include safe request/job/project identifiers and
 classified error codes. Set `LOG_LEVEL` to `debug`, `info`, `warn` or `error`.
+
+The single implementation is `api/src/logging.ts`; `api/src/middleware/observability.ts`
+generates one `requestId` per request, stores it on the Hono context, returns it as
+`X-Request-Id` and puts it on the `http.request` line, so a log search and a client-side
+report meet on the same id. Websocket upgrades keep the id but receive no response headers.
 
 Raw exception messages, provider responses, SQL, prompts, document bodies, cookies,
 credentials and source URLs are not logged. Redaction is bounded and tolerates circular

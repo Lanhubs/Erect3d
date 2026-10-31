@@ -1,6 +1,6 @@
 import type { MiddlewareHandler } from 'hono'
 import type { ApiEnv } from './types'
-import { log } from '../security/log'
+import { log } from '../logging'
 import { report, type TelemetrySink } from './telemetry'
 export class Metrics {
   constructor(readonly sink?: TelemetrySink) {}

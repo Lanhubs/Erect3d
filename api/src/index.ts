@@ -3,7 +3,7 @@ import { createApp } from './app'
 import { readConfig } from './config/env'
 import { createServices } from './config/services'
 import { maximumMessageBytes } from './realtime/protocol'
-import { log } from './security/log'
+import { log } from './logging'
 const config = readConfig(),
   services = createServices(config),
   app = createApp(services)
