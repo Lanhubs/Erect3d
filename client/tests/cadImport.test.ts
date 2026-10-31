@@ -1,5 +1,5 @@
 import './fixtures/cloudOrigin'
-import { beforeEach, expect, test } from 'bun:test'
+import { afterAll, beforeEach, expect, test } from 'bun:test'
 import { api } from '../src/cloud/api'
 import { setCloudPersistence, type CloudPersistence } from '../src/state/persistenceMode'
 import { houseSample } from '../src/domain/residentialSamples'
@@ -51,7 +51,18 @@ function stubTransport(ticket: CadTicket) {
   return calls
 }
 
+/**
+ * The transport and the session are process-wide singletons. Bun shares globals between test
+ * files, so anything left patched here silently changes a later file's expectations.
+ */
+const originalRequest = api.request,
+  originalFetch = globalThis.fetch
 beforeEach(() => setCloudPersistence(undefined))
+afterAll(() => {
+  api.request = originalRequest
+  globalThis.fetch = originalFetch
+  setCloudPersistence(undefined)
+})
 
 test('a device project is refused before a byte leaves the browser', async () => {
   const project = houseSample(),
