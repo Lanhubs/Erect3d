@@ -82,6 +82,7 @@ test('the frozen baselines still describe the files they freeze', async () => {
   expect(drift).toEqual([])
 })
 
+// Spawning two real guard processes on a cold transpile cache can exceed Bun's 5 second default.
 test('both size guards reject a file that only exists to be too long', async () => {
   const probe = Array.from({ length: 301 }, (_line, index) => `// size probe ${index}`).join('\n') + '\n',
     written: string[] = []
@@ -90,12 +91,12 @@ test('both size guards reject a file that only exists to be too long', async () 
       const file = join(root, package_, 'src/size-probe.ts')
       await writeFile(file, probe)
       written.push(file)
-      const result = spawnSync(process.execPath, ['run', 'check:lines'], {
+      const result = spawnSync(process.execPath, ['scripts/check-lines.ts'], {
         cwd: join(root, package_),
         env: process.env,
         encoding: 'utf8',
         windowsHide: true,
-        timeout: 60000,
+        timeout: 45000,
       })
       expect(result.status, `${package_}: ${result.stderr}`).not.toBe(0)
       expect(result.stderr).toContain('src/size-probe.ts')
@@ -104,7 +105,7 @@ test('both size guards reject a file that only exists to be too long', async () 
   } finally {
     await Promise.all(written.map((file) => rm(file, { force: true })))
   }
-})
+}, 120000)
 
 afterAll(async () => {
   await rm(join(root, 'api/src/size-probe.ts'), { force: true })
