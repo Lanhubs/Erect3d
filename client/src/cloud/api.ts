@@ -3,7 +3,8 @@ const origin = (
   import.meta.env.VITE_API_ORIGIN || (typeof window !== 'undefined' ? window.location.origin : '')
 ).replace(/\/$/, '')
 // Object storage hands back a fully signed URL; only the local store's ticket path needs the app origin.
-export const privateAssetUrl = (url: string) => new URL(url, origin ? `${origin}/` : undefined).href
+export const privateAssetUrl = (url: string, base = origin) =>
+  new URL(url, base ? `${base}/` : undefined).href
 let expectedUser: string | null = null
 export function setExpectedUser(id: string | null) {
   expectedUser = id

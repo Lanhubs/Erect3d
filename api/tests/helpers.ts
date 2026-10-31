@@ -11,7 +11,7 @@ export const origin = 'http://127.0.0.1:5173'
 // Bun reports each client's address to the handler. An in-process test has no socket, so without a
 // distinct address every file would drain one shared per-IP rate-limit budget and slow suites 429.
 let testAddresses = 0
-function clientAddress() {
+export function testClientAddress() {
   const serial = testAddresses++
   return `${['192.0.2', '198.51.100', '203.0.113'][Math.floor(serial / 254) % 3]}.${(serial % 254) + 1}`
 }
@@ -40,7 +40,7 @@ export function harness(
   })
   const services = createServices(config, overrides),
     app = createApp(services),
-    address = clientAddress(),
+    address = testClientAddress(),
     send = app.request.bind(app)
   app.request = ((input: Parameters<typeof send>[0], init?: RequestInit, env?: unknown) =>
     send(input, init, env ?? ({ server: { requestIP: () => ({ address }) } } as never))) as typeof app.request
