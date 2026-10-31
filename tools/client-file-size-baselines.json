@@ -33,7 +33,6 @@
   "src/features/plan/PlanEditor.tsx": 447,
   "src/features/projects/Dashboard.tsx": 231,
   "src/features/projects/SampleLibrary.tsx": 205,
-  "src/features/structure/StructurePanel.tsx": 569,
   "src/geometry/articulationCompiler.ts": 214,
   "src/geometry/roof.ts": 274,
   "src/intelligence/convertProposal.ts": 286,
