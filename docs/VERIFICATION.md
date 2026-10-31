@@ -46,11 +46,20 @@ Coverage instrumentation uses a 20-second test deadline; it does not change prod
 request/AI timeouts. The ordinary backend suite uses the same bounded deadline for its
 real database and image-processing integration cases.
 
-An open reproducibility defect is recorded in
-[assessment evidence](REASSESSMENT.md): the editor stylesheet imports Tailwind CSS, which no
-package manifest declares, so a production build on a clean machine can fail to resolve that
-import even though every test and type check passes. Declaring the dependency is the fix and
-changes the installed dependency tree, so it needs an explicit decision from the repository owner.
+A reproducibility defect found in this pass is closed. The editor stylesheet imports Tailwind CSS,
+which no package manifest declared, so a production build on a clean machine failed to resolve that
+import even though every test and type check passed. `tailwindcss` and `@tailwindcss/vite` are now
+client devDependencies and `client/vite.config.ts` registers the plugin; a clone in an unrelated
+path, installed from the committed lockfile with `--frozen-lockfile`, now completes the documented
+workflow and emits a stylesheet byte for byte identical to this tree's.
+
+One open defect replaces it, recorded in [assessment evidence](REASSESSMENT.md). With the plugin
+enabled the built editor stylesheet contains no `@import` at all, and no `@font-face` or font binary
+is inlined in its place, so the built stylesheet never requests DM Sans or IBM Plex Mono while still
+naming those families 46 times. Text silently falls back to the platform sans-serif,
+which is a visible typography change across the application. Serving the fonts from a `<link>` in
+`client/index.html` is the usual remedy, and it is left to the repository owner because it changes
+rendering.
 
 The formatting pass expanded formerly dense API files, so size is guarded rather than freely
 rewritten. `client/scripts/check-lines.ts` and `api/scripts/check-lines.ts` run inside

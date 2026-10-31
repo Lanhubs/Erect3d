@@ -18,6 +18,11 @@
   review) were divided into focused components and hooks, with viewport bounds and review state
   extracted under test. This is internal structure only; no interface, model or rendering behavior
   changed.
+- Tailwind CSS declared in the client manifest and registered as a Vite plugin, so a clean clone
+  installs from the committed lockfile and builds the editor stylesheet. Known consequence: the
+  plugin drops the stylesheet's remote Google Fonts `@import` instead of hoisting it, so the built
+  CSS no longer requests `DM Sans` or `IBM Plex Mono` even though it still names them. The evidence
+  and the one-line remedy are recorded in `docs/REASSESSMENT.md`.
 - Consistent formatting maintained separately from functional changes.
 
 Earlier features remain documented in the package guides and Git history. No historical

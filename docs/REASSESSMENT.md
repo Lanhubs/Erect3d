@@ -99,18 +99,20 @@ separately in `format-review-final.json`. No commits or history were fabricated.
 Each scanner finding was re-checked against the code before anything changed, so a finding the
 repository already satisfied was recorded rather than "fixed". The owner's standing instruction for
 this pass was that no interface, model or rendering behavior may change; the work is therefore
-confined to tooling, module structure behind unchanged components, tests and documentation.
+confined to tooling, module structure behind unchanged components, tests and documentation. Two
+changes beyond that were authorized by name: declaring the Tailwind packages the build already
+imported, and hardening the file-size guard test.
 
-| Finding                     | Independent check                                                                                                | Outcome                                                                                                                                 |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| No runnable test suite      | `bun run test` executed with no database configured                                                              | Runnable, and it names the 28 database suites it skips instead of hiding them                                                           |
-| Not reproducible install    | Read `scripts/repository.mjs` and each manifest/lock, then cloned the repository and ran the documented workflow | Frozen per-package installs reproduced in a clean clone; that clone's production build exposed an undeclared dependency, recorded below |
-| No structured logging       | Existing shared JSON logger found; no dependency added                                                           | Consolidated behind one `api/src/logging.ts` entry point with HTTP-level coverage                                                       |
-| Oversized frontend files    | Measured the five largest editor modules, split each at a real boundary                                          | See sizes below; the largest remaining files are deliberately untouched                                                                 |
-| Weak test coverage evidence | Ran the database-free suites; coverage requires the disposable database                                          | 543 tests pass; coverage floors restated from committed configuration, not re-measured                                                  |
-| CI/security immaturity      | Read `.github/workflows/ci.yml` and `.gitleaks.toml`; ran lint/format/types/audit                                | Steps and gates are real; hosted green run not claimed here                                                                             |
-| Documentation drift         | Every documented command read against its script, then corrected                                                 | Defects listed below; `api/docs/ENDPOINTS.md` regenerated from the live route tree                                                      |
-| Repository history maturity | Inspected `git log` authors and dates; no tags                                                                   | No history rewritten, no contributors or releases invented                                                                              |
+| Finding                     | Independent check                                                                                                | Outcome                                                                                                                                                             |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| No runnable test suite      | `bun run test` executed with no database configured                                                              | Runnable, and it names the 28 database suites it skips instead of hiding them                                                                                       |
+| Not reproducible install    | Read `scripts/repository.mjs` and each manifest/lock, then cloned the repository and ran the documented workflow | Frozen per-package installs reproduced in a clean clone; that clone's first production build exposed an undeclared dependency, since declared and re-verified below |
+| No structured logging       | Existing shared JSON logger found; no dependency added                                                           | Consolidated behind one `api/src/logging.ts` entry point with HTTP-level coverage                                                                                   |
+| Oversized frontend files    | Measured the five largest editor modules, split each at a real boundary                                          | See sizes below; the largest remaining files are deliberately untouched                                                                                             |
+| Weak test coverage evidence | Ran the database-free suites; coverage requires the disposable database                                          | 543 tests pass; coverage floors restated from committed configuration, not re-measured                                                                              |
+| CI/security immaturity      | Read `.github/workflows/ci.yml` and `.gitleaks.toml`; ran lint/format/types/audit                                | Steps and gates are real; hosted green run not claimed here                                                                                                         |
+| Documentation drift         | Every documented command read against its script, then corrected                                                 | Defects listed below; `api/docs/ENDPOINTS.md` regenerated from the live route tree                                                                                  |
+| Repository history maturity | Inspected `git log` authors and dates; no tags                                                                   | No history rewritten, no contributors or releases invented                                                                                                          |
 
 ### Sizes after the module splits
 
@@ -128,51 +130,81 @@ sequence, alongside the package suites, type checks and lint baseline.
 
 ### Measured in this pass
 
-| Command                             | Result                                                                                                                                                                                            |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `bun run lint`                      | 150 warnings, 0 errors across 874 files — the recorded baseline, not reduced by suppressions                                                                                                      |
-| `bun run format:check`              | 960 files checked, 0 needing formatting                                                                                                                                                           |
-| `bun run test` (no database)        | 543 pass, 0 fail: 16 repository tooling, 321 client, 204 API, 2 film; 28 integration suites listed as skipped                                                                                     |
-| `bun run typecheck`                 | Client, API and film type checks plus both size guards: API 323 files maximum 378, client 448 files maximum 488                                                                                   |
-| `bun run build`                     | Editor and standalone film production builds passed here, retaining the existing large-chunk warnings — this tree resolves the undeclared Tailwind import described below; a clean clone does not |
-| `bun run audit`                     | No high or critical advisories (21 root, 66 client, 103 API, 90 film packages)                                                                                                                    |
-| `bun scripts/endpoint-inventory.ts` | Regenerates the endpoint inventory deterministically; 94 registered endpoints                                                                                                                     |
+| Command                             | Result                                                                                                                                                                   |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `bun run lint`                      | 150 warnings, 0 errors across 874 files — the recorded baseline, not reduced by suppressions                                                                             |
+| `bun run format:check`              | 960 files checked, 0 needing formatting                                                                                                                                  |
+| `bun run test` (no database)        | 543 pass, 0 fail: 16 repository tooling, 321 client, 204 API, 2 film; 28 integration suites listed as skipped                                                            |
+| `bun run typecheck`                 | Client, API and film type checks plus both size guards: API 323 files maximum 378, client 448 files maximum 488                                                          |
+| `bun run build`                     | Editor and standalone film production builds passed here, retaining the existing large-chunk warnings; the clean clone below now emits the same stylesheet byte for byte |
+| `bun run audit`                     | No high or critical advisories (21 root, 66 client, 103 API, 90 film packages)                                                                                           |
+| `bun scripts/endpoint-inventory.ts` | Regenerates the endpoint inventory deterministically; 94 registered endpoints                                                                                            |
 
 ### Fresh-clone reproducibility run
 
 The 30 October table above claims a fresh independent copy built successfully. That copy was made
 on this machine, where a module installed outside the repository can satisfy an import; a clone in
 a different directory does not have that accident. This pass cloned the repository to an unrelated
-path, with no `node_modules`, and ran the documented workflow:
+path, with no `node_modules`, and ran the documented workflow. That table is the first run; the
+clone has since been remade from the committed history and passes, as recorded after the defects:
 
-| Step                                                               | Result                                                                        |
-| ------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
-| `bun install --frozen-lockfile` (root)                             | Passed                                                                        |
-| `bun run setup` (client, API, film from their own committed locks) | Passed                                                                        |
-| `bun run lint`                                                     | 150 warnings, 0 errors — identical to the working tree                        |
-| `bun run typecheck`                                                | Passed, including both file-size guards with the same maxima                  |
-| `bun run test`                                                     | 543 pass, 0 fail on a warm re-run; see the flake below for the cold first run |
-| `bun run build`                                                    | **Failed**: `Unable to resolve @import "tailwindcss"`                         |
+| Step                                                               | Result                                                                     |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| `bun install --frozen-lockfile` (root)                             | Passed                                                                     |
+| `bun run setup` (client, API, film from their own committed locks) | Passed                                                                     |
+| `bun run lint`                                                     | 150 warnings, 0 errors — identical to the working tree                     |
+| `bun run typecheck`                                                | Passed, including both file-size guards with the same maxima               |
+| `bun run test`                                                     | 543 pass, 0 fail; the cold first run failed the guard case, recorded below |
+| `bun run build`                                                    | **Failed**: `Unable to resolve @import "tailwindcss"`                      |
 
-Two defects follow, both outside the documentation-only scope the owner set for this pass, so they
-are recorded with their minimal fixes rather than applied:
+Two defects followed:
 
 1. **Undeclared build dependency.** `client/src/index.css` starts with `@import 'tailwindcss';`
-   and no manifest declares Tailwind, so the stylesheet resolves only when a copy exists somewhere
-   Node's parent-directory search can reach; this developer's stray `tailwindcss@4.3.3` in
-   `~/node_modules` is why local builds succeed. Copying that same package into the clone's
-   `client/node_modules` made `bun run build` pass and produced a byte-identical stylesheet
-   (same content hash, same `index-BvQRVDl5.css` file name), which is the evidence that declaring
-   `"tailwindcss": "4.3.3"` as a client devDependency is rendering-neutral. It changes the
-   dependency tree and `client/bun.lock`, so it awaits an explicit go-ahead. Until then the
-   documented build — and CI's production web build step, which installs from the same locks —
-   cannot be expected to pass on a clean machine.
-2. **Cold-start flake in the guard test.** The last case of `tests/cad-file-size.test.ts` spawns
+   and no manifest declared Tailwind, so the stylesheet resolved only where a copy existed somewhere
+   Node's parent-directory search could reach; this developer's stray `tailwindcss@4.3.3` in
+   `~/node_modules` is why local builds succeeded and a clean machine's did not.
+2. **Cold-start flake in the guard test.** The last case of `tests/cad-file-size.test.ts` spawned
    two `bun run check:lines` children inside Bun's default five-second test budget. On the cold
    clone it exceeded it and failed; re-running the identical command in the same clone passed with
-   the rest of the suite. Giving that case an explicit timeout and invoking
-   `scripts/check-lines.ts` directly instead of through `bun run` removes the dependency on
-   transpile-cache warmth. This is a test-only change and was left for the same scope reason.
+   the rest of the suite.
+
+Both are now closed on the owner's instruction. `tailwindcss` and `@tailwindcss/vite` at `4.3.3`
+are client devDependencies and `client/vite.config.ts` registers the plugin, and the guard case
+runs each script as its own process inside an explicit 120-second budget. The clone was then made
+again from the committed history and the documented workflow re-run end to end:
+
+| Step                                             | Result                                                                                                                     |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `bun install --frozen-lockfile`, `bun run setup` | Passed; both Tailwind packages land in the clone's own `client/node_modules`, and no parent directory of the clone has one |
+| `bun run lint`                                   | 150 warnings, 0 errors                                                                                                     |
+| `bun run format:check`                           | 960 files, 0 needing formatting                                                                                            |
+| `bun run typecheck`                              | Passed; API guard 323 files maximum 378, client guard 448 files maximum 488                                                |
+| `bun run test`                                   | 543 pass, 0 fail, 28 integration suites skipped                                                                            |
+| the guard case on its own                        | 2536 ms cold — well inside the budget it now carries                                                                       |
+| `bun run build`                                  | Passed: `client/dist/assets/index-CcQfal0q.css`, 93,028 bytes, sha256 `1f46409f…82b6`, identical to this tree's output     |
+
+**An open defect comes from the plugin rather than from the declaration.** Building the same tree
+with `tailwindcss()` removed yields `index-BvQRVDl5.css`, 104,988 bytes, sha256 `57de0063…ee09`.
+The two outputs differ in kind, not only in size:
+
+| Built editor stylesheet | remote `@import` | `@font-face` or font bytes | `@property` | unresolved Tailwind at-rules |
+| ----------------------- | ---------------- | -------------------------- | ----------- | ---------------------------- |
+| plugin off              | 1 (Google Fonts) | 0                          | 0           | `@tailwind` 1, `@theme` 2    |
+| plugin on               | 0                | 0                          | 34          | 0                            |
+
+Tailwind compiles its own at-rules away, and the remote font `@import` that sits on the second line
+of `client/src/index.css` disappears from the output instead of being hoisted, with nothing inlined
+in its place. The stylesheet still names `'DM Sans'` 15 times and `'IBM Plex Mono'` 31 times, so
+that text now depends on whatever the platform supplies. In one page, swapping only the stylesheet,
+`document.fonts` registered 23 faces against the old output and 0 against the new one, and returned
+to 23 when swapped back. On the animated landing route 88 of 345 elements measured a different box
+between the two sheets (the primary button 163.66 → 172.98 px wide, the page 8300.86 → 8289.86 px
+tall) while every computed `font-*` property stayed identical; that route also moves on its own, so
+those numbers are indicative. The deterministic part is the stylesheet itself: the request for the
+two families exists in one build and not the other. Declaring the dependencies is rendering-neutral,
+which is what the identical hashes above show; enabling the plugin is not. The usual remedy is a
+`<link rel="stylesheet">` for those families in `client/index.html`, and it is left to the owner
+because it decides how the application paints.
 
 ### Not verified here, and why
 
