@@ -141,6 +141,15 @@ asset routes; production requires storage readiness. Redis-backed protection fai
 if Redis is unavailable. PostgreSQL rate limiting is a supported deployment choice, not
 a silent Redis failover. WebSocket loss is recovered from persisted revisions, not presence.
 
-Structured logs redact sensitive fields and do not include raw SQL, plans or prompts.
-`TelemetrySink` supports requests, job duration/status and active connection counts without
-binding the app to a monitoring vendor. Configure an exporter in `createServices` when needed.
+Structured logs redact sensitive fields and do not include raw SQL, plans or prompts. pino emits
+each record, but `api/src/logging.ts` owns the field names, levels and scrubbing, so a caller never
+chooses a logger. `TelemetrySink` supports requests, job duration/status and active connection
+counts without binding the app to a monitoring vendor. Configure an exporter in `createServices`
+when needed.
+
+`api/src/monitoring.ts` is the only place a vendor is referenced, and only optionally. Both process
+entrypoints call `startIncidentReporting(config)` after reading the configuration, so an empty
+`SENTRY_DSN` creates no client, patches no routes and sends nothing. `mountIncidentReporting(app)`
+runs inside `createApp` only once reporting is enabled; `app.onError` remains the single owner of
+the client-visible error response, and `captureIncident` applies the same policy to worker failures
+that the HTTP middleware applies to requests, so one failure is never filed twice.

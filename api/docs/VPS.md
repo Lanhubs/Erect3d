@@ -68,6 +68,14 @@ Production configuration rejects disabled database verification and HTTP storage
 Set Gemini credentials only when enabling optional cloud interpretation. Requests require
 explicit cloud consent. Confirm model availability in your account using the opt-in check.
 
+Incident reporting is optional and off while `SENTRY_DSN` is empty. Set it, with
+`SENTRY_RELEASE` (for example `erect3d-api@<tag>`), only if you run a Sentry project; both
+API and worker processes read them from their own environment. The DSN is validated like the
+other endpoints: HTTPS, public key only, no secret, no query. Only unexpected 5xx failures and
+provider outages are reported, cookies, headers, bodies, query strings and source lines are
+switched off, and the logger's credential scrub runs again before anything leaves the server.
+See [observability](../../docs/OBSERVABILITY.md).
+
 ## Migrations and database roles
 
 Create the `erect3d` database and a separate migration role that owns schema objects.

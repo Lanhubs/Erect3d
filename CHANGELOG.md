@@ -9,6 +9,20 @@
 - Structured diagnostics with safe error context and optional bounded self-hosted OTLP export.
 - One `api/src/logging.ts` entry point for the JSON logger, with request correlation, level
   escalation and error classification now covered end to end through the HTTP middleware.
+- pino added as the JSON emitter behind that unchanged contract: one framed document per event,
+  text levels, no `pid`/`hostname`, direct synchronous writes and the same credential redaction.
+  The last `console.*` call in API runtime source is gone.
+- Optional Sentry incident reporting (`api/src/monitoring.ts`, `@sentry/bun` + `@sentry/hono`):
+  inert while `SENTRY_DSN` is empty, one policy for HTTP and worker failures, Sentry 11
+  `dataCollection` switched off for cookies, headers, bodies, query strings, stack-frame locals
+  and source lines, `beforeSend` re-scrubbing every exception string, `app.onError` still the only
+  response contract and both entrypoints flushing before exit. `SENTRY_DSN`/`SENTRY_RELEASE` are
+  documented in `api/.env.example` and validated with the other endpoint settings, which moved the
+  schema checks into `api/src/config/validate.ts`.
+- One Bun workspace lockfile (`bun.lock` at the repository root) for the editor, API and film
+  packages, replacing the three per-package lockfiles, so a single
+  `bun install --frozen-lockfile` resolves every declared dependency and its transitive closure.
+  `tests/dependency-health.test.ts` now guards the lock, the shared resolutions and the Bun pin.
 - DWG/DXF plan import through a bounded conversion worker, and DXF/DWG sheet export for CAD tools.
 - A `bun run test` that runs the database-free suites and prints every integration suite it skipped,
   alongside explicit `test:unit` and `test:integration` commands.

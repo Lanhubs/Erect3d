@@ -48,6 +48,26 @@ Coverage instrumentation uses a 20-second test deadline; it does not change prod
 request/AI timeouts. The ordinary backend suite uses the same bounded deadline for its
 real database and image-processing integration cases.
 
+## Logging and incident reporting checks
+
+`api/tests/observability.test.ts` and `api/tests/observability-http.test.ts` assert the JSON line
+contract (one document per event, `level`/`at`/`event`, request id correlation, level escalation)
+and the redaction of credentials, URLs and bearer tokens. They need no database and no logger
+dependency beyond pino.
+
+`api/tests/monitoring.test.ts` asserts the reporting policy and option mapping, including that an
+empty `SENTRY_DSN` leaves the Hono application with exactly one route attached, and rejects the five
+malformed DSN shapes. `api/tests/sentry-reporting.test.ts` proves the capture path without any
+account: it spawns `api/tests/sentry-probe.ts`, which binds an ingest endpoint on an ephemeral
+loopback port, points the SDK at it with a synthetic key, throws a controlled exception and reads
+the envelopes the SDK serialized itself. The probe drives the same routes with reporting on and off
+and deep-compares every response, so a change in the client-visible error contract fails this suite.
+Both files pass with `SENTRY_DSN` unset, produce no traffic beyond `127.0.0.1` and commit no
+credential — the DSN, cookie value and connection string in them are placeholders.
+
+The 28 integration suites, `bun run coverage` and `bun run check:startup` still require the
+disposable PostgreSQL database; nothing here substitutes for them.
+
 A reproducibility defect found in this pass is closed. The editor stylesheet imports Tailwind CSS,
 which no package manifest declared, so a production build on a clean machine failed to resolve that
 import even though every test and type check passed. `tailwindcss` and `@tailwindcss/vite` are now

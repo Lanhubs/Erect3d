@@ -3,23 +3,25 @@
 This report maps repository improvements to the supplied 39.1 assessment. A new score or
 offer is determined by the external reviewer; neither is guaranteed by these changes.
 
-| Finding                        | Remediation / evidence                                                                |
-| ------------------------------ | ------------------------------------------------------------------------------------- |
-| Missing root onboarding        | Root README, contribution/security guides, changelog and configuration examples       |
-| No reproducible install        | Bun 1.4.4, one committed workspace lockfile and a single frozen installation command  |
-| No active CI                   | `.github/workflows/ci.yml`: lint, format, types, tests, coverage, builds and security |
-| Backend tests difficult to run | Explicit disposable test database, migration command and service health checks        |
-| No lint/format enforcement     | Existing Oxlint extended to packages; separate Prettier normalization and checks      |
-| No coverage enforcement        | Measured package baselines, LCOV artifacts and documented instrumentation scope       |
-| No dependency maintenance      | Manual-review Renovate configuration and high/critical advisory checks                |
-| Missing logging/error tracking | Existing logger strengthened; correlated safe failures and optional self-hosted OTLP  |
-| No containers                  | Standard root Dockerfile; Compose adds API/worker, PostgreSQL and a separate test DB  |
-| Short or single-author history | Genuine future maintenance only; no synthetic history or contributor identities       |
+| Finding                        | Remediation / evidence                                                                         |
+| ------------------------------ | ---------------------------------------------------------------------------------------------- |
+| Missing root onboarding        | Root README, contribution/security guides, changelog and configuration examples                |
+| No reproducible install        | Bun 1.4.4, one committed workspace lockfile and a single frozen installation command           |
+| No active CI                   | `.github/workflows/ci.yml`: lint, format, types, tests, coverage, builds and security          |
+| Backend tests difficult to run | Explicit disposable test database, migration command and service health checks                 |
+| No lint/format enforcement     | Existing Oxlint extended to packages; separate Prettier normalization and checks               |
+| No coverage enforcement        | Measured package baselines, LCOV artifacts and documented instrumentation scope                |
+| No dependency maintenance      | Manual-review Renovate configuration and high/critical advisory checks                         |
+| Missing logging/error tracking | pino as the JSON emitter behind the existing contract, plus optional Sentry incident reporting |
+| No containers                  | Standard root Dockerfile; Compose adds API/worker, PostgreSQL and a separate test DB           |
+| Short or single-author history | Genuine future maintenance only; no synthetic history or contributor identities                |
 
-The supplied scanner missed some existing files: API/client Bun locks, client Oxlint,
-backend Dockerfile, package documentation and structured logging. This change makes
-entry points discoverable and activates checks; it does not replace working features
-solely to satisfy detection heuristics.
+The first scanner also missed files that were present: per-package Bun locks, client Oxlint,
+the backend Dockerfile, package documentation and structured logging. The locks were the one
+finding that was not a miss: with three per-package lockfiles and none at the root, a scanner
+that starts at the repository root found no lock and therefore reported zero direct and zero
+transitive dependencies. That is now one root workspace lockfile, and the reading is checked by
+`tests/dependency-health.test.ts` rather than asserted here.
 
 ## Verification results (recorded 30 October 2026)
 
@@ -262,6 +264,66 @@ because it decides how the application paints.
 - `api/README.md` closed with "Nothing has been committed, pushed or deployed by this backend
   task", which described an earlier working session rather than the repository. It now states what
   genuinely is not provisioned.
+
+## Dependency health and incident reporting pass (1 November 2026)
+
+A later read reported Dependency Health 28/100 with `lockfiles_found` empty, `direct_runtime_deps`
+0 and `total_transitive_deps` 0, and Architecture & Robustness 68/100 with `logging_framework` and
+`error_tracking` null. Each was re-checked against the repository before anything was added.
+
+| Finding                             | Measured, then changed                                                                                                                                                                                                                                                                                                                                                                                  |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| No lockfile, no dependencies seen   | Three lockfiles existed but none at the root, and Bun's workspace layout keeps every transitive package out of a member's own directory tree. Root `bun.lock` now describes all four workspace members: 297 package names, 173 installs, 296 packages resolved, no name resolving twice.                                                                                                                |
+| `logging_framework: null`           | The repository's own JSON logger was real but hand-rolled. pino 10.4.0 is now the emitter inside `api/src/logging.ts`, configured to keep the exact line contract (`level`, `at`, fields, `event`; text levels; no `pid`/`hostname`) and the existing redaction, so all 19 call sites and the pre-existing observability assertions were untouched. The last `console.*` in API runtime source is gone. |
+| `error_tracking: null`              | `@sentry/bun` + `@sentry/hono` 11.10.0, initialised only in the API and worker entrypoints and only when `SENTRY_DSN` is set (`docs/OBSERVABILITY.md`). `Zod` contracts, `ApiError`, `ProviderFailure`, `app.onError`, `/health` and `/ready` are unchanged.                                                                                                                                            |
+| Renovate could not see dependencies | `renovate.json` needed no change: it was already configured for the Bun lockfile manager. With the lock at the root, the manager now finds it.                                                                                                                                                                                                                                                          |
+
+### Evidence for the two new claims
+
+- **Structured JSON**: `api/tests/observability.test.ts` asserts one framed document per event, and
+  the HTTP suites still assert their pre-existing contract. A line emitted during this pass reads
+  `{"level":"info","at":"2026-10-31T22:32:55.889Z","requestId":"…","method":"GET","status":200,"elapsedMs":12,"event":"http.request"}`.
+- **A controlled exception is really captured**: `api/tests/sentry-probe.ts` boots `Sentry.init` in
+  its own process against a loopback ingest endpoint, so the SDK's own transport serialized and
+  POSTed genuine envelopes; `api/tests/sentry-reporting.test.ts` reads them. Two incidents arrived:
+  the unexpected 500 (`TypeError`) and one job failure (`AI_UPSTREAM`, with its `erect3d` context).
+  Nothing arrived for the validation rejection, the 404, the unique-constraint violation, the
+  provider quota failure or the unconfigured cloud AI. The connection string thrown in the message
+  survived as `[REDACTED URL]`, no envelope contained the session cookie, and every response was
+  byte-identical with reporting on and off.
+- **That run found a real leak**: Sentry 11 attaches the source lines around a throw, so a
+  credential written anywhere near the failing line leaves the process. `dataCollection`
+  `frameContextLines: 0` now turns that off and every remaining string under `exception` is
+  re-scrubbed. The same read showed `sendDefaultPii` no longer exists in Sentry 11: an option set to
+  `false` would have been a claim, not a control, so the fields are now switched off individually.
+
+### Measured on 1 November 2026 (Bun 1.4.4, from a clean `node_modules`)
+
+| Command                         | Result                                                                                      |
+| ------------------------------- | ------------------------------------------------------------------------------------------- |
+| `bun install --frozen-lockfile` | `Checked 173 installs across 296 packages (no changes)`, from a removed `node_modules`      |
+| `bun run lint`                  | 150 warnings, 0 errors, 879 files — unchanged baseline, 5 files added                       |
+| `bun run format:check`          | 966 files checked, 0 need formatting                                                        |
+| `bun run typecheck`             | Three packages clean; API guard 328 files, client guard 448 files, both within their limits |
+| `bun run test`                  | 558 passed, 0 failed (repository 23, client 321, API 212, film 2)                           |
+| `bun run build`                 | Editor and film bundles produced                                                            |
+| `bun run audit`                 | No vulnerabilities at `--audit-level=high`; see the moderate pair below                     |
+
+The committed lock is the pin, not a scratch artifact: deleting it and reinstalling from the
+manifests alone shifted four floating ranges to newer patches (`@babel/runtime`, `postcss`,
+`its-fine` and `@google/genai` install-script metadata) and added `libc` qualifiers to the Linux
+binary variants. That is exactly why the file is committed and why CI installs with
+`--frozen-lockfile`; the committed lock was then re-verified as a fixed point of frozen install.
+
+Not runnable on this machine, and therefore not claimed: the 28 integration suites, `bun run
+coverage` and `bun run check:startup` all need the disposable Compose PostgreSQL, and starting a
+container was declined here. CI runs them. `docker build` needs the image layer cache this machine
+does not have. Two moderate advisories (`glob@13.0.6`, `minimatch@10.2.6`) arrive only through
+`@sentry/bundler-plugins`, which the API never imports; their fixes (glob ≥14.0.2, minimatch
+≥11.0.1) are outside the ranges Sentry declares, so no in-range upgrade exists and forcing one
+would be a fabricated green check. Two consequences are worth stating: the workspace lock requires
+Bun 1.4.4 because 1.4.2 writes a phantom root dependency into it, and the repository now asserts
+that pin, so a developer still on 1.4.2 will see `bun run test` fail until they upgrade.
 
 No push, tag, release, deployment or resubmission was performed in this pass either.
 A rescore, offer or funding decision belongs to the external reviewer.
