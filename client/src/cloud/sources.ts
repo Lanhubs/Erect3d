@@ -1,6 +1,7 @@
 import { api, privateAssetUrl, browserLock } from './api'
 import { getBlob, putBlob, getTask, putTask } from './cache'
 import type { SourceDocument } from '../domain/types'
+import { isCadMime, isPdfMime } from '../domain/sourceMime'
 export type SourceLink = { source_id: string; original_asset_id: string; raster_asset_id: string }
 export type StorageSavings = { inputBytes: number; storedBytes: number; savedBytes: number; method: string }
 type Uploaded = {
@@ -17,13 +18,7 @@ type UploadTask = {
   savings?: StorageSavings[]
 }
 export const sourceLinks = (projectId: string) => api.request<SourceLink[]>(`/projects/${projectId}/sources`)
-export async function loadPrivateSource(key: string, projectId: string, id: string) {
-  const cached = await getBlob(key, id)
-  if (cached) return cached
-  const sourceId = id.replace(/:original$/, '')
-  const link = (await sourceLinks(projectId)).find((link) => link.source_id === sourceId)
-  if (!link) return undefined
-  const assetId = id.endsWith(':original') ? link.original_asset_id : link.raster_asset_id
+export async function downloadPrivateAsset(projectId: string, assetId: string) {
   const ticket = await api.request<{ downloadUrl: string }>(
     `/projects/${projectId}/assets/${assetId}/download`,
   )
@@ -32,11 +27,20 @@ export async function loadPrivateSource(key: string, projectId: string, id: stri
     cache: 'no-store',
   })
   if (!response.ok) throw new Error('The private plan download failed. Retry to get a new signed link.')
-  const blob = await response.blob()
+  return response.blob()
+}
+export async function loadPrivateSource(key: string, projectId: string, id: string) {
+  const cached = await getBlob(key, id)
+  if (cached) return cached
+  const sourceId = id.replace(/:original$/, '')
+  const link = (await sourceLinks(projectId)).find((link) => link.source_id === sourceId)
+  if (!link) return undefined
+  const assetId = id.endsWith(':original') ? link.original_asset_id : link.raster_asset_id
+  const blob = await downloadPrivateAsset(projectId, assetId)
   await putBlob(key, id, blob)
   return blob
 }
-async function upload(
+export async function uploadAsset(
   projectId: string,
   blob: Blob,
   name: string,
@@ -85,16 +89,23 @@ async function uploadSource(
   source: SourceDocument,
   report?: (savings: StorageSavings[]) => void,
 ) {
+  const linked = (await sourceLinks(projectId)).find((link) => link.source_id === source.id)
+  if (linked) {
+    report?.([])
+    return linked.raster_asset_id
+  }
   const taskKey = `${key}/upload/${source.id}`
   const task = (await getTask<UploadTask>(taskKey)) || {}
   const image = await getBlob(key, source.id)
   if (!image) throw new Error('Import this plan again to upload its original file.')
-  const original = source.mime === 'application/pdf' ? await getBlob(key, `${source.id}:original`) : image
-  if (!original) throw new Error('The original PDF is missing. Import it again.')
+  // Vector sources keep their original bytes; the cached raster is what analysis reads.
+  const vector = isPdfMime(source.mime) || isCadMime(source.mime)
+  const original = vector ? await getBlob(key, `${source.id}:original`) : image
+  if (!original) throw new Error('The original vector drawing is missing. Import it again.')
   if (!task.originalAssetId) {
     task.originalUploadKey ||= crypto.randomUUID()
     await putTask(taskKey, task)
-    const uploaded = await upload(
+    const uploaded = await uploadAsset(
       projectId,
       original,
       source.name,
@@ -109,16 +120,16 @@ async function uploadSource(
   }
   if (!task.rasterAssetId) {
     const originalIsUpright =
-      source.mime !== 'application/pdf' &&
+      !vector &&
       task.originalMetadata?.orientation === 1 &&
       task.originalMetadata.width === source.width &&
       task.originalMetadata.height === source.height
     if (originalIsUpright) task.rasterAssetId = task.originalAssetId
     else {
-      const png = source.mime === 'application/pdf' ? image : await uprightPng(image)
+      const png = vector ? image : await uprightPng(image)
       task.rasterUploadKey ||= crypto.randomUUID()
       await putTask(taskKey, task)
-      const uploaded = await upload(
+      const uploaded = await uploadAsset(
         projectId,
         png,
         `${source.name} (upright page)`,

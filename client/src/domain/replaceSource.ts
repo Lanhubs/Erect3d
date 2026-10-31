@@ -1,5 +1,5 @@
 import type { Building, Level, Project, SourceDocument } from './types'
-import { initialAutoScale } from '../geometry/autoScale'
+import { calibrationFromMetresPerPixel, initialAutoScale } from '../geometry/autoScale'
 
 const collections = [
   'walls',
@@ -43,7 +43,9 @@ export function replaceSource(project: Project, document: SourceDocument, levelI
   )
   copy.sources = [...copy.sources.filter((item) => item.id !== previous || otherUses), document]
   level.sourceId = document.id
-  level.calibration = initialAutoScale(document.width, document.height)
+  level.calibration = document.metresPerPixel
+    ? calibrationFromMetresPerPixel(document.width, document.height, document.metresPerPixel)
+    : initialAutoScale(document.width, document.height)
   if (level === copy.buildings[0].levels[0]) copy.calibration = level.calibration
   if (previous) {
     const removed = new Set(collections.flatMap((key) => (level[key] || []).map((item) => item.id)))

@@ -17,6 +17,24 @@ export function initialAutoScale(width: number, height: number): Calibration {
   }
 }
 
+// CAD drawings declare their own units, so their pixels-per-metre is exact and must not
+// be re-estimated by the analyzer; 'manual' marks the scale as trusted.
+export function calibrationFromMetresPerPixel(
+  width: number,
+  height: number,
+  metresPerPixel: number,
+): Calibration {
+  const basisPixels = Math.max(width, height)
+  return {
+    a: { x: 0, z: 0 },
+    b: { x: basisPixels, z: 0 },
+    knownMetres: basisPixels * metresPerPixel,
+    metresPerPixel,
+    method: 'manual',
+    basisPixels,
+  }
+}
+
 export function estimateAutoScale(
   walls: PixelWall[],
   width: number,

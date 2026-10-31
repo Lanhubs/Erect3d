@@ -1,19 +1,23 @@
 import type { SourceDocument } from '../../domain/types'
 import { uid } from '../../domain/types'
 import { pngSize, validateImageSize } from './imageSize'
+import { cadExtension, cadFormatFromMime } from './cadFormat'
 
 const maxBytes = 200 * 1024 * 1024
 const signature = async (file: File) => new Uint8Array(await file.slice(0, 8).arrayBuffer())
-export async function readSource(
-  file: File,
-  pageNumber = 1,
-): Promise<{ document: SourceDocument; blob: Blob; pages: number }> {
+export type ScannedSource = { document: SourceDocument; blob: Blob; pages: number }
+export async function readSource(file: File, pageNumber = 1): Promise<ScannedSource> {
   if (file.size > maxBytes) throw new Error('The floor plan exceeds the 200 MB local import limit.')
   const bytes = await signature(file)
   const pdf = String.fromCharCode(...bytes.slice(0, 4)) === '%PDF'
   const png = bytes[0] === 137 && bytes[1] === 80 && bytes[2] === 78 && bytes[3] === 71
   const jpeg = bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255
-  if (!pdf && !png && !jpeg) throw new Error('Use a valid PNG, JPEG, or PDF floor plan.')
+  if (!pdf && !png && !jpeg)
+    throw new Error(
+      cadExtension(file.name) || cadFormatFromMime(file.type)
+        ? 'DWG and DXF drawings are converted by the cloud CAD importer. Open a cloud project to import them.'
+        : 'Use a valid PNG, JPEG, or PDF floor plan. DWG and DXF use the cloud CAD importer.',
+    )
   let blob: Blob = file,
     pages = 1
   if (pdf) {

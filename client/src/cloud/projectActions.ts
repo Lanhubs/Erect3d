@@ -2,6 +2,7 @@ import { api } from './api'
 import { cachedRecords, getTask, putTask, putBlob, repository } from './cache'
 import { loadLocalSource, saveLocalProject, saveSource } from '../state/database'
 import { uid, type Project } from '../domain/types'
+import { isCadMime, isPdfMime } from '../domain/sourceMime'
 import { recordKey, type CloudRecord } from './types'
 import { loadPrivateSource } from './sources'
 import { connectionUnavailable } from './offline'
@@ -90,7 +91,7 @@ export async function localCopy(record: CloudRecord) {
       id = uid('source')
     const blob = await loadPrivateSource(record.key, projectId, previous)
     const original =
-      source.mime === 'application/pdf'
+      isCadMime(source.mime) || isPdfMime(source.mime)
         ? await loadPrivateSource(record.key, projectId, `${previous}:original`)
         : undefined
     if (!blob) throw new Error('Download the private source first, or export the geometry draft as JSON.')

@@ -213,6 +213,18 @@
   width: 290px;
 }
 
+.studio-export > div {
+  top: calc(100% + 10px);
+  right: 0;
+  bottom: auto;
+  width: 290px;
+  max-width: calc(100vw - 24px);
+}
+
+.studio-export > div > p.studio-export-error {
+  color: #8f3e32;
+}
+
 .studio-tool-dock {
   position: absolute;
   z-index: 40;
