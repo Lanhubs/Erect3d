@@ -7,7 +7,7 @@
   "src/cloud/CollaborationPanel.tsx": 274,
   "src/cloud/engine.ts": 234,
   "src/cloud/ProposalModelPreview.tsx": 216,
-  "src/cloud/ProposalReview.tsx": 512,
+  "src/cloud/ProposalReview.tsx": 271,
   "src/cloud/SourcePanel.tsx": 488,
   "src/cloud/useAssistant.ts": 303,
   "src/cloud/useCloudProject.ts": 237,

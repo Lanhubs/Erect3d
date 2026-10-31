@@ -1,45 +1,29 @@
-import { useEffect, useRef, useState } from 'react'
-import type { Candidate, Intelligence } from '../../../api/src/contracts/analysis'
-import { SourceTextReview } from './SourceTextReview'
-import { RemoteError } from '../../../api/client'
+import { useRef, useState } from 'react'
+import type { Candidate } from '../../../api/src/contracts/analysis'
 import { api } from './api'
-import { getTask, putTask } from './cache'
-import { CandidateDetails } from './CandidateDetails'
+import { putTask } from './cache'
 import { ProposalPreview } from './ProposalPreview'
 import { ProposalModelPreview } from './ProposalModelPreview'
-import { DesignReview } from './DesignReview'
-import { activeLevel, type Project, type SourceDocument } from '../domain/types'
+import { ProposalAnalysisReport } from './ProposalAnalysisReport'
+import { ProposalCandidateReview } from './ProposalCandidateReview'
+import { activeLevel, type SourceDocument } from '../domain/types'
 import { useProject } from '../state/project'
 import type { CloudSession } from './useCloudProject'
 import { analysisStatus } from './analysisStatus'
-import { buildableCandidates } from '../../../api/src/modules/plan-analysis/quality'
-import { watchAnalysis } from './watchAnalysis'
 import { reconstructionUpdate } from './reconstructionState'
 import { useSourceScope } from './useSourceScope'
-type Analysis = {
-  status: string
-  job_status: string
-  created_at?: string
-  options?: { engine?: string; purpose?: string }
-  failure_code?: string
-  progress?: { completed: string[]; stages: string[]; current: string }
-  result?: {
-    proposal: Intelligence
-    quality?: { status: string; issues: { code: string; message: string; severity: string }[] }
-  }
-}
-type Acceptance = {
-  operationId: string
-  baseRevision: number
-  candidateIds: string[]
-  edits: Candidate[]
-  allowConfirmedIds?: string[]
-  designIds?: string[]
-  replaceLevel?: boolean
-  rejected?: boolean
-  before?: Project
-  historyRecorded?: boolean
-}
+import { useProposalAnalysis } from './useProposalAnalysis'
+import { useProposalAutoApply } from './useProposalAutoApply'
+import { applyProposal } from './proposalAcceptance'
+import {
+  applyLabel,
+  blocksAcceptance,
+  reconstructionAdvice,
+  rebuildSelection,
+  wallChoices,
+  type Acceptance,
+  type Analysis,
+} from './proposalReviewModel'
 export function ProposalReview({
   analysisId,
   session,
@@ -64,7 +48,6 @@ export function ProposalReview({
   const [replaceLevel, setReplaceLevel] = useState(false)
   const [previewValid, setPreviewValid] = useState(false)
   const candidatesLoaded = useRef(false)
-  const autoApplied = useRef(false)
   const readOnly = useProject((state) => state.readOnly),
     record = session.record!,
     taskKey = `${record.key}/accept/${analysisId}`
@@ -72,21 +55,8 @@ export function ProposalReview({
     scope = useSourceScope(context)
   const receive = (result: Analysis) => {
     if (!scope.current()) return
-    const regression = result.result?.quality?.issues.find((issue) =>
-      ['DETAIL_REGRESSION', 'SOURCE_DETAIL_INCOMPLETE'].includes(issue.code),
-    )
-    const blocking = result.result?.quality?.issues.find((issue) => issue.severity === 'error')
     setAnalysis(result)
-    reconstructionUpdate(
-      context,
-      result,
-      analysisId,
-      result.status === 'ready' && blocking
-        ? `Needs correction: ${blocking.message}. Nothing from this result has been applied.`
-        : result.status === 'ready' && regression
-          ? 'Review needed: this reconstruction omits detail from the current model. Nothing from this result has been applied.'
-          : undefined,
-    )
+    reconstructionUpdate(context, result, analysisId, reconstructionAdvice(result))
     const next = result.result?.proposal.candidates || []
     if (!candidatesLoaded.current && next.length) {
       candidatesLoaded.current = true
@@ -96,46 +66,27 @@ export function ProposalReview({
         result.options.purpose === 'rebuild' &&
         result.status === 'ready'
       ) {
-        setSelected(
-          new Set(
-            buildableCandidates(next)
-              .filter((item) => item.action !== 'remove')
-              .map((item) => item.id),
-          ),
-        )
+        setSelected(rebuildSelection(next))
         setReplaceLevel(true)
       }
     }
   }
   const refresh = async () => receive(await api.request<Analysis>(`/analysis/${analysisId}`))
-  useEffect(() => {
-    let alive = true
-    const stop = watchAnalysis(
-      record.base.projectId,
-      analysisId,
-      () => api.request<Analysis>(`/analysis/${analysisId}`),
-      receive,
-      (error) => setError(error.message),
-    )
-    getTask<Acceptance>(taskKey)
-      .then((task) => {
-        if (alive) {
-          setAcceptance(task)
-          if (task) {
-            setSelected(new Set(task.candidateIds))
-            setSelectedDesigns(new Set(task.designIds))
-            setAllowConfirmed(new Set(task.allowConfirmedIds))
-          }
-        }
-      })
-      .catch((error) => {
-        if (alive) setError(error.message)
-      })
-    return () => {
-      alive = false
-      stop()
-    }
-  }, [analysisId, taskKey])
+  useProposalAnalysis({
+    projectId: record.base.projectId,
+    analysisId,
+    taskKey,
+    receive,
+    restore: (task) => {
+      setAcceptance(task)
+      if (task) {
+        setSelected(new Set(task.candidateIds))
+        setSelectedDesigns(new Set(task.designIds))
+        setAllowConfirmed(new Set(task.allowConfirmedIds))
+      }
+    },
+    fail: setError,
+  })
   const run = async (action: () => Promise<unknown>) => {
     setBusy(true)
     setError('')
@@ -161,107 +112,48 @@ export function ProposalReview({
       if (scope.current()) setBusy(false)
     }
   }
-  const accept = async () => {
-    scope.assertCurrent()
-    reconstructionUpdate(
+  const accept = () =>
+    applyProposal({
       context,
-      { status: 'pending', job_status: 'running' },
+      scope,
+      session,
       analysisId,
-      'Erecting the editable 3D model…',
-    )
-    const engine = session.engine
-    if (!engine) throw new Error('This tab is read only.')
-    await engine.sync()
-    scope.assertCurrent()
-    if (engine.state !== 'saved') throw new Error('Resolve pending edits before accepting a proposal.')
-    let input = acceptance
-    if (!input) {
-      input = {
-        operationId: crypto.randomUUID(),
-        baseRevision: engine.record.base.revision,
-        candidateIds: [...selected],
-        replaceLevel,
-        edits: candidates.filter((candidate) => selected.has(candidate.id)),
-        allowConfirmedIds: [...allowConfirmed],
-        designIds: [...selectedDesigns],
-        before: structuredClone(useProject.getState().project!),
-      }
-      await putTask(taskKey, input)
-      setAcceptance(input)
-    }
-    scope.assertCurrent()
-    try {
-      await api.request(`/analysis/${analysisId}/accept`, 'POST', {
-        operationId: input.operationId,
-        baseRevision: input.baseRevision,
-        candidateIds: input.candidateIds,
-        edits: input.edits,
-        allowConfirmedIds: input.allowConfirmedIds || [],
-        designIds: input.designIds || [],
-        replaceLevel: input.replaceLevel || false,
-      })
-    } catch (error) {
-      if (error instanceof RemoteError && error.status >= 400 && error.status < 500) {
-        const rejected = { ...input, rejected: true }
-        await putTask(taskKey, rejected)
-        setAcceptance(rejected)
-      }
-      throw error
-    }
-    scope.assertCurrent()
-    await engine.refresh(() => scope.current() && !useProject.getState().previewBase)
-    scope.assertCurrent()
-    if (analysis?.options?.engine === 'backend' && engine.state === 'saved')
-      useProject.getState().setView('model')
-    if (engine.state === 'saved' && input.before && !input.historyRecorded) {
-      useProject.getState().rememberAccepted(input.before)
-      const recorded = { ...input, historyRecorded: true }
-      await putTask(taskKey, recorded)
-      setAcceptance(recorded)
-    }
-  }
+      taskKey,
+      analysis,
+      acceptance,
+      setAcceptance,
+      candidates,
+      selected,
+      allowConfirmed,
+      selectedDesigns,
+      replaceLevel,
+    })
   const disabled = busy || readOnly || Boolean(acceptance)
   const backend = analysis?.options?.engine === 'backend',
     rebuilding = analysis?.options?.purpose === 'rebuild'
-  const cannotApply =
-    busy ||
-    readOnly ||
-    analysis?.status === 'accepted' ||
-    (analysis?.result?.quality?.status === 'blocked' && !previewValid) ||
-    (!selected.size && !selectedDesigns.size) ||
-    selected.size > 1000 ||
-    Boolean(acceptance?.rejected) ||
-    (rebuilding && !replaceLevel && !acceptance)
+  const cannotApply = blocksAcceptance({
+    busy,
+    readOnly,
+    analysis,
+    acceptance,
+    previewValid,
+    selectedCount: selected.size,
+    designCount: selectedDesigns.size,
+    rebuilding,
+    replaceLevel,
+  })
   const project = useProject((state) => state.project)!,
     level = activeLevel(project, useProject.getState().activeLevelId)
-  const walls = [
-    ...new Map(
-      [
-        ...level.walls.map((wall) => ({ id: wall.id, label: undefined as string | undefined })),
-        ...candidates
-          .filter((candidate) => candidate.kind === 'wall')
-          .map((candidate) => ({ id: candidate.id, label: candidate.label })),
-      ].map((wall) => [wall.id, wall]),
-    ).values(),
-  ]
-  useEffect(() => {
-    if (
-      !autoApply ||
-      autoApplied.current ||
-      analysis?.status !== 'ready' ||
-      analysis.result?.quality?.status === 'blocked' ||
-      analysis.result?.quality?.issues.some((issue) =>
-        ['DETAIL_REGRESSION', 'SOURCE_DETAIL_INCOMPLETE'].includes(issue.code),
-      ) ||
-      !rebuilding ||
-      !replaceLevel ||
-      !selected.size ||
-      readOnly
-    )
-      return
-    autoApplied.current = true
-    void run(accept)
-  }, [autoApply, analysis?.status, replaceLevel, selected.size, readOnly])
+  const walls = wallChoices(level.walls, candidates)
+  useProposalAutoApply({
+    autoApply,
+    analysis,
+    rebuilding,
+    replaceLevel,
+    selectedCount: selected.size,
+    readOnly,
+    apply: () => void run(accept),
+  })
   return (
     <section aria-label="Cloud proposal review">
       <h3>Reconstruction result</h3>
@@ -276,56 +168,12 @@ export function ProposalReview({
       )}
       {(analysis?.status === 'ready' || (acceptance && analysis?.status === 'accepted')) && (
         <>
-          <p>
-            {analysis?.status === 'accepted'
-              ? 'Accepted into the model. Use the editor’s Undo action to restore the previous model.'
-              : backend
-                ? 'Review the source overlay and proposed 3D model. Open detected details if you need to correct an element.'
-                : 'Select and review each model change before accepting. Doors and windows need their host walls; unselected changes are discarded.'}
-          </p>
-          {!!analysis.result?.proposal.warnings.length && (
-            <details>
-              <summary>Interpretation notes · {analysis.result.proposal.warnings.length}</summary>
-              {analysis.result.proposal.warnings.map((warning, i) => (
-                <p key={i}>{warning}</p>
-              ))}
-            </details>
-          )}
-          {backend && analysis.result?.quality && (
-            <details open={analysis.result.quality.status === 'blocked'}>
-              <summary>Server model checks · {analysis.result.quality.status}</summary>
-              {analysis.result.quality.issues.map((issue, i) => (
-                <p key={i}>
-                  {issue.severity === 'error' ? 'Needs correction: ' : ''}
-                  {issue.message}
-                </p>
-              ))}
-            </details>
-          )}
-          {analysis.result?.proposal && (
-            <SourceTextReview
-              proposal={analysis.result.proposal}
-              dimensions={{ width: source.width, height: source.height }}
-            />
-          )}
-          {rebuilding && (
-            <p>
-              Applying replaces this floor’s detected geometry with the reviewed reconstruction. Other floors
-              and your roof choices are preserved. Undo is available.
-            </p>
-          )}
-          {analysis.result?.proposal.understanding && (
-            <details>
-              <summary>
-                Building understanding · {analysis.result.proposal.understanding.buildingType}
-              </summary>
-              <p>{analysis.result.proposal.understanding.circulation.join(' · ')}</p>
-              <p>{analysis.result.proposal.understanding.conventions.join(' · ')}</p>
-              {analysis.result.proposal.understanding.uncertainties.map((text, i) => (
-                <p key={i}>{text}</p>
-              ))}
-            </details>
-          )}
+          <ProposalAnalysisReport
+            analysis={analysis}
+            source={source}
+            backend={backend}
+            rebuilding={rebuilding}
+          />
           <ProposalPreview
             cacheKey={record.key}
             projectId={project.id}
@@ -365,120 +213,31 @@ export function ProposalReview({
                 : undefined
             }
           />
-          <details>
-            <summary>Edit detected details · {candidates.length} elements</summary>
-            {backend && (
-              <button
-                disabled={disabled}
-                onClick={() =>
-                  setSelected(
-                    new Set(
-                      buildableCandidates(candidates)
-                        .filter((item) => item.action !== 'remove')
-                        .map((item) => item.id),
-                    ),
-                  )
-                }
-              >
-                Select complete reconstruction
-              </button>
-            )}
-            <div className="cloud-candidates">
-              {candidates.map((candidate) => (
-                <article key={candidate.id}>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={selected.has(candidate.id)}
-                      disabled={disabled || candidate.kind === 'unknown'}
-                      onChange={(e) =>
-                        setSelected((previous) => {
-                          const next = new Set(previous)
-                          if (e.target.checked) {
-                            if (candidate.targetId)
-                              candidates
-                                .filter((item) => item.targetId === candidate.targetId)
-                                .forEach((item) => next.delete(item.id))
-                            next.add(candidate.id)
-                          } else next.delete(candidate.id)
-                          return next
-                        })
-                      }
-                    />
-                    {candidate.action === 'remove'
-                      ? `Remove existing ${candidate.kind}`
-                      : `${candidate.label || candidate.kind} · ${Math.round(candidate.confidence * 100)}% confidence`}
-                  </label>
-                  {candidate.targetId && (
-                    <>
-                      <p>
-                        {candidate.action === 'remove' ? 'Removes' : 'Updates'} existing {candidate.kind} ·{' '}
-                        {candidate.targetId}
-                      </p>
-                      {(candidate.confirmedFields?.length || 0) > 0 && (
-                        <label>
-                          <input
-                            type="checkbox"
-                            disabled={disabled}
-                            checked={allowConfirmed.has(candidate.id)}
-                            onChange={(event) =>
-                              setAllowConfirmed((previous) => {
-                                const next = new Set(previous)
-                                if (event.target.checked) next.add(candidate.id)
-                                else next.delete(candidate.id)
-                                return next
-                              })
-                            }
-                          />
-                          Approve this correction to my confirmed properties after review.
-                        </label>
-                      )}
-                    </>
-                  )}
-                  {candidate.kind === 'unknown' && <p>Choose an interpretation before acceptance.</p>}
-                  {candidate.kind === 'void' && (
-                    <p>Cuts a reviewed opening in a containing slab. Review the boundary carefully.</p>
-                  )}
-                  {candidate.kind === 'passage' && !candidate.wallId && (
-                    <p>
-                      Open circulation guide. The route stays open without adding a wall; choose a real host
-                      only if this is a framed opening.
-                    </p>
-                  )}
-                  {candidate.kind === 'stair' && (
-                    <p>
-                      Keep as a footprint guide, or choose a destination floor. A complete connection must fit
-                      its rise, footprint and upper slab.
-                    </p>
-                  )}
-                  <CandidateDetails
-                    candidate={candidate}
-                    walls={walls}
-                    disabled={disabled}
-                    update={(next) =>
-                      setCandidates((items) => items.map((item) => (item.id === next.id ? next : item)))
-                    }
-                  />
-                </article>
-              ))}
-            </div>
-            <DesignReview
-              designs={analysis.result?.proposal.designs || []}
-              selected={selectedDesigns}
-              select={setSelectedDesigns}
-              disabled={disabled}
-            />
-          </details>
-          <button className="primary" disabled={Boolean(cannotApply)} onClick={() => void run(accept)}>
-            {busy
-              ? 'Applying reconstruction…'
-              : analysis?.status === 'accepted'
-                ? 'Applied to your model'
-                : acceptance
-                  ? 'Retry applying reconstruction'
-                  : rebuilding
-                    ? 'Apply reconstruction to this floor'
-                    : `Accept ${selected.size} model changes / ${selectedDesigns.size} designs`}
+          <ProposalCandidateReview
+            candidates={candidates}
+            selected={selected}
+            select={setSelected}
+            allowConfirmed={allowConfirmed}
+            selectAllowConfirmed={setAllowConfirmed}
+            designs={analysis.result?.proposal.designs || []}
+            selectedDesigns={selectedDesigns}
+            selectDesigns={setSelectedDesigns}
+            walls={walls}
+            update={(next) =>
+              setCandidates((items) => items.map((item) => (item.id === next.id ? next : item)))
+            }
+            disabled={disabled}
+            backend={backend}
+          />
+          <button className="primary" disabled={cannotApply} onClick={() => void run(accept)}>
+            {applyLabel({
+              busy,
+              status: analysis.status,
+              acceptance,
+              rebuilding,
+              selectedCount: selected.size,
+              designCount: selectedDesigns.size,
+            })}
           </button>
           {acceptance?.rejected && (
             <button
