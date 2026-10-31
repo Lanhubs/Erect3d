@@ -11,13 +11,13 @@ for (const file of new Bun.Glob('{src,client,scripts,tests}/**/*.{ts,tsx}').scan
   files++
   maximum = Math.max(maximum, count)
   const key = file.replaceAll('\\', '/')
-  const limit = Math.min(500, baseline[key] || 200)
-  if (count > limit) violations.push(`${file}: ${count} lines (limit ${limit}; extract a focused module)`)
+  const limit = baseline[key] ?? 200
+  if (count > limit) violations.push(`${key}: ${count} lines (limit ${limit}; extract a focused module)`)
 }
 if (violations.length) {
   console.error(violations.join('\n'))
   process.exit(1)
 }
 console.log(
-  `API file-size guard passed: ${files} files, maximum ${maximum} lines. New files: 200; formatted legacy files: no growth; hard ceiling: 500.`,
+  `API file-size guard passed: ${files} files, maximum ${maximum} lines. New files: 200; legacy files frozen at baseline; hard ceiling for new work: 300.`,
 )

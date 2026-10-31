@@ -9,6 +9,7 @@
     "test": "bun test",
     "build": "bun scripts/build.mjs",
     "lint": "oxlint",
+    "check:lines": "bun scripts/check-lines.ts",
     "preview": "vite preview"
   },
   "dependencies": {

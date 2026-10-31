@@ -34,7 +34,10 @@ if (task?.startsWith('dev:')) {
   }
   if (task === 'test') run(['run', 'test:repository'])
   for (const directory of packages) run(['run', task], directory)
-  if (task === 'typecheck') run(['run', 'check:lines'], 'api')
+  if (task === 'typecheck') {
+    run(['run', 'check:lines'], 'api')
+    run(['run', 'check:lines'], 'client')
+  }
 } else if (task === 'audit') {
   for (const directory of ['.', ...packages]) run(['audit', '--audit-level=high'], directory)
 } else {
