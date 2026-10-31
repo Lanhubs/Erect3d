@@ -1,4 +1,6 @@
 import sharp from 'sharp'
+import { cadMimeFor, cadMimeToFormat, isBinaryDxf, sniffCadFormat } from '../cad/signature'
+import { isRasterMime } from '../../../../client/src/domain/sourceMime'
 import { ApiError } from '../../security/errors'
 import { digest } from '../../security/tokens'
 export function sniff(bytes: Uint8Array) {
@@ -6,16 +8,26 @@ export function sniff(bytes: Uint8Array) {
   if (bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255) return 'image/jpeg'
   if (new TextDecoder().decode(bytes.slice(0, 5)) === '%PDF-') return 'application/pdf'
   if (bytes[0] === 123 || bytes[0] === 91) return 'application/json'
-  return null
+  const cad = sniffCadFormat(bytes)
+  return cad ? cadMimeFor(cad) : null
 }
 export async function validateAsset(bytes: Uint8Array, mime: string, kind: string) {
   if (sniff(bytes) !== mime)
-    throw new ApiError(422, 'MIME_MISMATCH', 'File contents do not match its declared format')
+    throw new ApiError(
+      422,
+      'MIME_MISMATCH',
+      isBinaryDxf(bytes)
+        ? 'Binary DXF is not readable; save the drawing as ASCII DXF or DWG'
+        : 'File contents do not match its declared format',
+    )
   if (mime === 'application/pdf' && kind !== 'source')
     throw new ApiError(422, 'INVALID_CATEGORY', 'PDF must be a source document')
   if (mime === 'application/json')
     throw new ApiError(422, 'INVALID_CATEGORY', 'JSON exports are created by the server')
-  if (mime.startsWith('image/')) {
+  const cadFormat = cadMimeToFormat(mime)
+  if (cadFormat && kind !== 'source')
+    throw new ApiError(422, 'INVALID_CATEGORY', `${cadFormat.toUpperCase()} must be a source document`)
+  if (isRasterMime(mime)) {
     try {
       const image = sharp(bytes, { limitInputPixels: 100_000_000, animated: false })
       const metadata = await image.metadata()
@@ -28,6 +40,6 @@ export async function validateAsset(bytes: Uint8Array, mime: string, kind: strin
       throw new ApiError(422, 'INVALID_IMAGE', 'Image is corrupt or exceeds the processing limit')
     }
   }
-  return { format: 'pdf-original', signatureValidated: true }
+  return { format: cadFormat ? `${cadFormat}-original` : 'pdf-original', signatureValidated: true }
 }
 export const bytesHash = (bytes: Uint8Array) => new Bun.CryptoHasher('sha256').update(bytes).digest('hex')

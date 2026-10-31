@@ -13,6 +13,7 @@ import { newId } from '../../security/tokens'
 import { validateAsset, bytesHash } from './validation'
 import { enqueue } from '../../jobs/queue'
 import { optimizeAsset } from './optimize'
+import { isRasterMime } from '../../../../client/src/domain/sourceMime'
 
 export function assetRoutes(db: Database, config: Config, store?: ObjectStore) {
   const routes = new Hono<ApiEnv>()
@@ -106,7 +107,7 @@ export function assetRoutes(db: Database, config: Config, store?: ObjectStore) {
           context.get('requestId'),
           600,
         )
-        if (asset.mime.startsWith('image/'))
+        if (isRasterMime(asset.mime))
           await enqueue(tx, actor, projectId, 'asset.normalize', { assetId }, context.get('requestId'))
       })
     } catch (error) {

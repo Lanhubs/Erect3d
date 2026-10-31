@@ -3,6 +3,9 @@ import type { StairGuide } from './interpretationTypes'
 import type { FurnitureObject } from '../furniture/types'
 import type { WalkViewpoint } from '../walkthrough/types'
 import type { ArchitectureVision } from './architectureTypes'
+import type { Calibration, SourceDocument } from './sourceTypes'
+
+export type { Calibration, SourceDocument, SourceUnits } from './sourceTypes'
 export type Point = { x: number; z: number }
 export type MaterialKey =
   | 'plaster'
@@ -274,25 +277,6 @@ export type Building = {
   walkViewpoints?: WalkViewpoint[]
   architecture?: ArchitectureVision
   designReference?: { assetId: string; name: string }
-}
-export type SourceDocument = {
-  id: string
-  name: string
-  mime: string
-  originalBytes: number
-  width: number
-  height: number
-  page?: number
-  pages?: number
-}
-export type Calibration = {
-  a: Point
-  b: Point
-  knownMetres: number
-  metresPerPixel: number
-  method?: 'auto' | 'manual'
-  basisPixels?: number
-  basis?: 'door-symbols' | 'wall-thickness'
 }
 export type InterpretationRecord = {
   origin: 'detected' | 'inferred' | 'user-selected'

@@ -46,11 +46,12 @@ export const calibration = z
     basis: z.enum(['door-symbols', 'wall-thickness']).optional(),
   })
   .strict()
+export const sourceUnits = z.enum(['mm', 'cm', 'm', 'in', 'ft', 'unknown'])
 export const source = z
   .object({
     id,
     name,
-    mime: z.enum(['image/png', 'image/jpeg', 'application/pdf']),
+    mime: z.enum(['image/png', 'image/jpeg', 'application/pdf', 'image/vnd.dwg', 'image/vnd.dxf']),
     originalBytes: z
       .number()
       .int()
@@ -60,6 +61,8 @@ export const source = z
     height: z.number().int().positive().max(200_000),
     page: z.number().int().positive().optional(),
     pages: z.number().int().positive().optional(),
+    metresPerPixel: positive.optional(),
+    units: sourceUnits.optional(),
   })
   .strict()
 export const pagination = z

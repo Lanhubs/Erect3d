@@ -1,4 +1,8 @@
 name: erect3d-local
+# DWG support is opt-in because LibreDWG is GPLv3 and is not redistributed with this image:
+#   docker compose build --build-arg WITH_LIBREDWG=1 && docker compose up -d
+# DXF import and DXF export need no extra binary. The container probes /usr/bin/dwg2dxf and
+# /usr/bin/dxf2dwg, so a missing converter only reports dwgImport/dwgExport as unavailable.
 services:
   postgres:
     image: postgres:17

@@ -7,6 +7,7 @@ import { id } from '../../contracts/primitives'
 import { authorize } from '../../security/permissions'
 import { ApiError } from '../../security/errors'
 import { loadDocument } from '../projects/documents'
+import { isCadMime, isRasterMime } from '../../../../client/src/domain/sourceMime'
 export const sourceLinkSchema = z
   .object({ originalAssetId: id, rasterAssetId: id.optional(), page: z.number().int().positive().optional() })
   .strict()
@@ -40,12 +41,17 @@ export function sourceRoutes(db: Database) {
         throw new ApiError(422, 'INVALID_ASSET', 'Original asset does not match the source format')
       if (source.mime === 'application/pdf' && (!input.rasterAssetId || input.page !== source.page))
         throw new ApiError(422, 'PDF_PAGE_REQUIRED', 'Link the selected PDF page raster separately')
+      if (isCadMime(source.mime)) {
+        if (!input.rasterAssetId)
+          throw new ApiError(422, 'CAD_RASTER_REQUIRED', 'Convert the drawing to a raster before linking it')
+        if (input.page) throw new ApiError(422, 'INVALID_PAGE', 'CAD drawings do not have pages')
+      }
       const rasterId = input.rasterAssetId || input.originalAssetId
       const [raster] =
         await tx`SELECT * FROM assets WHERE id=${rasterId} AND project_id=${projectId} AND state='ready'`
       if (
         !raster ||
-        !raster.mime.startsWith('image/') ||
+        !isRasterMime(raster.mime) ||
         raster.metadata.width !== source.width ||
         raster.metadata.height !== source.height
       ) {

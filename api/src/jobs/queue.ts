@@ -23,10 +23,11 @@ export async function enqueue(
   payload: unknown,
   requestId: string,
   delaySeconds = 0,
+  maxAttempts = 3,
 ) {
   const id = newId('job')
-  await db`INSERT INTO jobs(id,project_id,actor_id,kind,payload,request_id,available_at)
-    VALUES (${id},${projectId},${actor.id},${kind},${payload}::jsonb,${requestId},now()+${delaySeconds}*interval '1 second')`
+  await db`INSERT INTO jobs(id,project_id,actor_id,kind,payload,request_id,available_at,max_attempts)
+    VALUES (${id},${projectId},${actor.id},${kind},${payload}::jsonb,${requestId},now()+${delaySeconds}*interval '1 second',${maxAttempts})`
   return id
 }
 export async function claim(

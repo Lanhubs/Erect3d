@@ -10,6 +10,7 @@ import { versionRoutes } from './modules/versions/routes'
 import { assetRoutes } from './modules/assets/routes'
 import { optimizedUploadRoutes } from './modules/assets/optimized-upload'
 import { sourceRoutes } from './modules/assets/sources'
+import { cadRoutes } from './modules/cad/routes'
 import { commentRoutes } from './modules/comments/routes'
 import { issueRoutes } from './modules/issues/routes'
 import { approvalRoutes } from './modules/approvals/routes'
@@ -41,6 +42,7 @@ export function mountRoutes(app: Hono<ApiEnv>, services: Services) {
   app.route('/api/v1/projects', assetRoutes(db, config, store))
   app.route('/api/v1/projects', optimizedUploadRoutes(db, config, store))
   app.route('/api/v1/projects', sourceRoutes(db))
+  app.route('/api/v1/projects', cadRoutes(db, config, store))
   app.route('/api/v1/projects', commentRoutes(db))
   app.route('/api/v1/projects', issueRoutes(db))
   app.route('/api/v1/projects', approvalRoutes(db))
@@ -51,7 +53,7 @@ export function mountRoutes(app: Hono<ApiEnv>, services: Services) {
   app.route('/api/v1/projects', presentationRoutes(db))
   app.route('/api/v1/projects', shareRoutes(db))
   app.route('/api/v1/library', libraryRoutes(db))
-  app.route('/api/v1/projects', exportRoutes(db, store))
+  app.route('/api/v1/projects', exportRoutes(db, config, store))
   app.route('/api/v1/projects', auditRoutes(db))
   app.route('/api/v1/realtime', realtimeRoutes(hub, limits))
 }

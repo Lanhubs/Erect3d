@@ -15,20 +15,24 @@ import { ApiError } from '../../security/errors'
 import { bytesHash, validateAsset } from './validation'
 import { optimizeAsset } from './optimize'
 import { enqueue } from '../../jobs/queue'
+import { isCadMime, isRasterMime } from '../../../../client/src/domain/sourceMime'
 const inputSchema = z
   .object({
     name,
     kind: z.enum(['source', 'raster']),
-    mime: z.enum(['image/png', 'image/jpeg', 'application/pdf']),
+    mime: z.enum(['image/png', 'image/jpeg', 'application/pdf', 'image/vnd.dwg', 'image/vnd.dxf']),
   })
   .strict()
 let active = 0
 export function optimizedUploadRoutes(db: Database, config: Config, store?: ObjectStore) {
   const routes = new Hono<ApiEnv>()
+  // CAD sources are parsed and rasterised by a worker, so they get a far tighter ceiling than photos.
+  const uploadLimit = (mime?: string) =>
+    isCadMime(mime || '') ? Math.min(config.MAX_UPLOAD_BYTES, config.CAD_MAX_BYTES) : config.MAX_UPLOAD_BYTES
   routes.use('/:projectId/assets/optimized-upload', async (context, next) => {
     await authorize(db, context.get('actor'), param(context, 'projectId'), 'edit')
     return bodyLimit({
-      maxSize: config.MAX_UPLOAD_BYTES,
+      maxSize: uploadLimit(context.req.query('mime')),
       onError: (context) =>
         context.json(
           { error: { code: 'ASSET_TOO_LARGE', message: 'Upload exceeds its permitted size' } },
@@ -49,7 +53,7 @@ export function optimizedUploadRoutes(db: Database, config: Config, store?: Obje
     active++
     try {
       const bytes = new Uint8Array(await context.req.arrayBuffer())
-      if (!bytes.length || bytes.length > config.MAX_UPLOAD_BYTES)
+      if (!bytes.length || bytes.length > uploadLimit(input.mime))
         throw new ApiError(413, 'ASSET_TOO_LARGE', 'Upload exceeds its permitted size')
       const metadata = await validateAsset(bytes, input.mime, input.kind),
         hash = bytesHash(bytes)
@@ -76,7 +80,7 @@ export function optimizedUploadRoutes(db: Database, config: Config, store?: Obje
               writtenKey = key
               await tx`INSERT INTO assets(id,project_id,actor_id,object_key,name,mime,size,kind,state,sha256,metadata)
             VALUES (${assetId},${projectId},${actor.id},${key},${input.name},${input.mime},${content.length},${input.kind},'ready',${hash},${{ ...metadata, optimization }}::jsonb)`
-              if (input.kind === 'source' && input.mime.startsWith('image/'))
+              if (input.kind === 'source' && isRasterMime(input.mime))
                 await enqueue(tx, actor, projectId, 'asset.normalize', { assetId }, context.get('requestId'))
               return { assetId, state: 'ready', metadata, optimization }
             },

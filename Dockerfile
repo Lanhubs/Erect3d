@@ -4,7 +4,12 @@ COPY api/package.json api/bun.lock ./
 RUN bun install --frozen-lockfile
 
 FROM oven/bun:1.4.2 AS api-runtime
-RUN apt-get update && apt-get install -y --no-install-recommends qpdf && rm -rf /var/lib/apt/lists/*
+# qpdf optimises PDFs; DejaVu gives the CAD rasteriser real glyphs so room labels survive conversion.
+# libredwg-tools (GPLv3) is opt-in: it only adds DWG import/export, DXF works without it.
+ARG WITH_LIBREDWG=0
+RUN apt-get update && apt-get install -y --no-install-recommends qpdf fonts-dejavu-core && \
+  if [ "$WITH_LIBREDWG" = "1" ]; then apt-get install -y --no-install-recommends libredwg-tools; fi && \
+  rm -rf /var/lib/apt/lists/*
 WORKDIR /app/api
 COPY --from=dependencies /app/api/node_modules ./node_modules
 COPY api/src ./src
@@ -18,5 +23,8 @@ RUN ln -s /app/api/node_modules /app/node_modules
 USER bun
 ENV HOST=0.0.0.0
 ENV PDF_OPTIMIZER_PATH=/usr/bin/qpdf
+# Probed at startup; absent binaries simply disable the DWG capabilities.
+ENV DWG_CONVERTER_PATH=/usr/bin/dwg2dxf
+ENV DXF_TO_DWG_CONVERTER_PATH=/usr/bin/dxf2dwg
 EXPOSE 4000
 CMD ["bun", "src/index.ts"]

@@ -22,6 +22,7 @@
     "@hono/bun": "^1.0.0",
     "@techstark/opencv-js": "5.0.0-release.1",
     "@tesseract.js-data/eng": "1.0.0",
+    "dxf-parser": "1.1.2",
     "hono": "^4.0.0",
     "sharp": "0.35.5",
     "tesseract.js": "7.0.0",

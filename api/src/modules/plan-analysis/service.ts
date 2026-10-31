@@ -11,6 +11,7 @@ import { audit, emit } from '../audit/service'
 import { promptVersion } from '../ai/gemini'
 import { loadDocument } from '../projects/documents'
 import { captureContext } from './model-context'
+import { isRasterMime } from '../../../../client/src/domain/sourceMime'
 
 export async function requestAnalysis(
   db: Database,
@@ -40,7 +41,7 @@ export async function requestAnalysis(
           'Choose an uploaded image from this project as the design reference',
         )
     }
-    if (!asset.mime.startsWith('image/') || !['source', 'raster'].includes(asset.kind))
+    if (!isRasterMime(asset.mime) || !['source', 'raster'].includes(asset.kind))
       throw new ApiError(
         422,
         'RASTER_REQUIRED',

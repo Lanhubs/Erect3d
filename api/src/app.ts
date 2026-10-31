@@ -15,6 +15,7 @@ import { report } from './middleware/telemetry'
 import { mountRoutes } from './routes'
 import { buildOpenApi } from './contracts/openapi'
 import { mountPrivateObjects } from './storage/routes'
+import { cadCapabilities } from './modules/cad/capabilities'
 export function createApp(services: Services) {
   const app = new Hono<ApiEnv>({ strict: false }),
     { config, db, metrics, limits, store } = services
@@ -63,6 +64,7 @@ export function createApp(services: Services) {
   app.get('/ready', async (context) => {
     try {
       await services.readiness.check()
+      const cad = await cadCapabilities(config)
       return context.json({
         status: 'ready',
         capabilities: {
@@ -70,6 +72,9 @@ export function createApp(services: Services) {
           cloudAnalysis: !!services.provider,
           assistant: !!services.editingProvider,
           realtime: true,
+          cadImport: !!store,
+          dwgImport: !!store && cad.dwgImport,
+          dwgExport: !!store && cad.dwgExport,
         },
       })
     } catch {
