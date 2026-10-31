@@ -8,12 +8,20 @@ import { unpackSource } from '../src/storage/archive'
 import type { PlanIntelligenceProvider } from '../src/modules/ai/provider'
 import type { EditingProvider } from '../src/modules/assistant/provider'
 export const origin = 'http://127.0.0.1:5173'
+// Bun reports each client's address to the handler. An in-process test has no socket, so without a
+// distinct address every file would drain one shared per-IP rate-limit budget and slow suites 429.
+let testAddresses = 0
+function clientAddress() {
+  const serial = testAddresses++
+  return `${['192.0.2', '198.51.100', '203.0.113'][Math.floor(serial / 254) % 3]}.${(serial % 254) + 1}`
+}
 export function harness(
   overrides: {
     store?: ObjectStore
     provider?: PlanIntelligenceProvider
     editingProvider?: EditingProvider
     ai?: boolean
+    config?: Record<string, unknown>
   } = {},
 ) {
   const url = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL
@@ -25,9 +33,14 @@ export function harness(
     ALLOWED_ORIGINS: origin,
     SNAPSHOT_INTERVAL: 2,
     ...(overrides.ai ? { GEMINI_API_KEY: 'fake-test-key' } : {}),
+    ...(overrides.config || {}),
   })
   const services = createServices(config, overrides),
-    app = createApp(services)
+    app = createApp(services),
+    address = clientAddress(),
+    send = app.request.bind(app)
+  app.request = ((input: Parameters<typeof send>[0], init?: RequestInit, env?: unknown) =>
+    send(input, init, env ?? ({ server: { requestIP: () => ({ address }) } } as never))) as typeof app.request
   return { ...services, app }
 }
 export type Harness = ReturnType<typeof harness>
