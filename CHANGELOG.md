@@ -5,6 +5,12 @@
 - Repository-level installation, testing and production-build commands for the editor,
   API and standalone film.
 - Active CI, coverage baselines, dependency auditing, secret scanning and reviewed update configuration.
+- Coverage floors are now recorded per Bun release (`tools/coverage-baselines.json` keyed by
+  `Bun.version`), and the measured release is published in `coverage/summary.json`. The single
+  unlabeled set compared 1.4.4 numbers against 1.4.2 floors — the same files measure 25595 lines /
+  2380 functions under 1.4.4 against 27001 / 2419 under 1.4.2 — so every package appeared to
+  regress. The original floors stand unchanged; a new release without its own recorded set now
+  stops the run instead of comparing instruments.
 - Development/test setup documentation and separate disposable database configuration.
 - Structured diagnostics with safe error context and optional bounded self-hosted OTLP export.
 - One `api/src/logging.ts` entry point for the JSON logger, with request correlation, level

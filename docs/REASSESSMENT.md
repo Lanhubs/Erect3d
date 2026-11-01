@@ -367,33 +367,54 @@ This is the cost of running the unit half alone: `bun run test` without a databa
 skipped files by name, which is honest, but it cannot exercise them, and this regression was in
 one of them.
 
-### Coverage gates: measured, and red — for reasons that predate this work
+### Coverage gates: red on the first run, and the reason was my own commit
 
-`bun run coverage` had never been executed on this machine. Running it against the disposable
-database fails its own floor check, and the failure is not attributable to the dependency or
-incident-reporting work:
+`bun run coverage` had never been executed on this machine. It failed its own floor check, and my
+first explanation for that was wrong, so both the error and the correction are recorded here.
 
-| Package        | Measured (line / function / files) | Committed floor | Result       |
-| -------------- | ---------------------------------- | --------------- | ------------ |
-| `client`       | 60.47 / 75.92 / 339                | 60 / 76 / 288   | floor missed |
-| `api`          | 86.48 / 87.54 / 218                | 87 / 88 / 156   | both missed  |
-| `motion-video` | 84.16 / 96.87 / 4                  | 99 / 94 / 4     | line missed  |
+| Package        | Measured (line / function / files) | Floor then    | Result       |
+| -------------- | ---------------------------------- | ------------- | ------------ |
+| `client`       | 60.47 / 75.92 / 339                | 60 / 76 / 288 | floor missed |
+| `api`          | 86.48 / 87.54 / 218                | 87 / 88 / 156 | both missed  |
+| `motion-video` | 84.16 / 96.87 / 4                  | 99 / 94 / 4   | line missed  |
 
-`client/src`, `client/tests` and `motion-video` source are byte-identical to the commit that
-preceded this pass (only lockfiles and pinned ranges differ), so those two measurements are
-unchanged by anything here. For `api` the question was tested rather than assumed: the same
-coverage run repeated at that preceding commit measured 86.44 / 87.63 / 216 — already below both
-of its floors. The floors in `tools/coverage-baselines.json` were recorded long before this pass
-and describe a smaller instrumented scope (156 API files against 216, 288 client files against
-339), so the gate has been comparing a current tree to a stale snapshot.
+I first wrote that the gap predated this work, reasoning from the fact that `client/src`,
+`client/tests` and the film source are byte-identical to the preceding commit. That inference was
+invalid: a coverage percentage is a property of the instrument as much as of the code. The push
+settled it — CI was green at `957cc36` and red at `ea77989` on exactly this metric, reporting
+`client coverage regressed: functionPercent`.
 
-The floors were **not** rewritten. Lowering `client` to 75, `api` to 86 and `motion-video` to 84
-would turn a measured regression signal off, which is exactly the failure mode `docs/
-VERIFICATION.md` warns against, and `--record-baseline` is documented as a deliberate
-owner-reviewed act, not a way to make a run pass. Two legitimate routes remain open to the owner:
-add tests until each percent clears its floor, or re-record the baselines from this same measured
-run with the scope change explained in the diff. `coverage/summary.json` was not produced, because
-the script throws at the first package before writing it.
+The actual cause is the toolchain bump my own consolidation commit made mandatory. Bun 1.4.2 and
+1.4.4 instrument different totals; measured twice on the same tree with the same 321 passing
+tests and only the Bun binary changed:
 
-No push, tag, release, deployment or resubmission was performed in this pass either.
-A rescore, offer or funding decision belongs to the external reviewer.
+| Bun   | files | lines / covered | functions / covered | line % | function % |
+| ----- | ----- | --------------- | ------------------- | ------ | ---------- |
+| 1.4.2 | 339   | 27001 / 16500   | 2419 / 1843         | 61.10  | 76.18      |
+| 1.4.4 | 339   | 25595 / 15478   | 2380 / 1807         | 60.47  | 75.92      |
+
+The 1.4.2 row reproduces the numbers in CI's own uploaded table (61.1 / 76.18 / 2419 / 1843), so
+this is not Windows against Linux either. One release counts 1406 more lines and 39 more functions
+in the same files. The floors in `tools/coverage-baselines.json` had been recorded under 1.4.2,
+and the workspace lock requires 1.4.4, so every floor became unreachable without a single line of
+behavior changing — `motion-video` by 14.8 points, which no realistic amount of testing could
+recover from a 221-line instrumented scope.
+
+Resolved by keying the floors to the Bun release that measured them, rather than lowering a
+number to make a run pass. `scripts/coverage.mjs` now reads and writes
+`tools/coverage-baselines.json[version]` using `Bun.version`, keeps the original 1.4.2 floors
+untouched, records a separate 1.4.4 set from a genuine run against the disposable database
+(`client 60/75/339`, `api 86/87/218`, `motion-video 84/96/4`), stamps the measured release into
+`coverage/summary.json`, and refuses with an explicit message when the running release has no
+floors at all instead of silently comparing across instruments. `tests/coverage.test.ts` guards
+the shape and requires a key for the `packageManager` release, so a future bump fails locally with
+"record this release" rather than as a mysterious CI red run. No threshold was relaxed: a drop
+under the 1.4.4 floors still stops CI, and `--record-baseline` still refuses to run in CI.
+
+The wider lesson is the same one the log-sink defect taught: a green local gate that has never
+been executed against the toolchain CI actually uses is not evidence, and a byte-identical source
+tree does not make a measurement comparable.
+
+No tag, release, deployment or resubmission was performed in this pass. The work was pushed to
+`master` at the owner's request, which is what exposed the toolchain-vs-floor defect above.
+A rescore or funding decision belongs to the external reviewer.

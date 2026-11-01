@@ -27,11 +27,13 @@ also owned source. Bun does not automatically instrument every unimported UI fil
 these percentages must not be advertised as whole-application coverage.
 
 `coverage/summary.json` publishes line/function coverage, instrumented production-file
-counts and source inventory counts. CI uploads that file and the three LCOV reports.
-`tools/coverage-baselines.json` contains the initial measured floors. CI fails if line or
-function coverage or the instrumented production-file count decreases. The baseline is
-rounded down to whole percentage points to avoid failures from sub-point platform differences.
-It is
+counts, the Bun release that measured them and source inventory counts. CI uploads that file
+and the three LCOV reports. `tools/coverage-baselines.json` holds the measured floors, keyed by
+the Bun release that produced each set, because a percentage is only comparable to a floor
+measured by the same instrument. CI fails if line or function coverage or the instrumented
+production-file count decreases below the entry for its own release, and fails outright if that
+release has no entry. The baseline is
+rounded down to whole percentage points to avoid failures from sub-point platform differences. It is
 not rewritten by CI. Add behavior tests toward at least 60% and review changes in scope;
 never exclude production features simply to improve a percentage.
 
@@ -72,10 +74,13 @@ with persistence off) and all 28 pass, with the Redis suite passing once `TEST_R
 see [assessment evidence](REASSESSMENT.md). Running them found and fixed a real regression in the
 worker log sink, so a unit-only pass is not sufficient evidence for a logging change.
 
-Coverage floors are a separate matter: executed against that database, all three packages currently
-miss at least one committed floor, and the same run repeated at the preceding commit shows the gap
-predates the dependency and incident-reporting work. The floors were left untouched rather than
-re-recorded to match. `bun run coverage` therefore exits non-zero today.
+Coverage floors are keyed by the Bun release that measured them. The floors were originally
+recorded under 1.4.2, and consolidating the workspace made 1.4.4 mandatory; 1.4.4 instruments 1406
+fewer lines and 39 fewer functions in the same files, so every package missed a floor with no code
+change at all. `bun run coverage` now compares only against the entry for `Bun.version`, records
+that release in `coverage/summary.json`, and stops with a message asking for a deliberate
+`--record-baseline` run when the current release has no floors. See
+[assessment evidence](REASSESSMENT.md) for the measurement that proved it.
 
 A reproducibility defect found in this pass is closed. The editor stylesheet imports Tailwind CSS,
 which no package manifest declared, so a production build on a clean machine failed to resolve that
