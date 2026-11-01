@@ -1,17 +1,36 @@
 {
-  "client": {
-    "linePercent": 60,
-    "functionPercent": 76,
-    "files": 288
+  "1.4.2": {
+    "client": {
+      "linePercent": 60,
+      "functionPercent": 76,
+      "files": 288
+    },
+    "api": {
+      "linePercent": 87,
+      "functionPercent": 88,
+      "files": 156
+    },
+    "motion-video": {
+      "linePercent": 99,
+      "functionPercent": 94,
+      "files": 4
+    }
   },
-  "api": {
-    "linePercent": 87,
-    "functionPercent": 88,
-    "files": 156
-  },
-  "motion-video": {
-    "linePercent": 99,
-    "functionPercent": 94,
-    "files": 4
+  "1.4.4": {
+    "client": {
+      "linePercent": 60,
+      "functionPercent": 75,
+      "files": 339
+    },
+    "api": {
+      "linePercent": 86,
+      "functionPercent": 87,
+      "files": 218
+    },
+    "motion-video": {
+      "linePercent": 84,
+      "functionPercent": 96,
+      "files": 4
+    }
   }
 }
